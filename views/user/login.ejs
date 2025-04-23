@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GameZone - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gradient-to-b from-black via-zinc-900 to-black font-sans">
+  <div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md bg-zinc-900/50 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300">
+      <!-- Logo and Title -->
+      <div class="text-center mb-8 transform hover:scale-105 transition-transform duration-300">
+        <h1 class="text-5xl font-bold text-white mb-2 animate-pulse">GameZone</h1>
+        <p class="text-zinc-400 hover:text-zinc-300 transition-colors">Welcome back, gamer!</p>
+      </div>
+
+      <!-- Error Message (if any) -->
+      <% if (typeof err !== 'undefined' && err) { %>
+        <div class="bg-red-900/20 border border-red-900/30 text-red-400 px-4 py-2 rounded-lg mb-6 animate-shake">
+          <%= err %>
+        </div>
+      <% } %>
+
+      <!-- Sign In Form -->
+      <form action="/login" method="POST" class="space-y-6">
+        <!-- Email -->
+        <div class="group">
+          <label for="email" class="block text-sm font-medium text-zinc-300 mb-2 group-hover:text-white transition-colors">
+            Email Address
+          </label>
+          <div class="relative">
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-10 pr-4 py-2.5 
+                     focus:ring-2 focus:ring-white/50 focus:border-transparent 
+                     hover:border-zinc-600 transition-all duration-200"
+              placeholder="Enter your email"
+            >
+            <i class="fas fa-envelope absolute left-3 top-3 text-zinc-500"></i>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="group">
+          <div class="flex justify-between items-center mb-2">
+            <label for="password" class="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
+              Password
+            </label>
+            <a href="/forgot-password" 
+               class="text-sm text-zinc-400 hover:text-white transition-colors transform hover:translate-x-1 inline-block">
+              Forgot password? →
+            </a>
+          </div>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required 
+              class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-10 pr-4 py-2.5 
+                     focus:ring-2 focus:ring-white/50 focus:border-transparent 
+                     hover:border-zinc-600 transition-all duration-200"
+              placeholder="Enter your password"
+            >
+            <i class="fas fa-lock absolute left-3 top-3 text-zinc-500"></i>
+            <button type="button" 
+                    onclick="togglePassword()"
+                    class="absolute right-3 top-3 text-zinc-500 hover:text-white transition-colors">
+              <i class="fas fa-eye" id="togglePassword"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full bg-white text-black hover:bg-zinc-200 font-semibold py-3 rounded-lg 
+                 transition-all duration-300 transform hover:scale-[1.02] active:scale-95
+                 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+                 shadow-lg hover:shadow-white/10"
+        >
+          Sign In
+        </button>
+      </form>
+
+      <!-- Social Login -->
+      <div class="mt-6">
+        <div class="flex items-center justify-center">
+          <button 
+            onclick="window.location.href='/auth/google'"
+            class="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 font-semibold py-3 rounded-lg 
+                   transition-all duration-300 transform hover:scale-[1.02] active:scale-95
+                   focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+                   shadow-lg hover:shadow-white/10"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+                 alt="Google" 
+                 class="w-5 h-5">
+            Continue with Google
+          </button>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="flex items-center my-8">
+        <hr class="flex-grow border-zinc-800">
+        <span class="px-4 text-zinc-500 text-sm">New to GameZone?</span>
+        <hr class="flex-grow border-zinc-800">
+      </div>
+
+      <!-- Sign Up Link -->
+      <a 
+        href="/signup" 
+        class="block w-full text-center bg-transparent border border-zinc-700 text-zinc-300 
+               hover:bg-zinc-800/50 hover:text-white font-semibold py-3 rounded-lg 
+               transition-all duration-300 transform hover:scale-[1.02] active:scale-95"
+      >
+        Create an Account
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const password = document.getElementById('password');
+      const toggleIcon = document.getElementById('togglePassword');
+      
+      if (password.type === 'password') {
+        password.type = 'text';
+        toggleIcon.classList.remove('fa-eye');
+        toggleIcon.classList.add('fa-eye-slash');
+      } else {
+        password.type = 'password';
+        toggleIcon.classList.remove('fa-eye-slash');
+        toggleIcon.classList.add('fa-eye');
+      }
+    }
+  </script>
+</body>
+</html>

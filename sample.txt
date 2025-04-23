@@ -1,0 +1,76 @@
+export const postSignUp = async (req, res) => {
+  try {
+    
+    const { name, email, phone, password, confirm_password } = req.body;
+       
+    // Validate required fields
+    if (!name || !email || !password || !confirm_password) {
+      return res.render('user/signup',{err:'Please Fill All The field'})
+    }
+
+    // Validate password match
+    if (password !== confirm_password) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.render("user/signup",{ err: "User Already Exist" });
+    }
+    //Store user Data in sesssion
+    req.session.tempUser = { name, email, phone, password };
+
+    //Generate and send OTP
+
+    const otpsent = await generateOTP(email);
+    if (!otpsent) {
+      return res.status(500).json({ message: "Failed To Send OTP" });
+    }
+    // res.status(200).json({
+    //   message: "OTP sent to your email",
+    //   redirectTo: `/user/verify-otp?email=${encodeURIComponent(email)}`,
+    // });
+    res.render("../views/user/verify-otp.ejs", { email });
+  } catch (err) {
+    console.error("Signup error:", err);
+    res.status(500).json({ error: "Something went wrong during registration" });
+  }
+};
+
+// Create and save new user
+export const createUser = async (tempUser) => {
+  try {
+    const { name, email, phone, password } = tempUser;
+    const newUser = new User({
+      name,
+      email,
+      phone,
+      password,
+      isVerified: true,
+    });
+    await newUser.save();
+    return newUser;
+  } catch (error) {
+    console.log("Error Creating User:", error);
+    return null;
+  }
+};
+
+//Generate and Send OTP
+
+export const verifyOTP = async(req,res)=>{
+  try{
+    const {email,otp1,otp2,otp3,otp4,otp5,otp6} = req.body;
+    const fullOTP  = otp1+otp2+otp3+otp4+otp5+otp6;
+    
+    // Find the OTP Record
+    const otpRecord = await OTP.findOne({email});
+  }
+}
+
+
+
+
+

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GameZone - OTP Verification</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .otp-input {
+      width: 2.5rem;
+      height: 2.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+      border-radius: 0.5rem;
+      background-color: rgba(39, 39, 42, 0.5);
+      border: 1px solid rgb(63, 63, 70);
+      color: white;
+      transition: all 0.2s ease;
+    }
+
+    .otp-input:focus {
+      outline: none;
+      border-color: white;
+      ring: 2px white;
+    }
+
+    .otp-input:disabled {
+      background-color: rgba(39, 39, 42, 0.3);
+      border-color: rgb(63, 63, 70);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-black via-zinc-900 to-black font-sans">
+  <div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md bg-zinc-900/50 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300">
+      <!-- Logo and Title -->
+      <div class="text-center mb-8 transform hover:scale-105 transition-transform duration-300">
+        <h1 class="text-5xl font-bold text-white mb-2 animate-pulse">GameZone</h1>
+        <p class="text-zinc-400 hover:text-zinc-300 transition-colors">Verify your account</p>
+      </div>
+
+      <p class="text-zinc-400 text-sm mb-8">Enter the 6-digit code sent to <%= email %></p>
+      
+      <form id="otpForm" action="/verify-otp" method="POST">
+        <input type="hidden" id="email" name="email" value="<%= email %>">
+        
+        <div class="flex justify-between gap-3 mb-6">
+          <input type="text" maxlength="1" id="otp1" name="otp1" class="otp-input" oninput="moveToNext(this, 'otp2')" />
+          <input type="text" maxlength="1" id="otp2" name="otp2" class="otp-input" oninput="moveToNext(this, 'otp3')" />
+          <input type="text" maxlength="1" id="otp3" name="otp3" class="otp-input" oninput="moveToNext(this, 'otp4')" />
+          <input type="text" maxlength="1" id="otp4" name="otp4" class="otp-input" oninput="moveToNext(this, 'otp5')" />
+          <input type="text" maxlength="1" id="otp5" name="otp5" class="otp-input" oninput="moveToNext(this, 'otp6')" />
+          <input type="text" maxlength="1" id="otp6" name="otp6" class="otp-input" />
+        </div>
+
+        <!-- Error Message -->
+        <% if (typeof err !== 'undefined' && err) { %>
+          <div class="bg-red-900/20 border border-red-900/30 text-red-400 px-4 py-2 rounded-lg mb-6">
+            <%= err %>
+          </div>
+        <% } %>
+
+        <button type="submit" 
+          class="w-full bg-white text-black hover:bg-zinc-200 font-semibold py-3 rounded-lg 
+                 transition-all duration-300 transform hover:scale-[1.02] active:scale-95
+                 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
+                 shadow-lg hover:shadow-white/10 mb-4">
+          Verify OTP
+        </button>
+      </form>
+
+      <div class="flex items-center my-6">
+        <hr class="flex-grow border-zinc-800">
+        <span class="px-4 text-zinc-500 text-sm">Didn't receive code?</span>
+        <hr class="flex-grow border-zinc-800">
+      </div>
+
+      <button onclick="resendOTP()" 
+        class="w-full bg-transparent border border-zinc-700 text-zinc-300 
+               hover:bg-zinc-800/50 hover:text-white font-semibold py-3 rounded-lg 
+               transition-all duration-300 transform hover:scale-[1.02] active:scale-95">
+        Resend OTP
+      </button>
+
+      <div id="successMessage" class="mt-4 text-green-400 text-sm hidden">OTP Verified Successfully!</div>
+    </div>
+  </div>
+
+  <script>
+    // Function to move to next input field
+    function moveToNext(current, nextId) {
+      if (current.value.length === current.maxLength) {
+        const next = document.getElementById(nextId);
+        if (next) {
+          next.focus();
+        }
+      }
+    }
+
+    // Function to handle backspace
+    document.addEventListener("DOMContentLoaded", () => {
+      const otpInputs = document.querySelectorAll(".otp-input");
+      
+      otpInputs.forEach((input, index) => {
+        input.addEventListener("keydown", (e) => {
+          // If backspace is pressed and current input is empty, focus previous input
+          if (e.key === "Backspace" && input.value === "" && index > 0) {
+            otpInputs[index - 1].focus();
+          }
+        });
+      });
+    });
+
+    // Function to display success animation
+    function showSuccessAnimation() {
+      const successMessage = document.getElementById('successMessage');
+      successMessage.classList.remove('hidden');
+      successMessage.classList.add('success-animation');
+    }
+
+    // Resend OTP logic
+    function resendOTP() {
+      const email = document.getElementById('email').value;
+      fetch('/resend-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message || "OTP has been resent to your email");
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Failed to resend OTP. Please try again.");
+      });
+    }
+  </script>
+</body>
+</html>

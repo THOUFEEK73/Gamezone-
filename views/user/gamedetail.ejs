@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= game.title %> - GameZone</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #10B981;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .product-image {
+            max-width: 100%;
+            max-height: 500px;
+            object-fit: contain;
+        }
+        .price-tag {
+            color: #B12704;
+            font-size: 18px;
+        }
+        .prime-badge {
+            background: url('https://m.media-amazon.com/images/G/01/prime/marketing/slashPrime/amazon-prime-delivery-checkmark._CB659998231_.png') no-repeat;
+            background-size: contain;
+            width: 53px;
+            height: 15px;
+        }
+        .buy-box {
+            border: 1px solid #DDD;
+            border-radius: 4px;
+            padding: 14px 18px;
+            background-color: #ffffff;
+        }
+        .add-to-cart-button {
+            background: #EA7300;
+            border-color: #a88734 #9c7e31 #846a29;
+            border-radius: 3px;
+            border-style: solid;
+            border-width: 1px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 0;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .add-to-cart-button:hover {
+            background: #FF9B17;
+        }
+        .buy-now-button {
+            background: linear-gradient(to bottom, #10b981, #059669);
+            border-color: #047857;
+            border-radius: 3px;
+            border-style: solid;
+            border-width: 1px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 0;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .buy-now-button:hover {
+            background: linear-gradient(to bottom, #059669, #047857);
+        }
+        .delivery-info {
+            color: #007185;
+            font-size: 14px;
+        }
+        .stock-status {
+            color: #007600;
+            font-size: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .platform-badge {
+            background-color: #F0F2F2;
+            border-radius: 3px;
+            padding: 3px 7px;
+            font-size: 12px;
+            color: #111;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <a href="/home" class="text-2xl font-bold text-green-600">GameZone</a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/games" class="nav-link text-gray-700 hover:text-green-600">Games</a>
+                    <a href="/categories" class="nav-link text-gray-700 hover:text-green-600">Categories</a>
+                    <a href="/deals" class="nav-link text-gray-700 hover:text-green-600">Deals</a>
+                    <a href="/about" class="nav-link text-gray-700 hover:text-green-600">About</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search games..." 
+                               class="pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:border-green-500">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    </div>
+                    <a href="/cart" class="relative">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700 hover:text-green-600"></i>
+                        <span class="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                            <%= locals.cartCount || 0 %>
+                        </span>
+                    </a>
+                    <% if (locals.user) { %>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2">
+                                <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
+                                     alt="Profile" 
+                                     class="w-8 h-8 rounded-full">
+                                <span class="text-gray-700"><%= user.name %></span>
+                            </button>
+                            <div class="absolute right-0 w-48 mt-2 py-2 bg-white rounded-lg shadow-xl hidden group-hover:block">
+                                <a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                                    Profile
+                                </a>
+                                <a href="/orders" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                                    Orders
+                                </a>
+                                <a href="/wishlist" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                                    Wishlist
+                                </a>
+                                <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <a href="/logout" class="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition">
+                            Logout
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-16">
+        <div class="container mx-auto px-4 py-4">
+            <!-- Breadcrumb -->
+            <div class="text-sm text-gray-600 mb-2">
+                <a href="/" class="hover:text-orange-600">Games</a>
+                <span class="mx-1">›</span>
+                <a href="/category/<%= game.category %>" class="hover:text-orange-600"><%= game.category %></a>
+                <span class="mx-1">›</span>
+                <span class="text-gray-900"><%= game.title %></span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Left Column - Images -->
+                <div>
+                    <!-- Main Image -->
+                    <div class="bg-white p-4 flex items-center justify-center rounded-lg border border-gray-200 h-[400px] w-full">
+                        <img src="<%= game.media.coverImage %>" 
+                             alt="<%= game.title %>" 
+                             class="w-full h-full object-contain">
+                    </div>
+                    
+                    <!-- Thumbnails -->
+                    <% if (game.media.screenshots && game.media.screenshots.length > 0) { %>
+                        <div class="grid grid-cols-4 gap-2 mt-4">
+                            <% game.media.screenshots.forEach(screenshot => { %>
+                                <div class="border-gray-200 p-1 cursor-pointer h-24">
+                                    <img src="<%= screenshot %>" 
+                                         alt="<%= game.title %> Screenshot" 
+                                         class="w-full h-full object-contain">
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Right Column - Product Info -->
+                <div class="space-y-6">
+                    <!-- Title -->
+                    <h1 class="text-2xl font-medium text-gray-900"><%= game.title %></h1>
+                    
+                    <!-- Rating and Reviews -->
+                    <div class="flex items-center mt-2">
+                        <div class="flex items-center">
+                            <span class="text-yellow-400">★★★★★</span>
+                            <a href="#" class="text-blue-600 hover:text-orange-600 ml-1 text-sm">(123)</a>
+                        </div>
+                        <span class="mx-2 text-gray-400">|</span>
+                        <a href="#" class="text-blue-600 hover:text-orange-600 text-sm">See all buying options</a>
+                    </div>
+
+                    <!-- Price Box -->
+                    <div class="buy-box">
+                        <div class="price-tag text-black mb-2">$<%= game.price %></div>
+                        <div class="text-sm text-gray-600 mb-2">No Import Fees Deposit & $9.98 Shipping to United Kingdom</div>
+                        <div class="delivery-info mb-2">
+                            <span class="prime-badge inline-block mr-2"></span>
+                            FREE delivery <span class="font-bold">Monday, January 15</span>
+                        </div>
+                        <div class="stock-status mb-4">
+                            <span class="text-green-500">Available Stock <%=game.stockQuantity%> Units</span>
+                        </div>
+
+                        <!-- Platform Selection -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Platform:</label>
+                            <div class="flex flex-wrap gap-2">
+                                <% game.platforms.forEach(platform => { %>
+                                    <span class="platform-badge"><%= platform %></span>
+                                <% }); %>
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Quantity:</label>
+                            <select id="quantiy" class="border border-gray-300 rounded p-1" onchange="updateTotalPrice()">
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4</option>
+                                <option>5</option>
+                            </select>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="space-y-2 max-w-[150px]">
+                            <button onclick="addToCart('<%= game._id %>')" 
+                                    class="add-to-cart-button w-full py-1.5 text-sm">
+                                Add to Cart
+                            </button>
+                            <button onclick="buyNow('<%= game._id %>')" 
+                                    class="buy-now-button w-full py-1.5 text-sm">
+                                Buy Now
+                            </button>
+                        </div>
+
+                        <!-- Secure Transaction -->
+                        <div class="mt-4 text-xs text-gray-600">
+                            <i class="fas fa-lock mr-1"></i>
+                            Secure transaction
+                        </div>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="text-sm text-gray-600">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-shipping-fast text-gray-500 mr-2"></i>
+                            <span>Ships from and sold by GameZone</span>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-undo text-gray-500 mr-2"></i>
+                            <span>Returnable within 30 days of receipt</span>
+                        </div>
+                    </div>
+
+                    <!-- Product Description -->
+                    <div class="bg-white p-6 border border-gray-200 rounded-lg shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-xl font-semibold text-gray-900">About this item</h2>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-500">Scroll to read more</span>
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <div id="description" class="text-gray-700 max-h-[200px] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                                <div class="space-y-4">
+                                    <p class="leading-relaxed"><%= game.description %></p>
+                                    <!-- Additional Features -->
+                                    <div class="grid grid-cols-2 gap-4 mt-4">
+                                        <div class="flex items-start space-x-3">
+                                            <i class="fas fa-gamepad text-green-500 mt-1"></i>
+                                            <div>
+                                                <h3 class="font-medium text-gray-900">Gameplay</h3>
+                                                <p class="text-sm text-gray-600">Immersive gaming experience with stunning graphics</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <i class="fas fa-users text-green-500 mt-1"></i>
+                                            <div>
+                                                <h3 class="font-medium text-gray-900">Multiplayer</h3>
+                                                <p class="text-sm text-gray-600">Play with friends in exciting multiplayer modes</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <i class="fas fa-trophy text-green-500 mt-1"></i>
+                                            <div>
+                                                <h3 class="font-medium text-gray-900">Achievements</h3>
+                                                <p class="text-sm text-gray-600">Unlock achievements and show off your skills</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start space-x-3">
+                                            <i class="fas fa-download text-green-500 mt-1"></i>
+                                            <div>
+                                                <h3 class="font-medium text-gray-900">Updates</h3>
+                                                <p class="text-sm text-gray-600">Regular updates with new content and features</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="descriptionOverlay" class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+                        </div>
+                        <button id="readMoreBtn" 
+                                class="mt-4 text-green-600 hover:text-green-700 font-medium flex items-center group">
+                            <span>Read More</span>
+                            <i class="fas fa-chevron-down ml-2 text-sm group-hover:translate-y-1 transition-transform"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Games Section -->
+        <div class="container mx-auto px-4 py-8">
+            <h2 class="text-2xl font-bold mb-6 text-gray-900">Related Games</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <!-- Game Card Template -->
+                <a href="#" class="group">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                        <!-- Game Image -->
+                        <div class="h-48 overflow-hidden">
+                            <img src="/images/game-placeholder.jpg" 
+                                 alt="Game Title" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        
+                        <!-- Game Info -->
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-green-600 font-bold">$49.99</span>
+                                <span class="text-sm text-gray-500">Action</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Repeat the card template for more games -->
+                <a href="#" class="group">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                        <div class="h-48 overflow-hidden">
+                            <img src="/images/game-placeholder.jpg" 
+                                 alt="Game Title" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-green-600 font-bold">$49.99</span>
+                                <span class="text-sm text-gray-500">Action</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="#" class="group">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                        <div class="h-48 overflow-hidden">
+                            <img src="/images/game-placeholder.jpg" 
+                                 alt="Game Title" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-green-600 font-bold">$49.99</span>
+                                <span class="text-sm text-gray-500">Action</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="#" class="group">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+                        <div class="h-48 overflow-hidden">
+                            <img src="/images/game-placeholder.jpg" 
+                                 alt="Game Title" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-green-600 font-bold">$49.99</span>
+                                <span class="text-sm text-gray-500">Action</span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function updateTotalPrice(){
+        const quantity = document.getElementById('quantity').value;
+        const price = "<%=game.price%>";
+        const totalPrice = quantity * price;
+        document.getElementById('totalPrice').innerHTML = totalPrice.toFixed(2);
+    }
+
+    // Description read more functionality
+    const description = document.getElementById('description');
+    const descriptionOverlay = document.getElementById('descriptionOverlay');
+    const readMoreBtn = document.getElementById('readMoreBtn');
+    let isExpanded = false;
+
+    readMoreBtn.addEventListener('click', () => {
+        isExpanded = !isExpanded;
+        if (isExpanded) {
+            description.style.maxHeight = 'none';
+            descriptionOverlay.style.display = 'none';
+            readMoreBtn.innerHTML = '<span>Read Less</span><i class="fas fa-chevron-up ml-2 text-sm group-hover:-translate-y-1 transition-transform"></i>';
+        } else {
+            description.style.maxHeight = '200px';
+            descriptionOverlay.style.display = 'block';
+            readMoreBtn.innerHTML = '<span>Read More</span><i class="fas fa-chevron-down ml-2 text-sm group-hover:translate-y-1 transition-transform"></i>';
+        }
+    });
+</script>
+</html> 

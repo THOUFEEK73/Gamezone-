@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GameZone - Sign Up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-b from-black via-zinc-900 to-black font-sans">
+  <div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-sm bg-zinc-900/50 backdrop-blur-sm p-6 rounded-xl shadow-xl border border-zinc-800/50">
+      <!-- Logo and Title -->
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-white">GameZone</h1>
+        <p class="text-zinc-400 text-sm">Join the gaming community!</p>
+      </div>
+
+      <!-- Error Message -->
+      <% if (err) { %>
+        <div class="bg-red-900/20 border border-red-900/30 text-red-400 px-3 py-2 rounded-lg mb-4 text-sm">
+          <%= err %>
+        </div>
+      <% } %>
+
+      <form action="/signup" method="POST" class="space-y-4">
+        <!-- Name -->
+        <div class="relative">
+          <input type="text" name="name"  
+            placeholder="Full Name"
+            class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
+                   focus:ring-1 focus:ring-white/50 focus:border-transparent">
+          <i class="fas fa-user absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
+        </div>
+
+        <!-- Email -->
+        <div class="relative">
+          <input type="email" name="email"  
+            placeholder="Email Address"
+            class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
+                   focus:ring-1 focus:ring-white/50 focus:border-transparent">
+          <i class="fas fa-envelope absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
+        </div>
+
+        <!-- Phone -->
+        <div class="relative">
+          <input type="tel" name="phone"  
+            placeholder="Phone Number"
+            class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
+                   focus:ring-1 focus:ring-white/50 focus:border-transparent">
+          <i class="fas fa-phone absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
+        </div>
+
+        <!-- Password -->
+        <div class="relative">
+          <input type="password" name="password"  
+            placeholder="Password (min. 6 characters)"
+            class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
+                   focus:ring-1 focus:ring-white/50 focus:border-transparent">
+          <i class="fas fa-lock absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="relative">
+          <input type="password" name="confirm_password"  
+            placeholder="Confirm Password"
+            class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
+                   focus:ring-1 focus:ring-white/50 focus:border-transparent">
+          <i class="fas fa-lock absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" 
+          class="w-full bg-white text-black hover:bg-zinc-200 font-medium py-2 rounded-lg 
+                 transition-all duration-200 text-sm">
+          Create Account
+        </button>
+      </form>
+
+      <!-- Social Signup -->
+      <div class="mt-6">
+        <div class="flex items-center justify-center">
+          <button 
+            onclick="window.location.href='/auth/google'"
+            class="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 font-medium py-2 rounded-lg 
+                   transition-all duration-200 text-sm"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+                 alt="Google" 
+                 class="w-4 h-4">
+            Continue with Google
+          </button>
+        </div>
+      </div>
+
+      <!-- Login Link -->
+      <p class="text-center text-zinc-400 text-sm mt-4">
+        Already have an account? 
+        <a href="/login" class="text-white hover:text-zinc-200 underline">Sign In</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

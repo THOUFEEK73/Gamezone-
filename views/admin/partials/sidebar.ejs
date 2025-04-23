@@ -1,0 +1,76 @@
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">
+            <i class="fas fa-gamepad animate-float"></i>
+            <h1>GameZone</h1>
+        </div>
+    </div>
+
+    <nav class="space-y-1 px-4">
+        <!-- Main Navigation -->
+        <a href="/admin/dashboard" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
+            <i class="fas fa-home"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <!-- Games Management -->
+        <div class="nav-group">
+            <div class="nav-group-header">
+                <div class="flex items-center">
+                    <i class="fas fa-gamepad mr-3"></i>
+                    <span>Games Management</span>
+                </div>
+                <i class="fas fa-chevron-down nav-group-toggle"></i>
+            </div>
+            <div class="nav-group-content <%= currentPage.startsWith('games') ? 'show' : '' %>">
+                <a href="/admin/games" class="nav-link <%= currentPage === 'games-list' ? 'active' : '' %>">
+                    <i class="fas fa-list"></i>
+                    <span>All Games</span>
+                </a>
+                <a href="/admin/addgame" class="nav-link <%= currentPage === 'games-add' ? 'active' : '' %>">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add New Game</span>
+                </a>
+                <a href="/admin/category" class="nav-link <%= currentPage === 'games-categories' ? 'active' : '' %>">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- User Management -->
+        <div class="nav-group">
+            <div class="nav-group-header">
+                <div class="flex items-center">
+                    <i class="fas fa-users mr-3"></i>
+                    <span>User Management</span>
+                </div>
+                <i class="fas fa-chevron-down nav-group-toggle"></i>
+            </div>
+            <div class="nav-group-content <%= currentPage.startsWith('users') ? 'show' : '' %>">
+                <a href="/admin/users" class="nav-link <%= currentPage === 'users-list' ? 'active' : '' %>">
+                    <i class="fas fa-user-friends"></i>
+                    <span>All Users</span>
+                </a>
+                <a href="/admin/users/admins" class="nav-link <%= currentPage === 'users-admins' ? 'active' : '' %>">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Admin Users</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Other navigation items... -->
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-profile">
+            <img src="/images/default-avatar.png" alt="Admin" class="user-avatar">
+            <div class="user-info">
+                <div class="user-name">Admin</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <i class="fas fa-sign-out-alt text-gray-400 hover:text-red-500 cursor-pointer"></i>
+        </div>
+    </div>
+</div>
