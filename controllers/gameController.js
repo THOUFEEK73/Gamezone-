@@ -4,8 +4,9 @@ import Category from '../models/CategoryModel.js';
 // Add this new function to your existing controller
 export const getAllGames = async (req, res) => {
     try {
-        const games = await Game.find().populate('category');
-        res.render('admin/games', { games });
+        const categories = await Category.find();
+        const games = await Game.find();
+        res.render('admin/games', {games,categories});
     } catch (error) {
         console.error('Error fetching games:', error);
         res.status(500).json({ error: 'Failed to fetch games' });

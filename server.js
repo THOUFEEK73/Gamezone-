@@ -45,7 +45,7 @@ app.use('/admin', adminRoutes);
 app.use('/',addGamesRouts);
 app.use('/',gameDetailsRoutes);
 app.use('/',userManageRoutes);
-app.use('/',categoriesRoutes);
+// app.use('/',categoriesRoutes);
 
 
 // Connect to MongoDB

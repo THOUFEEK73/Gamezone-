@@ -588,8 +588,8 @@
                     <div>
                         <label class="form-label">Price</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
-                            <input type="number" name="price" step="0.01" class="form-input pl-8" required>
+                            <span class="absolute left-3 top-2.5 text-gray-400"></span>
+                            <input type="number" name="price" step="0.01" class="form-input pl-10" required>
                             <p class="helper-text">Set the retail price for the game</p>
                         </div>
                     </div>
@@ -604,67 +604,101 @@
                     <div>
                         <label class="form-label">Game Cover Image</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <label for="coverImage" class="file-upload cursor-pointer">
+                            <div class="file-upload cursor-pointer">
+                                <input type="file" id="imageUpload" name="coverImage" accept="image/*" class="hidden" required>
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
                                     <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
                                     <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                                 </div>
-                                <input id="coverImage" type="file" name="coverImage" accept="image/*" class="hidden" required onchange="previewCoverImage(this)"/>
-                            </label>
-                            <div id="coverImagePreview" class="hidden">
+                            </div>
+                            <div id="previewContainer" class="hidden">
                                 <div class="card p-4">
                                     <h3 class="text-lg font-semibold text-gray-800 mb-3">Cover Preview</h3>
                                     <div class="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-                                        <img src="" alt="Cover Preview" class="w-full h-full object-cover">
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-                                        <div class="absolute bottom-0 left-0 right-0 p-4">
-                                            <h4 class="text-white font-semibold text-lg">Game Title</h4>
-                                            <p class="text-white/90 text-sm">Category</p>
-                                        </div>
-                                        <div class="absolute top-2 right-2">
-                                            <button type="button" onclick="removeCoverImage()" 
-                                                    class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </div>
+                                        <img src="" alt="Preview" class="w-full h-full object-cover">
+                                        <button type="button" onclick="clearPreview()" 
+                                                class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
-                                    <div class="mt-4 flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <i class="fas fa-info-circle text-gray-400"></i>
-                                            <span class="text-sm text-gray-500">Aspect Ratio: 16:9</span>
-                                        </div>
-                                        <div class="flex items-center space-x-2">
-                                            <i class="fas fa-image text-gray-400"></i>
-                                            <span class="text-sm text-gray-500">Cover Image</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Game Screenshots -->
-                    <div>
-                        <label class="form-label">Game Screenshots (up to 5)</label>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <label for="screenshots" class="file-upload cursor-pointer">
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-plus text-2xl text-gray-400 mb-2"></i>
-                                    <p class="text-sm text-gray-600">Add Screenshots</p>
-                                    <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB each</p>
-                                </div>
-                                <input id="screenshots" type="file" name="screenshots" multiple accept="image/*" class="hidden" onchange="previewScreenshots(this)"/>
-                            </label>
-                            <div id="screenshotsPreview" class="col-span-2">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <!-- Screenshot previews will be added here -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Add this script section before the closing body tag -->
+            <script>
+                const imageUpload = document.getElementById('imageUpload');
+                const previewContainer = document.getElementById('previewContainer');
+                const previewImage = previewContainer.querySelector('img');
+
+                imageUpload.addEventListener('change', function() {
+                    const file = this.files[0];
+
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            previewContainer.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+
+                function clearPreview() {
+                    imageUpload.value = '';
+                    previewImage.src = '';
+                    previewContainer.classList.add('hidden');
+                }
+
+                // Drag and drop functionality
+                const dropZone = document.querySelector('.file-upload');
+
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, highlight, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, unhighlight, false);
+                });
+
+                function highlight() {
+                    dropZone.classList.add('border-accent-color', 'bg-accent-color/5');
+                }
+
+                function unhighlight() {
+                    dropZone.classList.remove('border-accent-color', 'bg-accent-color/5');
+                }
+
+                dropZone.addEventListener('drop', handleDrop, false);
+
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    const file = dt.files[0];
+
+                    if (file) {
+                        imageUpload.files = dt.files;
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            previewImage.src = e.target.result;
+                            previewContainer.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                }
+            </script>
 
             <!-- Details Section -->
             <div class="card p-6">
@@ -684,11 +718,10 @@
   <div id="platformSelectMenu" class="absolute mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden z-10">
     <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="ps5">PlayStation 5</div>
     <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="xbox">Xbox Series X</div>
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="switch">Nintendo Switch</div>
     <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="pc">PC</div>
   </div>
 
-  <input type="hidden" name="platform" id="platformInput"> // Change from platforms to platform
+  <input type="hidden" name="platform" id="platformInput"> 
 </div>
 
                           

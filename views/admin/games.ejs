@@ -112,55 +112,63 @@
         <!-- Filters -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <input type="text" placeholder="Search games..." class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-            <select class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option>All Platforms</option>
-                <option>PS5</option>
-                <option>Xbox Series X</option>
-                <option>Nintendo Switch</option>
+          
+            <select name="category" class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <option disabled>All Categories</option>
+                
+                <% categories.forEach(category=>{%>
+                 <option value="<%=category._id%>"><%=category.categoryName%></option>
+                <%});%>
+                
             </select>
-            <select class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option>All Categories</option>
-                <option>Action</option>
-                <option>Adventure</option>
-                <option>RPG</option>
-                <option>Sports</option>
-            </select>
-            <select class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+            <!-- <select class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                 <option>Sort By: Latest</option>
                 <option>Price: Low to High</option>
                 <option>Price: High to Low</option>
                 <option>Name: A to Z</option>
-            </select>
+            </select> -->
         </div>
 
         <!-- Games Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Game Card -->
-            <div class="card rounded-lg overflow-hidden">
-                <img src="https://via.placeholder.com/400x225" alt="Game" class="game-image w-full">
-                <div class="p-4">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="font-semibold">God of War Ragnarök</h3>
-                        <span class="text-emerald-500 font-semibold">$59.99</span>
-                    </div>
-                    <div class="flex items-center mb-3">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">PS5</span>
-                        <span class="mx-2">•</span>
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Action</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600">In Stock</span>
-                        <div class="flex space-x-2">
-                            <button class="p-2 text-gray-500 hover:text-emerald-500">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="p-2 text-gray-500 hover:text-red-500">
-                                <i class="fas fa-trash"></i>
-                            </button>
+           
+
+                <% if(games && games.length>0){%>
+                <%games.forEach(game=>{%>
+                    <div class="card rounded-lg overflow-hidden">
+                        <img src="/uploads/games/<%=game.coverImage%>" alt="<%=game.title%>" class="game-image w-full">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold"><%=game.title%></h3>
+                                <span class="text-emerald-500 font-semibold"><%=game.price%></span>
+                            </div>
+                            <div class="flex items-center mb-3">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">PS5</span>
+                                <span class="mx-2">•</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400"><%=game.category.name%></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600"><%= game.status %></span>
+                                <div class="flex space-x-2">
+                                    <button class="p-2 text-gray-500 hover:text-emerald-500">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-gray-500 hover:text-red-500">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+               <% });%>
+               <% } else { %>
+                <div class="col-span-full text-center py-8">
+                    <i class="fas fa-game text-gray-400 text-4xl mb-4"></i>
+                    <p class="text-gray-500">No games found</p>
                 </div>
-            </div>
+            <% } %>
+             
 
             <!-- More game cards... -->
         </div>

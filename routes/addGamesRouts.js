@@ -26,13 +26,6 @@ const upload = multer({
 });
 
 router.get("/admin/addgame", addGame);
-router.post(
-  "/admin/addgame",
-  upload.fields([
-    { name: "coverImage", maxCount: 1 },
-    { name: "screenshots", maxCount: 5 },
-  ]),
-  postAdd
-);
+router.post("/admin/addgame",upload.fields([ { name: "coverImage", maxCount: 1 },{ name: "screenshots", maxCount: 5 },]),postAdd);
 
 export default router;

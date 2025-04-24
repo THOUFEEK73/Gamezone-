@@ -38,6 +38,7 @@ adminRoutes.get("/dashboard", (req, res) => {
 adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category", postAllCategories);
 adminRoutes.post("/category/:id", updateCategoryStatus);
+adminRoutes.get('/games',getAllGames)
 
 // Game routes
 adminRoutes.get("/games", getAllGames);
