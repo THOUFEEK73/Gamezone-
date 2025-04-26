@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xbox Games Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+ .hero-carousel {
+            transition: transform 0.5s ease-in-out;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #10B981;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+     .custom-select {
+      appearance: none;
+      width: 100%;
+      background-color: rgb(249, 250, 251);
+      border: 1px solid rgb(209, 213, 219);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      padding-right: 2rem;
+      transition: all 0.2s;
+      font-size: 16px;
+      color: rgb(55, 65, 81);
+    }
+    
+    .custom-select:focus {
+      outline: none;
+      ring: 2px;
+      ring-color: rgb(34, 197, 94);
+      border-color: transparent;
+      box-shadow: 0 0 0 2px rgb(34, 197, 94);
+    }
+    
+    .select-wrapper {
+      position: relative;
+      width: 100%;
+    }
+    
+    .select-wrapper::after {
+      content: "▼";
+      font-size: 12px;
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: rgb(107, 114, 128);
+    }
+
+    .placeholder {
+      color: rgb(156, 163, 175);
+    }
+
+    /* Apply the same styling to the platform select */
+    .platform-select {
+      appearance: none;
+      width: 100%;
+      background-color: rgb(249, 250, 251);
+      border: 1px solid rgb(209, 213, 219);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      padding-right: 2rem;
+      transition: all 0.2s;
+      font-size: 16px;
+      color: rgb(55, 65, 81);
+    }
+    
+    .platform-select:focus {
+      outline: none;
+      ring: 2px;
+      ring-color: rgb(34, 197, 94);
+      border-color: transparent;
+      box-shadow: 0 0 0 2px rgb(34, 197, 94);
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-800">
+  <nav class="bg-white shadow-lg fixed w-full z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="/home" class="flex items-center space-x-2">
+                    <i class="fas fa-gamepad text-2xl text-green-600"></i>
+                    <span class="text-2xl font-bold text-green-600 hover:text-green-700 transition">GameZone</span>
+                </a>
+            </div>
+            
+            <!-- Main Navigation - Desktop -->
+            <div class="hidden md:flex items-center space-x-1">
+                <a href="/allgames" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                    <i class="fas fa-dice-d20 mr-1"></i> All Games
+                </a>
+                <a href="/categories" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                    <i class="fas fa-tags mr-1"></i> Categories
+                </a>
+                <a href="/deals" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                    <i class="fas fa-percentage mr-1"></i> Deals
+                </a>
+                <a href="/about" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                    <i class="fas fa-info-circle mr-1"></i> About
+                </a>
+            </div>
+            
+            <!-- Right Side Section -->
+            <div class="flex items-center space-x-4">
+                <!-- Search Bar with animation -->
+                <div class="relative group">
+                    <input type="text" placeholder="Search games..." 
+                           class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 w-40 md:w-64 focus:w-72">
+                    <button class="absolute left-3 top-2.5 text-gray-400 hover:text-green-600">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <!-- Shopping Cart -->
+                <a href="/cart" class="relative p-2 rounded-full hover:bg-gray-100 transition">
+                    <i class="fas fa-shopping-cart text-xl text-gray-700 hover:text-green-600 transition"></i>
+                    <span class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                        <%= locals.cartCount || 0 %>
+                    </span>
+                </a>
+                
+                <!-- User Account -->
+                <% if (locals.user) { %>
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition">
+                            <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
+                                 alt="Profile" 
+                                 class="w-8 h-8 rounded-full border-2 border-green-500">
+                            <span class="text-gray-700 hidden sm:inline"><%= user.name %></span>
+                            <i class="fas fa-chevron-down text-xs text-gray-500 group-hover:text-green-600 transition"></i>
+                        </button>
+                        <div class="absolute right-0 w-56 mt-2 py-2 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 z-50">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm text-gray-500">Signed in as</p>
+                                <p class="font-medium text-gray-800 truncate"><%= user.name %></p>
+                            </div>
+                            <a href="/profile" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                <i class="fas fa-user-circle w-5 mr-2"></i> Profile
+                            </a>
+                            <a href="/orders" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                <i class="fas fa-clipboard-list w-5 mr-2"></i> Orders
+                            </a>
+                            <a href="/wishlist" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                <i class="fas fa-heart w-5 mr-2"></i> Wishlist
+                            </a>
+                            <div class="border-t border-gray-100 mt-2"></div>
+                            <a href="/logout" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-500 hover:text-white transition">
+                                <i class="fas fa-sign-out-alt w-5 mr-2"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                <% } else { %>
+                  <a>Profile</a>
+                    <!-- <div class="flex space-x-2">
+                        <a href="/login" class="bg-white text-green-600 border border-green-500 px-4 py-2 rounded-lg hover:bg-green-50 transition">
+                            Login
+                        </a>
+                        <a href="/register" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                            Sign Up
+                        </a>
+                    </div> -->
+                <% } %>
+                
+                <!-- Mobile Menu Button -->
+                <button class="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none" id="mobile-menu-button">
+                    <i class="fas fa-bars text-xl text-gray-700"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu - Hidden by default -->
+        <div class="md:hidden hidden mt-3 pt-3 border-t border-gray-200" id="mobile-menu">
+            <div class="flex flex-col space-y-2 pb-3">
+                <a href="/allgames" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                    <i class="fas fa-dice-d20 mr-2"></i> All Games
+                </a>
+                <a href="/categories" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                    <i class="fas fa-tags mr-2"></i> Categories
+                </a>
+                <a href="/deals" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                    <i class="fas fa-percentage mr-2"></i> Deals
+                </a>
+                <a href="/about" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                    <i class="fas fa-info-circle mr-2"></i> About
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+  
+ 
+  <div class="p-6">
+    <h1 class="text-2xl font-bold mb-4">Browse all games (10,464 games)</h1>
+    <h1 class="text-2xl font-bold mb-4">Browse all games </h1>
+
+    <div class="flex flex-col md:flex-row gap-6">
+      <div class="w-full md:w-1/4 space-y-6">
+        <!-- Clear Filters Button -->
+        <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-3 rounded-lg transition duration-300 flex items-center justify-center">
+          <i class="fas fa-times-circle mr-2"></i>
+          <span>CLEAR ALL FILTERS</span>
+        </button>
+        
+        <!-- Filters Container -->
+        <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+          <h2 class="text-lg font-bold mb-4 pb-2 border-b border-gray-200">Game Filters</h2>
+          
+          <div class="space-y-5">
+            <!-- Platform Dropdown -->
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">PlatForms</label>
+              <div class="relative">
+                <div class="select-wrapper">
+                  <select class="platform-select" id="platformSelect">
+                    <option value="" disabled selected class="placeholder">Select Platform</option>
+                    <option value="xbox">Xbox Series X/S</option>
+                    <option value="ps5">PlayStation 5</option>
+                    
+                    <option value="pc">PC</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Multiplayer Dropdown -->
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">Multiplayer</label>
+              <div class="relative">
+                <div class="select-wrapper">
+                  <select class="custom-select" id="gameMode">
+                    <option value="" disabled selected class="placeholder">Select Game Mode</option>
+                    <option value="single">Single Player</option>
+                    <option value="online">Online Multiplayer</option>
+                   
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Price Range -->
+            <div>
+              <label class="block font-medium text-gray-700 mb-2">Price Range</label>
+              <div class="flex items-center space-x-4">
+                <input type="range" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-500">
+              </div>
+              <div class="flex justify-between text-sm text-gray-600 mt-2">
+                <span>$0</span>
+                <span>$100</span>
+              </div>
+            </div>
+            
+            <!-- Apply Filters Button -->
+            <button class="w-full bg-green-500 hover:bg-green-600 text-white font-medium px-6 py-3 rounded-lg mt-4 transition duration-300 flex items-center justify-center">
+              <i class="fas fa-filter mr-2"></i>
+              <span>Apply Filters</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+     
+      <div class="w-full md:w-3/4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="border rounded shadow hover:shadow-md">
+          <img src="https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/Global-Header_Image-Tile_Realms_321x321.jpg" alt="Fortnite">
+          <div class="p-2">
+            <h3 class="font-semibold">Fortnite</h3>
+            <p class="text-sm text-gray-600">Free+</p>
+          </div>
+        </div>
+
+     
+
+
+        <div class="border rounded shadow hover:shadow-md">
+          <img src="https://via.placeholder.com/300x150.png?text=GTA+V" alt="GTA V">
+          <div class="p-2">
+            <h3 class="font-semibold">Grand Theft Auto V</h3>
+            <p class="text-sm text-gray-600">View game</p>
+          </div>
+        </div>
+
+        <div class="border rounded shadow hover:shadow-md">
+          <img src="https://via.placeholder.com/300x150.png?text=ROBLOX" alt="ROBLOX">
+          <div class="p-2">
+            <h3 class="font-semibold">ROBLOX</h3>
+            <p class="text-sm text-gray-600">Free+</p>
+          </div>
+        </div>
+
+        <div class="border rounded shadow hover:shadow-md">
+          <img src="https://via.placeholder.com/300x150.png?text=ANNIE" alt="ANNIE: Last Hope">
+          <div class="p-2">
+            <h3 class="font-semibold">ANNIE: Last Hope</h3>
+            <p class="text-sm text-gray-600">₹ 1,774.00</p>
+          </div>
+        </div>
+
+        <div class="border rounded shadow hover:shadow-md relative">
+          <img src="https://via.placeholder.com/300x150.png?text=NBA+2K25" alt="NBA 2K25">
+          <div class="p-2">
+            <h3 class="font-semibold">NBA 2K25 Standard Edition</h3>
+            <p class="text-sm text-gray-600 line-through">₹ 4,999.00</p>
+            <p class="text-sm text-green-600 font-bold">₹ 1,249.75+</p>
+            <span class="absolute bottom-2 right-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded">-75%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  
+  <script>
+    // Toggle mobile menu
+    if (document.getElementById('mobile-menu-button')) {
+      document.getElementById('mobile-menu-button').addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu) {
+          mobileMenu.classList.toggle('hidden');
+        }
+      });
+    }
+        
+    // Shrink navbar on scroll
+    window.addEventListener('scroll', function() {
+      const navbar = document.querySelector('nav');
+      if (navbar) {
+        if (window.scrollY > 50) {
+          navbar.classList.add('py-1');
+          navbar.classList.add('shadow-md');
+        } else {
+          navbar.classList.remove('py-1');
+          navbar.classList.remove('shadow-md');
+        }
+      }
+    });
+
+    // Handle both select elements with placeholders
+    const gameSelect = document.getElementById('gameMode');
+    const platformSelect = document.getElementById('platformSelect');
+    
+    // Add event listener for game mode selection changes
+    if (gameSelect) {
+      gameSelect.addEventListener('change', function() {
+        this.classList.remove('placeholder');
+      });
+    }
+    
+    // Add event listener for platform selection changes
+    if (platformSelect) {
+      platformSelect.addEventListener('change', function() {
+        this.classList.remove('placeholder');
+      });
+    }
+  </script>
+</body>
+</html>

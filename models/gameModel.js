@@ -17,12 +17,12 @@ const gameSchema = new mongoose.Schema({
             required: true
         },
         screenshots: [{
-            type: String
+            type: String,
+            required:true
         }]
     },
     platforms: [{
-        type: String,
-        enum: ['ps5', 'xbox', 'pc'],
+        type: [String],
         required: true
     }],
     category: {
@@ -48,7 +48,13 @@ const gameSchema = new mongoose.Schema({
         required: true,
         enum: ['available', 'outofstock', 'comingsoon'],
         default: 'available'
-    }
+    },
+    gameSeries: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'GameSeries'
+      }
+    
+      
 });
 
 const Game = mongoose.model('Game', gameSchema);

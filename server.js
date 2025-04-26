@@ -8,17 +8,16 @@ import sessionMiddleware from "./middleware/sessionMiddleWare.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import addGamesRouts from './routes/addGamesRouts.js';
 import gameDetailsRoutes from './routes/gameDetailsRoutes.js';
-import userManageRoutes from "./routes/userManageRoutes.js";
+// import userManageRoutes from "./routes/userManageRoutes.js";
+import passport from './config/passport.js'; 
 import isAthenticated from "./middleware/auth.js";
-import categoriesRoutes from "./routes/CategoriesRoutes.js";
 
-// Load environment variables
+
 dotenv.config();
-
 const app = express();
 
 // Middleware to prevent caching for sensitive routes like login
-app.use("/login", (req, res, next) => {
+app.use(["/login","/signup","/verify-otp"], (req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
   res.set("Pragma", "no-cache");
   res.set("Expires", "0");
@@ -27,9 +26,12 @@ app.use("/login", (req, res, next) => {
 
 // Middleware
 app.use(sessionMiddleware);
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
+
 
 
 // View engine setup
@@ -38,13 +40,18 @@ app.set("views", "views");
 
 
 // Routes
-app.use('/home',isAthenticated);
+
 app.use("/", authRoutes);
-// Mount admin routes with /admin prefix
+
+// Mount admin routes 
 app.use('/admin', adminRoutes);
+
+
+
+
 app.use('/',addGamesRouts);
 app.use('/',gameDetailsRoutes);
-app.use('/',userManageRoutes);
+// app.use('/',userManageRoutes);
 // app.use('/',categoriesRoutes);
 
 

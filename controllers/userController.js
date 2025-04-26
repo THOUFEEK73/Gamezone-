@@ -1,21 +1,42 @@
-export const createUser = async (tempUser) => {
-    try {
-      const { name, email, phone, password } = tempUser;
-      
-      // Create a new user and hash the password before saving it to the database
-      const newUser = new User({
-        name,
-        email,
-        phone,
-        password, // The hashed password is already in tempUser
-        isrsVerified: true,
-      });
-  
-      await newUser.save();
-      return newUser;
-    } catch (err) {
-      console.error("Error creating user:", err);
-      return null;
+
+import Game from '../models/gameModel.js';
+import User from '../models/userModel.js';
+import _ from 'lodash';
+
+
+export const getHomePage = async (req, res) => {
+  try {
+    // Check if user is authenticated
+    if (!req.session.userId && !req.isAuthenticated()) {
+      return res.redirect('/login');
     }
-  };
-  
+
+    // Set cache control headers
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+
+    // Fetch all games from the database
+    const games = await Game.find();
+
+    // Render the home page
+    res.render('user/home', { games: games });
+  } catch (error) {
+    console.error('Error fetching games:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};
+
+export const getAllGames = async(req,res)=>{
+  try{
+      if(!req.session.userId &&!req.isAuthenticated()){
+        return res.redirect('/login');
+      }
+     const games = await Game.find();
+     res.render('user/allgames',{games});
+  }catch(error){
+    console.error('Error fetching games:',error);
+    res.status(500).send('Internal Server Error');
+  }
+}
+

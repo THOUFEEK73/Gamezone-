@@ -27,7 +27,7 @@
         <!-- Name -->
         <div class="relative">
           <input type="text" name="name"  
-            placeholder="Full Name"
+            placeholder="Full Name" value="<%= formData ? formData.name:''%>" 
             class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
                    focus:ring-1 focus:ring-white/50 focus:border-transparent">
           <i class="fas fa-user absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
@@ -35,8 +35,8 @@
 
         <!-- Email -->
         <div class="relative">
-          <input type="email" name="email"  
-            placeholder="Email Address"
+          <input type="email" name="email" 
+            placeholder="Email Address"  value="<%= formData ? formData.email : '' %>" 
             class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
                    focus:ring-1 focus:ring-white/50 focus:border-transparent">
           <i class="fas fa-envelope absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
@@ -45,7 +45,7 @@
         <!-- Phone -->
         <div class="relative">
           <input type="tel" name="phone"  
-            placeholder="Phone Number"
+            placeholder="Phone Number" value="<%=formData?formData.phone:''%>" 
             class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-9 pr-3 py-2 text-sm
                    focus:ring-1 focus:ring-white/50 focus:border-transparent">
           <i class="fas fa-phone absolute left-3 top-2.5 text-zinc-500 text-sm"></i>
@@ -81,7 +81,7 @@
       <div class="mt-6">
         <div class="flex items-center justify-center">
           <button 
-            onclick="window.location.href='/auth/google'"
+          onclick="location.href='http://localhost:3001/auth/google';"
             class="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 font-medium py-2 rounded-lg 
                    transition-all duration-200 text-sm"
           >

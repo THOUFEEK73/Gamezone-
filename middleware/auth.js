@@ -1,31 +1,39 @@
 import User from '../models/userModel.js';
 
-const isAthenticated = async (req, res, next) => {
-  if (req.session && req.session.userId) {
+const isAuthenticated = async (req, res, next) => {
     try {
-      const user = await User.findById(req.session.userId);
-      console.log(user);
+        // Debug logging
+        console.log('Session ID:', req.sessionID);
+        console.log('Session Data:', req.session);
+        console.log('sessionData',req.user)
+        
+      
+        if (req.session.userId || (req.isAuthenticated() && req.session.user)) {
+            // If using passport (Google auth), ensure session is synchronized
+            
+            if (req.session.user && !req.session.userId) {
+                req.session.userId = req.user._id;
+                req.session.user = {
+                    name: req.user.name,
+                    email: req.user.email
+                };
+                // Force session save
+                await new Promise((resolve, reject) => {
+                    req.session.save(err => {
+                        if (err) reject(err);
+                        resolve();
+                    });
+                });
+            }
+            return next();
+        }
 
-      if (!user || user.isVerified === false) {
-        req.session.destroy((err) => {
-          if (err) {
-            console.log('Session destroy error:', err);
-          }
-          // Redirect outside of callback to avoid double response
-          return res.redirect('/login?blocked=true');
-        });
-        return; // Ensure no further code runs
-      }
-
-      // All good, user is verified
-      return next();
-    } catch (err) {
-      console.error('Error in isAthenticated middleware:', err);
-      return res.redirect('/login');
+        console.log('User not authenticated');
+        return res.redirect('/login');
+    } catch (error) {
+        console.error('Authentication middleware error:', error);
+        return res.redirect('/login?error=auth_error');
     }
-  } else {
-    return res.redirect('/login');
-  }
 };
 
-export default isAthenticated;
+export default isAuthenticated;

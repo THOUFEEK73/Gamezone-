@@ -2,7 +2,10 @@ import express from "express";
 import { getAdminLoginPage, postAdminLogin, adminLogout } from "../controllers/adminController.js";
 import { getAllCategories, postAllCategories, updateCategoryStatus } from "../controllers/adminCategory.js";
 import { addGame, postAdd, getAllGames } from "../controllers/gameController.js";
+import { getPlatFormPage } from "../controllers/platformController.js";
 import isAdminAuthenticated from "../middleware/adminAuth.js";
+import { getAllUsersPage,blockUser,searchUsers } from '../controllers/adminUserController.js';
+
 import multer from "multer";
 import path from "path";
 
@@ -28,16 +31,28 @@ adminRoutes.post("/login", postAdminLogin);
 adminRoutes.get("/logout", adminLogout);
 
 // Protected routes
-adminRoutes.use(isAdminAuthenticated); // Apply middleware to all routes below
+// Apply middleware to all routes below
+adminRoutes.use(isAdminAuthenticated); 
 
 adminRoutes.get("/dashboard", (req, res) => {
     res.render("admin/dashboard", { name: req.session.admin.name });
 });
 
+
+
+adminRoutes.get('/users',getAllUsersPage); //middle
+adminRoutes.post('/users/toggle-status',blockUser);
+
+adminRoutes.get('/users/search',searchUsers);
+
 // Category routes
 adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category", postAllCategories);
 adminRoutes.post("/category/:id", updateCategoryStatus);
+
+adminRoutes.get("/platform", getPlatFormPage);
+// adminRoutes.post("/platform", postAllCategories);
+// adminRoutes.post("/platform/:id", updateCategoryStatus);
 adminRoutes.get('/games',getAllGames)
 
 // Game routes

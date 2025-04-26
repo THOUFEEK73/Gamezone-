@@ -1,206 +1,125 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameZone Admin - Games</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-bg: #f8fafc;
-            --secondary-bg: #ffffff;
-            --accent-color: #6366f1;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-        }
-
-        .dark {
-            --primary-bg: #0f172a;
-            --secondary-bg: #1e293b;
-            --accent-color: #818cf8;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border-color: #334155;
-        }
-
-        body {
-            background-color: var(--primary-bg);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .sidebar {
-            background-color: var(--secondary-bg);
-            border-right: 1px solid var(--border-color);
-        }
-
-        .card {
-            background-color: var(--secondary-bg);
-            border: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-        }
-
-        .game-image {
-            aspect-ratio: 16/9;
-            object-fit: cover;
-        }
-
-        .game-title {
-            font-size: 1rem;
-            font-weight: 600;
-        }
-
-        .game-category {
-            font-size: 0.8125rem;
-        }
-
-        .game-price {
-            font-size: 0.9375rem;
-            font-weight: 600;
-        }
-
-        .status-tag {
-            font-size: 0.75rem;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GameZone Admin - Games</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <style>
+    body {
+      background-color: #1f1f1f;
+      font-family: 'Inter', sans-serif;
+      color: #fff;
+    }
+  </style>
 </head>
-<body class="flex h-screen">
-    <!-- Sidebar (reuse from dashboard) -->
-    <div class="sidebar w-64 fixed left-0 top-0 h-full text-gray-300 dark:text-gray-400">
-        <div class="p-6">
-            <div class="flex items-center mb-8">
-                <i class="fas fa-gamepad text-2xl text-indigo-500 mr-3"></i>
-                <h1 class="text-xl font-bold text-gray-800 dark:text-white">GameZone</h1>
-            </div>
-            <nav class="space-y-1">
-                <a href="/admin/dashboard" class="nav-link flex items-center p-3 text-gray-600 dark:text-gray-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg">
-                    <i class="fas fa-home mr-3"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="/admin/games" class="nav-link flex items-center p-3 text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                    <i class="fas fa-gamepad mr-3"></i>
-                    <span>Games</span>
-                </a>
-                <!-- Other nav items -->
-            </nav>
-        </div>
+<body class="flex min-h-screen">
+  <%- include('partials/sidebar') %>
+
+  <div class="flex-1 ml-72 p-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold">Manage Games</h1>
+        <p class="text-gray-400 text-sm">View and manage all uploaded games</p>
+      </div>
+      <a href="/admin/addgame" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-white flex items-center transition">
+        <i class="fas fa-plus mr-2"></i> Add Game
+      </a>
     </div>
 
-    <!-- Main Content -->
-    <div class="flex-1 ml-64 p-8">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold">Games Management</h1>
-            <div class="flex items-center space-x-4">
-                <button id="themeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800">
-                    <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
-                    <i class="fas fa-moon text-blue-500 hidden dark:block"></i>
-                </button>
-                <button class="flex items-center px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
-                    <i class="fas fa-plus mr-2"></i>
-                    Add New Game
-                </button>
-            </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <input type="text" placeholder="Search games..." class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-          
-            <select name="category" class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option disabled>All Categories</option>
-                
-                <% categories.forEach(category=>{%>
-                 <option value="<%=category._id%>"><%=category.categoryName%></option>
-                <%});%>
-                
-            </select>
-            <!-- <select class="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                <option>Sort By: Latest</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Name: A to Z</option>
-            </select> -->
-        </div>
-
-        <!-- Games Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Game Card -->
-           
-
-                <% if(games && games.length>0){%>
-                <%games.forEach(game=>{%>
-                    <div class="card rounded-lg overflow-hidden">
-                        <img src="/uploads/games/<%=game.coverImage%>" alt="<%=game.title%>" class="game-image w-full">
-                        <div class="p-4">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="font-semibold"><%=game.title%></h3>
-                                <span class="text-emerald-500 font-semibold"><%=game.price%></span>
-                            </div>
-                            <div class="flex items-center mb-3">
-                                <span class="text-sm text-gray-500 dark:text-gray-400">PS5</span>
-                                <span class="mx-2">•</span>
-                                <span class="text-sm text-gray-500 dark:text-gray-400"><%=game.category.name%></span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600"><%= game.status %></span>
-                                <div class="flex space-x-2">
-                                    <button class="p-2 text-gray-500 hover:text-emerald-500">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="p-2 text-gray-500 hover:text-red-500">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-               <% });%>
-               <% } else { %>
-                <div class="col-span-full text-center py-8">
-                    <i class="fas fa-game text-gray-400 text-4xl mb-4"></i>
-                    <p class="text-gray-500">No games found</p>
-                </div>
-            <% } %>
-             
-
-            <!-- More game cards... -->
-        </div>
-
-        <!-- Pagination -->
-        <div class="flex justify-center mt-8">
-            <nav class="flex space-x-2">
-                <button class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">Previous</button>
-                <button class="px-3 py-1 rounded-lg bg-emerald-500 text-white">1</button>
-                <button class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">2</button>
-                <button class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">3</button>
-                <button class="px-3 py-1 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400">Next</button>
-            </nav>
-        </div>
+    <!-- Search Filter -->
+    <div class="flex justify-between items-center mb-4">
+      <input id="searchInput" type="text" placeholder="Search games..." class="bg-[#2a2a2a] px-4 py-2 rounded-lg w-full max-w-md text-white focus:outline-none" />
     </div>
 
-    <script>
-        // Theme Toggle
-        const themeToggle = document.getElementById('themeToggle');
-        const html = document.documentElement;
+    <!-- Games Table -->
+    <div class="overflow-x-auto rounded-lg shadow">
+      <table class="min-w-full text-left text-sm bg-[#2a2a2a] rounded-lg">
+        <thead class="text-white bg-[#1a1a1a]">
+          <tr>
+            <th class="px-6 py-4">S.No</th>
+            <th class="px-6 py-4">Cover</th>
+            <th class="px-6 py-4">Title</th>
+            <th class="px-6 py-4">Category</th>
+            <th class="px-6 py-4">Price</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (games && games.length > 0) { %>
+            <% games.forEach((game, index) => { %>
+              <tr class="border-t border-gray-700 hover:bg-[#323232] transition">
+                <td class="px-6 py-4"><%= index + 1 %></td>
+                <td class="px-6 py-4">
+                  <img src="/uploads/games/<%= game.coverImage %>" alt="Game" class="w-10 h-10 rounded-full object-cover"/>
+                </td>
+                <td class="px-6 py-4 font-medium text-white"><%= game.title %></td>
+                <td class="px-6 py-4 text-gray-300"><%= game.category.name %></td>
+                <td class="px-6 py-4 text-purple-400">$<%= game.price %></td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 text-xs font-semibold rounded-full <%= game.status === 'active' ? 'bg-green-900/20 text-green-400' : 'bg-red-900/20 text-red-400' %>">
+                    <%= game.status === 'active' ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 flex gap-4 items-center">
+                  <button onclick="editGame('<%= game._id %>')" class="text-gray-400 hover:text-purple-500 transition">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="status-toggle text-gray-400 <%= game.status === 'active' ? 'hover:text-red-500' : 'hover:text-green-500' %>" 
+                          data-game-id="<%= game._id %>" data-status="<%= game.status %>">
+                    <i class="fas fa-toggle-<%= game.status === 'active' ? 'on' : 'off' %>"></i>
+                  </button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-6 text-gray-400">No games found.</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-        // Check for saved theme preference
-        if (localStorage.getItem('theme') === 'dark' || 
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            html.classList.add('dark');
+  <!-- Script -->
+  <script>
+    function editGame(id) {
+      window.location.href = `/admin/games/edit/${id}`;
+    }
+
+    document.querySelectorAll('.status-toggle').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const gameId = btn.dataset.gameId;
+        const current = btn.dataset.status;
+        const newStatus = current === 'active' ? 'inactive' : 'active';
+        try {
+          const res = await fetch(`/admin/games/${gameId}/toggle-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          });
+          const result = await res.json();
+          if (result.success) location.reload();
+        } catch (err) {
+          console.error('Failed to update status', err);
         }
+      });
+    });
 
-        // Toggle theme
-        themeToggle.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
-        });
-    </script>
+    // Basic search filter
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      rows.forEach(row => {
+        const title = row.querySelector('td:nth-child(3)')?.textContent.toLowerCase();
+        row.style.display = title.includes(term) ? '' : 'none';
+      });
+    });
+  </script>
 </body>
 </html>

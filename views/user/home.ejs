@@ -35,62 +35,140 @@
 </head>
 <body class="bg-gray-100">
     <!-- Navigation -->
-    <nav class="bg-white shadow-lg fixed w-full z-50">
-        <div class="container mx-auto px-6 py-3">
+    <nav class="bg-white shadow-lg fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
+                <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="/home" class="text-2xl font-bold text-green-600">GameZone</a>
+                    <a href="/home" class="flex items-center space-x-2">
+                        <i class="fas fa-gamepad text-2xl text-green-600"></i>
+                        <span class="text-2xl font-bold text-green-600 hover:text-green-700 transition">GameZone</span>
+                    </a>
                 </div>
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="/games" class="nav-link text-gray-700 hover:text-green-600">Games</a>
-                    <a href="/categories" class="nav-link text-gray-700 hover:text-green-600">Categories</a>
-                    <a href="/deals" class="nav-link text-gray-700 hover:text-green-600">Deals</a>
-                    <a href="/about" class="nav-link text-gray-700 hover:text-green-600">About</a>
+                
+                <!-- Main Navigation - Desktop -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/allgames" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-dice-d20 mr-1"></i> All Games
+                    </a>
+                    <a href="/categories" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-tags mr-1"></i> Categories
+                    </a>
+                    <a href="/deals" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-percentage mr-1"></i> Deals
+                    </a>
+                    <a href="/about" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-info-circle mr-1"></i> About
+                    </a>
                 </div>
+                
+                <!-- Right Side Section -->
                 <div class="flex items-center space-x-4">
-                    <div class="relative">
+                    <!-- Search Bar with animation -->
+                    <div class="relative group">
                         <input type="text" placeholder="Search games..." 
-                               class="pl-10 pr-4 py-2 rounded-full border focus:outline-none focus:border-green-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                               class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 w-40 md:w-64 focus:w-72">
+                        <button class="absolute left-3 top-2.5 text-gray-400 hover:text-green-600">
+                            <i class="fas fa-search"></i>
+                        </button>
                     </div>
-                    <a href="/cart" class="relative">
-                        <i class="fas fa-shopping-cart text-xl text-gray-700 hover:text-green-600"></i>
-                        <span class="absolute -top-2 -right-2 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                    
+                    <!-- Shopping Cart -->
+                    <a href="/cart" class="relative p-2 rounded-full hover:bg-gray-100 transition">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700 hover:text-green-600 transition"></i>
+                        <span class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                             <%= locals.cartCount || 0 %>
                         </span>
                     </a>
+                    
+                    <!-- User Account -->
                     <% if (locals.user) { %>
                         <div class="relative group">
-                            <button class="flex items-center space-x-2">
+                            <button class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition">
                                 <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
                                      alt="Profile" 
-                                     class="w-8 h-8 rounded-full">
-                                <span class="text-gray-700"><%= user.name %></span>
+                                     class="w-8 h-8 rounded-full border-2 border-green-500">
+                                <span class="text-gray-700 hidden sm:inline"><%= user.name %></span>
+                                <i class="fas fa-chevron-down text-xs text-gray-500 group-hover:text-green-600 transition"></i>
                             </button>
-                            <div class="absolute right-0 w-48 mt-2 py-2 bg-white rounded-lg shadow-xl hidden group-hover:block">
-                                <a href="/profile" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
-                                    Profile
+                            <div class="absolute right-0 w-56 mt-2 py-2 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 z-50">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm text-gray-500">Signed in as</p>
+                                    <p class="font-medium text-gray-800 truncate"><%= user.name %></p>
+                                </div>
+                                <a href="/profile" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                    <i class="fas fa-user-circle w-5 mr-2"></i> Profile
                                 </a>
-                                <a href="/orders" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
-                                    Orders
+                                <a href="/orders" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                    <i class="fas fa-clipboard-list w-5 mr-2"></i> Orders
                                 </a>
-                                <a href="/wishlist" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
-                                    Wishlist
+                                <a href="/wishlist" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                    <i class="fas fa-heart w-5 mr-2"></i> Wishlist
                                 </a>
-                                <a href="/logout" class="block px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white">
-                                    Logout
+                                <div class="border-t border-gray-100 mt-2"></div>
+                                <a href="/logout" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-500 hover:text-white transition">
+                                    <i class="fas fa-sign-out-alt w-5 mr-2"></i> Logout
                                 </a>
                             </div>
                         </div>
                     <% } else { %>
-                        <a href="/logout" class="bg-green-500 text-white px-6 py-2 rounded-full hover:bg-green-600 transition">
-                            Logout
-                        </a>
+                        <div class="flex space-x-2">
+                            <a href="/login" class="bg-white text-green-600 border border-green-500 px-4 py-2 rounded-lg hover:bg-green-50 transition">
+                                Logout
+                            </a>
+                            <!-- <a href="/register" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                                Sign Up
+                            </a> -->
+                        </div>
                     <% } %>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none" id="mobile-menu-button">
+                        <i class="fas fa-bars text-xl text-gray-700"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation Menu - Hidden by default -->
+            <div class="md:hidden hidden mt-3 pt-3 border-t border-gray-200" id="mobile-menu">
+                <div class="flex flex-col space-y-2 pb-3">
+                    <a href="/allgames" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-dice-d20 mr-2"></i> All Games
+                    </a>
+                    <a href="/categories" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-tags mr-2"></i> Categories
+                    </a>
+                    <a href="/deals" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-percentage mr-2"></i> Deals
+                    </a>
+                    <a href="/about" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-info-circle mr-2"></i> About
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
+    
+    
+    <script>
+        // Toggle mobile menu
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Shrink navbar on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-1');
+                navbar.classList.add('shadow-md');
+            } else {
+                navbar.classList.remove('py-1');
+                navbar.classList.remove('shadow-md');
+            }
+        });
+    </script>
 
     <!-- Hero Section -->
     <div class="pt-16">

@@ -1,5 +1,5 @@
 import User from '../models/userModel.js';
-
+import _ from 'lodash'
 export const getAllUsersPage = async(req , res)=>{
     try{
         if(!req.session.admin){
@@ -43,4 +43,39 @@ export const blockUser = async (req, res) => {
       return res.status(500).json({ success: false, message: 'Something went wrong' });
     }
   };
+
+  const debouncedSearch = _.debounce(async(searchQuery,res)=>{
+    try{
+      const users = await User.find({
+         $or:[
+          {name:{$regex:searchQuery,$options:'i'}},
+          {email:{$regex:searchQuery,$options:'i'}},
+         ]
+      }).limit(10);
+      return res.json({success:true,users});
+    }catch(error){
+     console.error('Error searching users',error);
+     return res.status(500).json({success:false,error:' Server Error'})
+      
+    }
+  },300);
+  
+  
+  export const searchUsers = async(req,res)=>{
+    try{
+      if(!req.session.admin){
+        return res.status(401).json({success:false,message:'Unauthorized'});
+      }
+      const {query} = req.query;
+      if (!query || query.length < 2) {
+        return res.json({ success: true, users: [] });
+      }
+      
+      debouncedSearch(query, res);
+    } catch (err) {
+      console.error('Error in searching users:', err);
+      return res.status(500).json({ success: false, message: 'Something went wrong' });
+    }
+  }
+  
   

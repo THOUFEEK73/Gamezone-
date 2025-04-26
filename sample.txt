@@ -1,76 +1,42 @@
-export const postSignUp = async (req, res) => {
-  try {
-    
-    const { name, email, phone, password, confirm_password } = req.body;
-       
-    // Validate required fields
-    if (!name || !email || !password || !confirm_password) {
-      return res.render('user/signup',{err:'Please Fill All The field'})
-    }
+   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Game Card -->
+           
 
-    // Validate password match
-    if (password !== confirm_password) {
-      return res.status(400).json({ error: "Passwords do not match" });
-    }
+                <% if(games && games.length>0){%>
+                <%games.forEach(game=>{%>
+                    <div class="card rounded-lg overflow-hidden">
+                        <img src="/uploads/games/<%=game.coverImage%>" alt="<%=game.title%>" class="game-image w-full">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="font-semibold"><%=game.title%></h3>
+                                <span class="text-emerald-500 font-semibold"><%=game.price%></span>
+                            </div>
+                            <div class="flex items-center mb-3">
+                                <span class="text-sm text-gray-500 dark:text-gray-400">PS5</span>
+                                <span class="mx-2">•</span>
+                                <span class="text-sm text-gray-500 dark:text-gray-400"><%=game.category.name%></span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600"><%= game.status %></span>
+                                <div class="flex space-x-2">
+                                    <button class="p-2 text-gray-500 hover:text-emerald-500">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="p-2 text-gray-500 hover:text-red-500">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+               <% });%>
+               <% } else { %>
+                <div class="col-span-full text-center py-8">
+                    <i class="fas fa-game text-gray-400 text-4xl mb-4"></i>
+                    <p class="text-gray-500">No games found</p>
+                </div>
+            <% } %>
+             
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.render("user/signup",{ err: "User Already Exist" });
-    }
-    //Store user Data in sesssion
-    req.session.tempUser = { name, email, phone, password };
-
-    //Generate and send OTP
-
-    const otpsent = await generateOTP(email);
-    if (!otpsent) {
-      return res.status(500).json({ message: "Failed To Send OTP" });
-    }
-    // res.status(200).json({
-    //   message: "OTP sent to your email",
-    //   redirectTo: `/user/verify-otp?email=${encodeURIComponent(email)}`,
-    // });
-    res.render("../views/user/verify-otp.ejs", { email });
-  } catch (err) {
-    console.error("Signup error:", err);
-    res.status(500).json({ error: "Something went wrong during registration" });
-  }
-};
-
-// Create and save new user
-export const createUser = async (tempUser) => {
-  try {
-    const { name, email, phone, password } = tempUser;
-    const newUser = new User({
-      name,
-      email,
-      phone,
-      password,
-      isVerified: true,
-    });
-    await newUser.save();
-    return newUser;
-  } catch (error) {
-    console.log("Error Creating User:", error);
-    return null;
-  }
-};
-
-//Generate and Send OTP
-
-export const verifyOTP = async(req,res)=>{
-  try{
-    const {email,otp1,otp2,otp3,otp4,otp5,otp6} = req.body;
-    const fullOTP  = otp1+otp2+otp3+otp4+otp5+otp6;
-    
-    // Find the OTP Record
-    const otpRecord = await OTP.findOne({email});
-  }
-}
-
-
-
-
-
+           
+        </div>
