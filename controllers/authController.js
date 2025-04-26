@@ -202,7 +202,12 @@ export const postLogin = async (req, res) => {
       req.session.loginError = "Password does not match";
       return res.redirect('/login');
     }
-
+    
+    if(!user.isVerified){
+      req.session.loginError = 'Your account has been blocked please contact us ';
+      return res.redirect('/login');
+    }
+   
     req.session.userId = user._id;
     req.session.user = {
       name: user.name,
@@ -224,6 +229,7 @@ export const postLogin = async (req, res) => {
   }
 };
 
+
 // Google Auth Trigger
 export const googleAuth = (req, res, next) => {
   try {
@@ -241,22 +247,27 @@ export const googleAuth = (req, res, next) => {
 
 // Google Callback
 export const googleCallback = (req, res, next) => {
- console.log('Google Callback triggered');
+    console.log('Google Callback triggered');
 
-  // Add this header before redirecting
-  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.set('Pragma', 'no-cache');
-  res.set('Expires', '0');
-  passport.authenticate('google', { failureRedirect: '/login', failureFlash: true }, (err, user, info) => {
-    if (err) {
-      console.error('Auth error:', err);
-      return res.redirect('/login?error=auth_error');
-    }
-  console.log('User after authentication:', user);
-    if (!user) {
-      console.log('User not found during Google callback');
-      return res.redirect('/login?error=auth_failed');
-    }
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    
+    passport.authenticate('google', { failureRedirect: '/login', failureFlash: true }, async (err, user, info) => {
+        if (err) {
+            console.error('Auth error:', err);
+            return res.redirect('/login?error=auth_error');
+        }
+
+        if (!user) {
+            console.log('User not found during Google callback');
+            return res.redirect('/login?error=auth_failed');
+        }
+
+        // Check if user is blocked
+        if (!user.isVerified) {
+            return res.redirect('/login?error=account_blocked');
+        }
 
     req.logIn(user, async (err) => {
       if (err) {
