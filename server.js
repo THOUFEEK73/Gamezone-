@@ -24,6 +24,11 @@ app.use(["/login","/signup","/verify-otp"], (req, res, next) => {
   next();
 });
 
+app.use((err,req,res,next)=>{
+  console.err('Error',err);
+  res.status(500).json('error',{message:'Internal Server Error'});
+})
+
 // Middleware
 app.use(sessionMiddleware);
 app.use(passport.initialize());

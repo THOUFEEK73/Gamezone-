@@ -1,6 +1,6 @@
 import express from "express";
 import { getAdminLoginPage, postAdminLogin, adminLogout } from "../controllers/adminController.js";
-import { getAllCategories, postAllCategories, updateCategoryStatus } from "../controllers/adminCategory.js";
+import { getAllCategories, postAllCategories, updateCategoryStatus,updateCategory } from "../controllers/adminCategory.js";
 import { addGame, postAdd, getAllGames } from "../controllers/gameController.js";
 import { getPlatFormPage } from "../controllers/platformController.js";
 import isAdminAuthenticated from "../middleware/adminAuth.js";
@@ -48,6 +48,7 @@ adminRoutes.get('/users/search',searchUsers);
 // Category routes
 adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category", postAllCategories);
+adminRoutes.post('/category/:id',updateCategory);
 adminRoutes.post("/category/:id", updateCategoryStatus);
 
 adminRoutes.get("/platform", getPlatFormPage);

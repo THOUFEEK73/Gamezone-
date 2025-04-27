@@ -1,34 +1,83 @@
-import Category from '../models/CategoryModel.js';
+import Category from "../models/CategoryModel.js";
 
-export const getAllCategories = async (req,res)=>{
-         
-        try{
-                const category =await Category.find();
-                res.render('admin/category',{category});
-        }catch(error){
+export const getAllCategories = async (req, res) => {
+  try {
+    const category = await Category.find();
+    res.render("admin/category", { category });
+  } catch (error) {
+    console.error("Error fetching Categories:", error);
+    res.status(500).render("error", { message: "Internal Server Error" });
+  }
+};
 
-        }
-}
+export const postAllCategories = async (req, res) => {
+  try {
+    const categoryName = req.body.categoryName;
+    if (!categoryName || categoryName.trim() === "") {
+      return res
+        .status(400)
+        .json({ success: false, err: "Category name is required" });
+    }
 
-export const postAllCategories = async(req,res)=>{
-        const categoryName = req.body.categoryName
-        console.log(categoryName)  
-        const newCategory =new Category({categoryName:categoryName});
-        await newCategory.save()
-        return res.redirect('/admin/category')    
-}
+    const existingCategory = await Category.findOne({ categoryName });
+    if (existingCategory) {
+      return res
+        .status(400)
+        .json({ success: false, err: "Category already existes" });
+    }
 
-export const  updateCategoryStatus = async(req,res)=>{
-       
+    const newCategory = new Category({ categoryName: categoryName });
+    await newCategory.save();
+    console.log("Category added successfully");
+    return res
+      .status(200)
+      .json({ success: true, message: "Category added successfully" });
+  } catch (err) {
+    console.error("Error adding category", err);
+    return res.status(500).json({
+      success: false,
+      message: "Error adding category please try again",
+    });
+  }
+};
+
+export const updateCategoryStatus = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const newStatus = req.body.status;
+    await Category.findByIdAndUpdate(categoryId, {
+      status: newStatus,
+      new: true,
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error updating Category status:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateCategory = async(req,res)=>{
         try{
                 const categoryId =req.params.id;
-                const newStatus = req.body.status;
-                await Category.findByIdAndUpdate(categoryId,{status:newStatus,new:true});
-                console.log(newStatus)
-                res.json({success:true});
-        }catch(error){
-                console.error('Error updating Category status:',error);
-                return res.status(500).json({message:'Internal Server Error'});
-        }
+                const {categoryName} = req.body;
+                const existingCategory = await Category.findOne({categoryName});
+                
+                if(existingCategory && existingCategory._id.toString()!==categoryId){
+                      return  res.status(400).json({success:false,err:"Category already existes"});
+                }
+              
+                const updatedCategory = await Category.findByIdAndUpdate(categoryId,{categoryName},{new:true});
 
+                if(!updatedCategory){
+                        return res.status(404).json({success:false,message:"Category not found"});
+                }
+
+                return res.status(200).json({success:true,category:updatedCategory});
+
+
+        }catch(err){
+                  console.error("Error updating Category status",err);
+                  return res.status(500).render("error",{message:"Internal Server Error"});
+        }
 }
