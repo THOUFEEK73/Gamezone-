@@ -176,6 +176,7 @@
             cursor: not-allowed;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="flex h-screen">
     <%- include('partials/sidebar') %>
@@ -272,7 +273,7 @@
                            name="categoryName" 
                            class="w-full px-4 py-2 rounded-lg bg-[#333333] border border-gray-600 text-white focus:outline-none focus:border-purple-500" 
                            placeholder="Enter category name" 
-                           required>
+                           autocomplete="off">
                 </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" 
@@ -313,7 +314,7 @@
                       name="categoryName" 
                       class="w-full px-4 py-2 rounded-lg bg-[#333333] border border-gray-600 text-white focus:outline-none focus:border-purple-500" 
                       placeholder="Enter category name" 
-                      required>
+                       autocomplete="off">
            </div>
            
            <div class="flex justify-end space-x-3">
@@ -333,8 +334,6 @@
 
     <script>
 
-        // Get modal and form elements
-// const editCategoryModal = document.getElementById('editCategoryModal');
 
 
         // Sidebar Navigation Groups
@@ -511,11 +510,26 @@ editCategoryModal.addEventListener('click', (e) => {
                     // Reload the page to show the new category
                     window.location.reload();
                 } else {
-                    alert('Failed to add category. Please try again.');
+                   
+                    Swal.fire({
+    title: 'Failed!',
+    text: 'Failed to add category. Please try again.' + data.message,
+    icon: 'error',
+    confirmButtonText: 'OK'
+  }).then(()=>{
+        window.location.reload()
+  })
+         
                 }
             } catch (error) {
                 console.error('Error adding category:', error);
-                alert('Error adding category. Please try again.');
+              
+                Swal.fire({
+    title: 'Failed!',
+    text: 'Error adding category. Please try again.' + data.message,
+    icon: 'error',
+    confirmButtonText: 'OK'
+  });
             }
         });
 
@@ -554,7 +568,9 @@ editCategoryModal.addEventListener('click', (e) => {
     text: 'Failed to update category: ' + data.message,
     icon: 'error',
     confirmButtonText: 'OK'
-  });
+  }).then(()=>{
+     window.location.reload();
+  })
             }
            }catch(err){
               console.error('Error updating category:',err);
@@ -569,8 +585,64 @@ editCategoryModal.addEventListener('click', (e) => {
 
 
 
+        function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+
+const searchInput = document.getElementById('searchInput');
+const categoryItems = document.querySelectorAll('.category-item');
+
+const handleSearch = debounce((searchTerm) => {
+    const normalizedSearchTerm = searchTerm.toLowerCase().trim();
+    
+    document.querySelectorAll('.category-item').forEach(item => {
+        const categoryName = item.querySelector('.text-lg').textContent.toLowerCase().trim();
+        
+        if (categoryName.includes(normalizedSearchTerm)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}, 300);
+
+// Add event listener for search input
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        handleSearch(e.target.value);
+    });
+}
+
+
+const statusFilter = document.getElementById('statusFilter');
+if (statusFilter) {
+    statusFilter.addEventListener('change', () => {
+        const selectedStatus = statusFilter.value;
+        
+        document.querySelectorAll('.category-item').forEach(item => {
+            const statusBadge = item.querySelector('.status-badge');
+            const itemStatus = statusBadge.classList.contains('status-active') ? 'active' : 'inactive';
+            
+            if (selectedStatus === 'all' || selectedStatus === itemStatus) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+}
  
 
     </script>
 </body>
 </html>
+

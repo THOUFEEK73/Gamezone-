@@ -13,6 +13,7 @@ export const getAllCategories = async (req, res) => {
 export const postAllCategories = async (req, res) => {
   try {
     const categoryName = req.body.categoryName;
+    console.log('testing')
     if (!categoryName || categoryName.trim() === "") {
       return res
         .status(400)
@@ -43,8 +44,9 @@ export const postAllCategories = async (req, res) => {
 
 export const updateCategoryStatus = async (req, res) => {
   try {
-    const categoryId = req.params.id;
+    const categoryId = req.params.Id;
     const newStatus = req.body.status;
+   
     await Category.findByIdAndUpdate(categoryId, {
       status: newStatus,
       new: true,
@@ -58,13 +60,14 @@ export const updateCategoryStatus = async (req, res) => {
 };
 
 export const updateCategory = async(req,res)=>{
+
         try{
                 const categoryId =req.params.id;
                 const {categoryName} = req.body;
                 const existingCategory = await Category.findOne({categoryName});
-                
+               
                 if(existingCategory && existingCategory._id.toString()!==categoryId){
-                      return  res.status(400).json({success:false,err:"Category already existes"});
+                      return  res.status(400).json({success:false,message:"Category already existes"});
                 }
               
                 const updatedCategory = await Category.findByIdAndUpdate(categoryId,{categoryName},{new:true});
@@ -81,3 +84,32 @@ export const updateCategory = async(req,res)=>{
                   return res.status(500).render("error",{message:"Internal Server Error"});
         }
 }
+
+export const pagination = async(req,res)=>{
+ 
+  try {
+      const page = parseInt(req.query.page) || 1; // Current page
+      const limit = 10; // Items per page
+      const skip = (page - 1) * limit;
+     
+      // Get total count of categories
+      const totalCategories = await Category.countDocuments();
+      const totalPages = Math.ceil(totalCategories / limit);
+
+      // Get categories for current page
+      const category = await Category.find()
+          .skip(skip)
+          .limit(limit)
+          .sort({ createdAt: -1 });
+
+      return res.render('admin/category', {
+          category:category,
+          currentPage: page,
+          totalPages:totalPages,
+          totalCategories
+      });
+  } catch (error) {
+      console.error('Error fetching categories:', error);
+      res.status(500).send('Error fetching categories');
+  }
+};
