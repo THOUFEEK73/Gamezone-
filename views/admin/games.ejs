@@ -57,7 +57,7 @@
                   <img src="/uploads/games/<%= game.coverImage %>" alt="Game" class="w-10 h-10 rounded-full object-cover"/>
                 </td>
                 <td class="px-6 py-4 font-medium text-white"><%= game.title %></td>
-                <td class="px-6 py-4 text-gray-300"><%= game.category.name %></td>
+                <td class="px-6 py-4 text-gray-300"><%= game.category? game.category.categoryName:'No Category Found' %></td>
                 <td class="px-6 py-4 text-purple-400">$<%= game.price %></td>
                 <td class="px-6 py-4">
                   <span class="px-3 py-1 text-xs font-semibold rounded-full <%= game.status === 'active' ? 'bg-green-900/20 text-green-400' : 'bg-red-900/20 text-red-400' %>">
