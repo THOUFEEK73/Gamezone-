@@ -5,12 +5,17 @@ import { addGame, postAdd, getAllGames } from "../controllers/gameController.js"
 import { getPlatFormPage } from "../controllers/platformController.js";
 import isAdminAuthenticated from "../middleware/adminAuth.js";
 import { getAllUsersPage,blockUser,searchUsers } from '../controllers/adminUserController.js';
+import sessionMiddleware from '../middleWare/sessionMiddleWare.js';
 
 import multer from "multer";
 import path from "path";
 
+
 const adminRoutes = express.Router();
 
+adminRoutes.get("/login", getAdminLoginPage);
+adminRoutes.post("/login", postAdminLogin);
+adminRoutes.use(isAdminAuthenticated); 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, "public/uploads/games/"),
@@ -26,13 +31,12 @@ const upload = multer({
 });
 
 // Auth routes
-adminRoutes.get("/login", getAdminLoginPage);
-adminRoutes.post("/login", postAdminLogin);
+
 adminRoutes.get("/logout", adminLogout);
 
 // Protected routes
 // Apply middleware to all routes below
-adminRoutes.use(isAdminAuthenticated); 
+
 
 adminRoutes.get("/dashboard", (req, res) => {
     res.render("admin/dashboard", { name: req.session.admin.name });

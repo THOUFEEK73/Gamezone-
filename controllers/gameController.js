@@ -4,7 +4,7 @@ import Category from '../models/CategoryModel.js';
 // Add this new function to your existing controller
 export const getAllGames = async (req, res) => {
     try {
-        const category = await Category.find();
+        // const category = await Category.find();
         // console.log(category)
         const games = await Game.find().populate('category','categoryName').exec();
         res.render('admin/games', {games:games});

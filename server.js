@@ -4,10 +4,12 @@ import authRoutes from "./routes/authRoutes.js";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import mongoose from "mongoose";
-import sessionMiddleware from "./middleware/sessionMiddleWare.js";
+import sessionMiddleware from "./middleware/sessionMiddleWare.js"
 import adminRoutes from "./routes/adminRoutes.js";
 import addGamesRouts from './routes/addGamesRouts.js';
 import gameDetailsRoutes from './routes/gameDetailsRoutes.js';
+// import isAdminAuthenticated from "./middleware/adminAuth.js";  
+// import categoriesRoutes from "./routes/categoriesRoutes.js"; 
 // import userManageRoutes from "./routes/userManageRoutes.js";
 import passport from './config/passport.js'; 
 import isAthenticated from "./middleware/auth.js";
@@ -45,11 +47,11 @@ app.set("views", "views");
 
 
 // Routes
-
+app.use('/admin', adminRoutes);
 app.use("/", authRoutes);
 
 // Mount admin routes 
-app.use('/admin', adminRoutes);
+
 
 
 

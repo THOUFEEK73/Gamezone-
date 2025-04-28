@@ -2,7 +2,9 @@ import User from "../models/userModel.js";
 import { comparePassword } from "../utils/hash.js";
 
 
+
 export const getAdminLoginPage = (req,res)=>{
+    console.log("admin login page");
     if(req.session.adminId){
         return res.redirect('/admin/dashboard');
     }
@@ -15,7 +17,7 @@ export const postAdminLogin = async (req,res)=>{
         const {email,password} = req.body;
     
         if(!email || !password){
-           return res.render('admin/loign',{err:'Please fill all the fields'}); 
+           return res.render('admin/login',{err:'Please fill all the fields'}); 
         }
     const adminUser = await User.findOne({email});
     if(!adminUser){
@@ -40,8 +42,8 @@ export const postAdminLogin = async (req,res)=>{
 
     }catch(err){
         console.error("admin Login error",err);
-         res.render('admin/login',{err:'Internal Server Error Please try again later'});
-       return res.status(500).json({message:'Internal Server Error'});
+        return res.status(500).render('admin/login',{err:'Internal Server Error Please try again later'});
+    //    return res.status(500).json({message:'Internal Server Error'});
     }
     
   
