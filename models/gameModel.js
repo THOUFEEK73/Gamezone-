@@ -18,18 +18,17 @@ const gameSchema = new mongoose.Schema({
         },
         screenshots: [{
             type: String,
-            required:true
+            required: true
         }]
     },
-    platforms: [{
+    platforms: {
         type: [String],
         required: true
-    }],
+    },
     category: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:'Category',
-        required: true,
-        trim:true,
+        ref: 'Category',
+        required: true
     },
     description: {
         type: String,
@@ -53,9 +52,7 @@ const gameSchema = new mongoose.Schema({
     gameSeries: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'GameSeries'
-      }
-    
-      
+    }
 });
 
 const Game = mongoose.model('Game', gameSchema);

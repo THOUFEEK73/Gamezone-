@@ -402,7 +402,13 @@
                     }
                 } catch (error) {
                     console.error('Error updating category status:', error);
-                    alert('Error updating category status. Please try again.');
+                   
+                    Swal.fire({
+    title: 'Failed!',
+    text: 'Error updating category status. Please try again.'+ data.message,
+    icon: 'error',
+    confirmButtonText: 'OK'
+  });
                 } finally {
                     toggle.disabled = false;
                 }
@@ -508,7 +514,16 @@ editCategoryModal.addEventListener('click', (e) => {
                 
                 if (data.success) {
                     // Reload the page to show the new category
-                    window.location.reload();
+                    Swal.fire({
+    title: 'Success!',
+    text: 'Category added SuccessFullt.' + data.message,
+    icon: 'success',
+    confirmButtonText: 'OK'
+  }).then(()=>{
+      window.location.reload()
+  })
+                    
+
                 } else {
                    
                     Swal.fire({
@@ -541,7 +556,8 @@ editCategoryModal.addEventListener('click', (e) => {
            const categoryName = formData.get('categoryName');
 
            try{
-            const response = await fetch(`/admin/category/${categoryId}`,{
+            const response = await fetch(`/admin/category/update/${categoryId}`,{
+                 
                 method:'POST',
                 headers:{
                     'Content-Type': 'application/json',

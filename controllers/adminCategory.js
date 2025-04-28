@@ -43,9 +43,12 @@ export const postAllCategories = async (req, res) => {
 };
 
 export const updateCategoryStatus = async (req, res) => {
+
   try {
     const categoryId = req.params.Id;
     const newStatus = req.body.status;
+
+    console.log(newStatus)
    
     await Category.findByIdAndUpdate(categoryId, {
       status: newStatus,
@@ -60,7 +63,7 @@ export const updateCategoryStatus = async (req, res) => {
 };
 
 export const updateCategory = async(req,res)=>{
-
+      
         try{
                 const categoryId =req.params.id;
                 const {categoryName} = req.body;

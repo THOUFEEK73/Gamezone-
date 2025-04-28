@@ -48,9 +48,9 @@ adminRoutes.get('/users/search',searchUsers);
 // Category routes
 adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category", postAllCategories);
-adminRoutes.post('/category/:id',updateCategory);
+adminRoutes.post('/category/update/:id',updateCategory);
 adminRoutes.post("/category/:Id", updateCategoryStatus);
-adminRoutes.post('/category/pagination',pagination)
+// adminRoutes.post('/category/pagination',pagination)
 
 adminRoutes.get("/platform", getPlatFormPage);
 // adminRoutes.post("/platform", postAllCategories);
