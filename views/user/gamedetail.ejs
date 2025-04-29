@@ -335,83 +335,34 @@
         </div>
 
         <!-- Related Games Section -->
-        <div class="container mx-auto px-4 py-8">
-            <h2 class="text-2xl font-bold mb-6 text-gray-900">Related Games</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <!-- Game Card Template -->
-                <a href="#" class="group">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <!-- Game Image -->
-                        <div class="h-48 overflow-hidden">
-                            <img src="/images/game-placeholder.jpg" 
-                                 alt="Game Title" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        
-                        <!-- Game Info -->
-                        <div class="p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="text-green-600 font-bold">$49.99</span>
-                                <span class="text-sm text-gray-500">Action</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[10px] p-[10px] bg-gray-50">
+            <% if (relatedGames && relatedGames.length > 0) { %>
+                <% relatedGames.forEach(game => { %>
+                    <a href="/gamedetail/<%= game._id %>" class="w-64 overflow-hidden">
+                        <div class="w-64 overflow-hidden bg-white rounded-md shadow-sm hover:shadow-md transition-shadow duration-300">
+                            <!-- Game Image -->
+                            <img src="<%= game.media.coverImage %>" 
+                                 alt="<%= game.title %>" 
+                                 class="w-full h-auto object-contain">
+        
+                            <!-- Game Title -->
+                            <div class="mt-2 px-4 pb-2">
+                                <h3 class="text-lg font-bold text-black truncate"><%= game.title %></h3>
+                            </div>
+        
+                            <!-- Add to Cart Button -->
+                            <div class="px-4 pb-4">
+                            
                             </div>
                         </div>
-                    </div>
-                </a>
-
-                <!-- Repeat the card template for more games -->
-                <a href="#" class="group">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <div class="h-48 overflow-hidden">
-                            <img src="/images/game-placeholder.jpg" 
-                                 alt="Game Title" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="text-green-600 font-bold">$49.99</span>
-                                <span class="text-sm text-gray-500">Action</span>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="group">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <div class="h-48 overflow-hidden">
-                            <img src="/images/game-placeholder.jpg" 
-                                 alt="Game Title" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="text-green-600 font-bold">$49.99</span>
-                                <span class="text-sm text-gray-500">Action</span>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="group">
-                    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                        <div class="h-48 overflow-hidden">
-                            <img src="/images/game-placeholder.jpg" 
-                                 alt="Game Title" 
-                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-2 truncate">Game Title</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="text-green-600 font-bold">$49.99</span>
-                                <span class="text-sm text-gray-500">Action</span>
-                            </div>
-                        </div>
-                    </div>
-                </a>
-            </div>
+                    </a>
+                <% }); %>
+            <% } else { %>
+                <p class="text-gray-600 col-span-full text-center">No related games found.</p>
+            <% } %>
         </div>
+        
+        
     </div>
 </body>
 <script>

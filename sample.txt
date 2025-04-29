@@ -3,579 +3,416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameZone Admin - Add Game</title>
+    <title>GameZone - Your Gaming Destination</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        body {
-            background-color: #1f1f1f;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
+        .hero-carousel {
+            transition: transform 0.5s ease-in-out;
         }
-
-        .card {
-            background-color: #2a2a2a;
-            border: 1px solid #333333;
-            transition: all 0.2s ease;
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        .nav-link {
+            position: relative;
         }
-
-        .form-input {
-            background-color: #333333;
-            border: 1px solid #404040;
-            color: #ffffff;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            transition: all 0.2s ease;
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #10B981;
+            transition: width 0.3s;
+        }
+        .nav-link:hover::after {
             width: 100%;
         }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #818cf8;
-            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
-        }
-
-        .form-label {
-            color: #e2e8f0;
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .helper-text {
-            color: #94a3b8;
-            font-size: 0.75rem;
-            margin-top: 0.25rem;
-                }
-
-                .file-upload {
-            border: 2px dashed #404040;
-                    border-radius: 1rem;
-                    padding: 2rem;
-                    text-align: center;
-                    transition: all 0.3s ease;
-            background: #2a2a2a;
-            cursor: pointer;
-        }
-
-        .file-upload:hover {
-            border-color: #818cf8;
-            background: rgba(129, 140, 248, 0.1);
-        }
-
-        .btn-primary {
-            background: #818cf8;
-            color: white;
-            border: none;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .btn-primary:hover {
-            background: #6366f1;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: #333333;
-            color: #ffffff;
-            border: 1px solid #404040;
-            border-radius: 0.75rem;
-            padding: 0.75rem 1.5rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .btn-secondary:hover {
-            background: #404040;
-            transform: translateY(-1px);
-        }
-
-        select.form-input {
-            background-color: #333333;
-            color: #ffffff;
-            border: 1px solid #404040;
-        }
-
-        select.form-input option {
-            background-color: #2a2a2a;
-            color: #ffffff;
-        }
-
-        /* Platform Select Styles */
-        #platformSelectBtn {
-            background-color: #333333;
-            border: 1px solid #404040;
-            color: #ffffff;
-        }
-
-        #platformSelectMenu {
-            background-color: #2a2a2a;
-            border: 1px solid #404040;
-        }
-
-        #platformSelectMenu div {
-            color: #ffffff;
-        }
-
-        #platformSelectMenu div:hover {
-            background-color: #404040;
-        }
-
-        /* Header section styles */
-        .text-gray-800 {
-            color: #ffffff;
-        }
-
-        .text-gray-600 {
-            color: #94a3b8;
-        }
-
-        /* Button styles in header */
-        .bg-white {
-            background-color: #2a2a2a;
-        }
-
-        .text-gray-700 {
-            color: #ffffff;
-        }
-
-        .shadow-lg {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Status badges */
-        .status-badge.success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .status-badge.warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .status-badge.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .status-badge.info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
     </style>
 </head>
-<body class="flex h-screen">
-   
-    <%- include('partials/sidebar') %>
-    <!-- Mobile Sidebar Toggle -->
-    <button class="sidebar-toggle lg:hidden">
-        <i class="fas fa-bars text-gray-600"></i>
-    </button>
-
-    <!-- Main Content -->
-    <div class="flex-1 ml-72 p-8 main-content bg-[#1f1f1f]">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-white">Add New Game</h1>
-                <p class="text-gray-400 mt-2">Fill in the details below to add a new game to the store.</p>
-            </div>
-            
-        </div>
-
-        <!-- Add Game Form -->
-        <form class="space-y-6" method="POST" action="/admin/addgame" enctype="multipart/form-data">
-            <!-- Basic Info Section -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Basic Information</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="form-label">Game Title</label>
-                        <input type="text" name="title" class="form-input" required>
-                        <p class="helper-text">Enter the official title of the game</p>
-                    </div>
-                    <div>
-                        <label class="form-label">Price</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-400"></span>
-                            <input type="number" name="price" step="0.01" class="form-input pl-10" required>
-                            <p class="helper-text">Set the retail price for the game</p>
-                        </div>
-                    </div>
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/home" class="flex items-center space-x-2">
+                        <i class="fas fa-gamepad text-2xl text-green-600"></i>
+                        <span class="text-2xl font-bold text-green-600 hover:text-green-700 transition">GameZone</span>
+                    </a>
                 </div>
-            </div>
-
-            <!-- Media Section -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Media</h2>
-                <div class="space-y-6">
-                    <!-- Game Cover Image -->
-                    <div>
-                        <label class="form-label">Game Cover Image</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="file-upload cursor-pointer">
-                                <input type="file" id="imageUpload" name="coverImage" accept="image/*" class="hidden" required>
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                    <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                                    <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
-                                </div>
-                            </div>
-                            <div id="previewContainer" class="hidden">
-                                <div class="card p-4">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Cover Preview</h3>
-                                    <div class="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-                                        <img src="" alt="Preview" class="w-full h-full object-cover">
-                                        <button type="button" onclick="clearPreview()" 
-                                                class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add this script section before the closing body tag -->
-            <script>
-                const imageUpload = document.getElementById('imageUpload');
-                const previewContainer = document.getElementById('previewContainer');
-                const previewImage = previewContainer.querySelector('img');
-
-                imageUpload.addEventListener('change', function() {
-                    const file = this.files[0];
-
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImage.src = e.target.result;
-                            previewContainer.classList.remove('hidden');
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-
-                function clearPreview() {
-                    imageUpload.value = '';
-                    previewImage.src = '';
-                    previewContainer.classList.add('hidden');
-                }
-
-                // Drag and drop functionality
-                const dropZone = document.querySelector('.file-upload');
-
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, preventDefaults, false);
-                });
-
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, highlight, false);
-                });
-
-                ['dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, unhighlight, false);
-                });
-
-                function highlight() {
-                    dropZone.classList.add('border-accent-color', 'bg-accent-color/5');
-                }
-
-                function unhighlight() {
-                    dropZone.classList.remove('border-accent-color', 'bg-accent-color/5');
-                }
-
-                dropZone.addEventListener('drop', handleDrop, false);
-
-                function handleDrop(e) {
-                    const dt = e.dataTransfer;
-                    const file = dt.files[0];
-
-                    if (file) {
-                        imageUpload.files = dt.files;
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImage.src = e.target.result;
-                            previewContainer.classList.remove('hidden');
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                }
-            </script>
-
-            <!-- Details Section -->
-            <div class="card p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Game Details</h2>
-                <div class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div class="relative w-full">
-  <label class="block mb-2 text-sm font-medium text-gray-700">Platform</label>
-
-  <button type="button" id="platformSelectBtn" class="w-full flex justify-between items-center bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 shadow-sm focus:outline-none">
-    <span id="selectedPlatform">Select Platform</span>
-    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
-
-  <div id="platformSelectMenu" class="absolute mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden z-10">
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="ps5">PlayStation 5</div>
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="xbox">Xbox Series X</div>
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="pc">PC</div>
-  </div>
-
-  <input type="hidden" name="platform" id="platformInput"> 
-</div>
-
-                          
-                            <div>
-                                <label class="form-label">Category</label>
-                                <select name="category" class="form-input">
-                                    <option value="">Select Category</option>
-                                    <% category.forEach(category=>{%>
-                                     <option value="<%=category._id%>"><%=category.categoryName%></option>
-                                    <%})%>
-                                   
-                                </select>
-                            </div>
-                    </div>
-                    <div>
-                        <label class="form-label">Description</label>
-                        <textarea name="description" rows="4" class="form-input"></textarea>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="form-label">Release Date</label>
-                            <input type="date" name="releaseDate" class="form-input">
-                        </div>
-                        <div>
-                            <label class="form-label">Stock Quantity</label>
-                            <input type="number" name="stockQuantity" class="form-input">
-                        </div>
-                        <div>
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-input">
-                                <option value="available">Available</option>
-                                <option value="comingsoon">Coming Soon</option>
-                                <option value="outofstock">Out of Stock</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Buttons -->
-            <div class="flex justify-end space-x-4">
-                <button type="button" class="btn-secondary">
-                    Cancel
-                </button>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save mr-2"></i>
-                    Save Game
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <script>
-        // Sidebar Navigation Groups
-        document.querySelectorAll('.nav-group-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const content = header.nextElementSibling;
-                const toggle = header.querySelector('.nav-group-toggle');
                 
-                content.classList.toggle('show');
-                toggle.classList.toggle('rotated');
-            });
+                <!-- Main Navigation - Desktop -->
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/allgames" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-dice-d20 mr-1"></i> All Games
+                    </a>
+                    <a href="/categories" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-tags mr-1"></i> Categories
+                    </a>
+                    <a href="/deals" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-percentage mr-1"></i> Deals
+                    </a>
+                    <a href="/about" class="nav-link px-3 py-2 rounded-md text-gray-700 hover:text-green-600 hover:bg-gray-100 transition">
+                        <i class="fas fa-info-circle mr-1"></i> About
+                    </a>
+                </div>
+                
+                <!-- Right Side Section -->
+                <div class="flex items-center space-x-4">
+                    <!-- Search Bar with animation -->
+                    <div class="relative group">
+                        <input type="text" placeholder="Search games..." 
+                               class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 w-40 md:w-64 focus:w-72">
+                        <button class="absolute left-3 top-2.5 text-gray-400 hover:text-green-600">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    
+                    <!-- Shopping Cart -->
+                    <a href="/cart" class="relative p-2 rounded-full hover:bg-gray-100 transition">
+                        <i class="fas fa-shopping-cart text-xl text-gray-700 hover:text-green-600 transition"></i>
+                        <span class="absolute -top-1 -right-1 bg-green-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                            <%= locals.cartCount || 0 %>
+                        </span>
+                    </a>
+                    
+                    <!-- User Account -->
+                    <% if (locals.user) { %>
+                        <div class="relative group">
+                            <button class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition">
+                                <img src="<%= user.avatar || '/images/default-avatar.png' %>" 
+                                     alt="Profile" 
+                                     class="w-8 h-8 rounded-full border-2 border-green-500">
+                                <span class="text-gray-700 hidden sm:inline"><%= user.name %></span>
+                                <i class="fas fa-chevron-down text-xs text-gray-500 group-hover:text-green-600 transition"></i>
+                            </button>
+                            <div class="absolute right-0 w-56 mt-2 py-2 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top scale-95 group-hover:scale-100 z-50">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm text-gray-500">Signed in as</p>
+                                    <p class="font-medium text-gray-800 truncate"><%= user.name %></p>
+                                </div>
+                                <a href="/profile" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                    <i class="fas fa-user-circle w-5 mr-2"></i> Profile
+                                </a>
+                                <a href="/orders" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                    <i class="fas fa-clipboard-list w-5 mr-2"></i> Orders
+                                </a>
+                                <a href="/wishlist" class="flex items-center px-4 py-2 text-gray-800 hover:bg-green-500 hover:text-white transition">
+                                    <i class="fas fa-heart w-5 mr-2"></i> Wishlist
+                                </a>
+                                <div class="border-t border-gray-100 mt-2"></div>
+                                <a href="/logout" class="flex items-center px-4 py-2 text-red-600 hover:bg-red-500 hover:text-white transition">
+                                    <i class="fas fa-sign-out-alt w-5 mr-2"></i> Logout
+                                </a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <div class="flex space-x-2">
+                            <a href="/login" class="bg-white text-green-600 border border-green-500 px-4 py-2 rounded-lg hover:bg-green-50 transition">
+                                Logout
+                            </a>
+                            <!-- <a href="/register" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition shadow-md hover:shadow-lg">
+                                Sign Up
+                            </a> -->
+                        </div>
+                    <% } %>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none" id="mobile-menu-button">
+                        <i class="fas fa-bars text-xl text-gray-700"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Navigation Menu - Hidden by default -->
+            <div class="md:hidden hidden mt-3 pt-3 border-t border-gray-200" id="mobile-menu">
+                <div class="flex flex-col space-y-2 pb-3">
+                    <a href="/allgames" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-dice-d20 mr-2"></i> All Games
+                    </a>
+                    <a href="/categories" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-tags mr-2"></i> Categories
+                    </a>
+                    <a href="/deals" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-percentage mr-2"></i> Deals
+                    </a>
+                    <a href="/about" class="px-3 py-2 rounded-md text-gray-700 hover:bg-green-500 hover:text-white transition">
+                        <i class="fas fa-info-circle mr-2"></i> About
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    
+    <script>
+        // Toggle mobile menu
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
         });
-
-        // Mobile Sidebar Toggle
-        const sidebarToggle = document.querySelector('.sidebar-toggle');
-        const sidebar = document.querySelector('.sidebar');
-
-        sidebarToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
-                if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
-                    sidebar.classList.remove('show');
-                }
+        
+        // Shrink navbar on scroll
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-1');
+                navbar.classList.add('shadow-md');
+            } else {
+                navbar.classList.remove('py-1');
+                navbar.classList.remove('shadow-md');
             }
-        });
-
-        // Image Upload Preview
-        document.querySelectorAll('input[type="file"]').forEach(input => {
-            const preview = input.parentElement;
-            
-            input.addEventListener('change', e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        preview.style.backgroundImage = `url(${e.target.result})`;
-                        preview.querySelector('div').style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            preview.addEventListener('click', () => input.click());
-            
-            preview.addEventListener('dragover', e => {
-                e.preventDefault();
-                preview.classList.add('border-indigo-500');
-            });
-            
-            preview.addEventListener('dragleave', e => {
-                e.preventDefault();
-                preview.classList.remove('border-indigo-500');
-            });
-            
-            preview.addEventListener('drop', e => {
-                e.preventDefault();
-                preview.classList.remove('border-indigo-500');
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                    input.files = e.dataTransfer.files;
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        preview.style.backgroundImage = `url(${e.target.result})`;
-                        preview.querySelector('div').style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
         });
     </script>
 
-    <!-- Add this script section at the end of the body -->
-    <script>
-        function previewCoverImage(input) {
-            const preview = document.getElementById('coverImagePreview');
-            const previewImg = preview.querySelector('img');
-            const gameTitle = document.querySelector('input[name="title"]').value || 'Game Title';
-            const gameCategory = document.querySelector('select[name="category"]').value || 'Category';
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.classList.remove('hidden');
-                    
-                    // Update preview title and category
-                    preview.querySelector('h4').textContent = gameTitle;
-                    preview.querySelector('p').textContent = gameCategory;
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    
-        function removeCoverImage() {
-            const input = document.getElementById('coverImage');
-            const preview = document.getElementById('coverImagePreview');
-            
-            input.value = '';
-            preview.classList.add('hidden');
-            preview.querySelector('img').src = '';
-        }
-    
-        function previewScreenshots(input) {
-            const preview = document.getElementById('screenshotsPreview');
-            const previewContainer = preview.querySelector('.grid');
-            previewContainer.innerHTML = ''; // Clear existing previews
-            
-            if (input.files) {
-                const files = Array.from(input.files).slice(0, 5); // Limit to 5 files
-                
-                files.forEach((file, index) => {
-                    const reader = new FileReader();
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'relative group';
-                    
-                    reader.onload = function(e) {
-                        previewItem.innerHTML = `
-                            <div class="card p-4">
-                                <div class="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-                                    <img src="${e.target.result}" alt="Screenshot ${index + 1}" 
-                                         class="w-full h-full object-cover">
-                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button type="button" onclick="removeScreenshot(${index})" 
-                                                class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full 
-                                                       hover:bg-red-600 transition-colors">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex items-center justify-between">
-                                    <span class="text-sm text-gray-500">Screenshot ${index + 1}</span>
-                                    <span class="text-xs text-gray-400">${formatFileSize(file.size)}</span>
+    <!-- Hero Section -->
+    <div class="pt-16">
+        <div class="relative h-[500px] overflow-hidden">
+            <div class="hero-carousel flex transition-transform duration-500">
+                <!-- Static Hero Item 1 -->
+                <div class="w-full flex-shrink-0 relative">
+                    <img src="/images/hero/game1.jpg" 
+                         alt="Call of Duty" 
+                         class="w-full h-[500px] object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent">
+                        <div class="container mx-auto px-6 h-full flex items-center">
+                            <div class="max-w-lg">
+                                <h1 class="text-4xl font-bold text-white mb-4">Call of Duty: Modern Warfare</h1>
+                                <p class="text-gray-200 mb-6">Experience the ultimate combat in this thrilling action game.</p>
+                                <div class="flex space-x-4">
+                                    <a href="/game/1" 
+                                       class="bg-green-500 text-white px-8 py-3 rounded-full hover:bg-green-600 transition">
+                                        Buy Now
+                                    </a>
+                                    <button onclick="addToWishlist('1')" 
+                                            class="bg-white/20 text-white px-8 py-3 rounded-full hover:bg-white/30 transition">
+                                        Add to Wishlist
+                                    </button>
                                 </div>
                             </div>
-                        `;
-                    }
-                    
-                    previewContainer.appendChild(previewItem);
-                    reader.readAsDataURL(file);
-                });
-            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Static Hero Item 2 -->
+                <div class="w-full flex-shrink-0 relative">
+                    <img src="/images/hero/game2.jpg" 
+                         alt="FIFA 24" 
+                         class="w-full h-[500px] object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent">
+                        <div class="container mx-auto px-6 h-full flex items-center">
+                            <div class="max-w-lg">
+                                <h1 class="text-4xl font-bold text-white mb-4">FIFA 24</h1>
+                                <p class="text-gray-200 mb-6">The most realistic football simulation experience.</p>
+                                <div class="flex space-x-4">
+                                    <a href="/game/2" 
+                                       class="bg-green-500 text-white px-8 py-3 rounded-full hover:bg-green-600 transition">
+                                        Buy Now
+                                    </a>
+                                    <button onclick="addToWishlist('2')" 
+                                            class="bg-white/20 text-white px-8 py-3 rounded-full hover:bg-white/30 transition">
+                                        Add to Wishlist
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Static Hero Item 3 -->
+                <div class="w-full flex-shrink-0 relative">
+                    <img src="/images/hero/game3.jpg" 
+                         alt="Assassin's Creed" 
+                         class="w-full h-[500px] object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent">
+                        <div class="container mx-auto px-6 h-full flex items-center">
+                            <div class="max-w-lg">
+                                <h1 class="text-4xl font-bold text-white mb-4">Assassin's Creed Valhalla</h1>
+                                <p class="text-gray-200 mb-6">Embark on an epic Viking saga.</p>
+                                <div class="flex space-x-4">
+                                    <a href="/game/3" 
+                                       class="bg-green-500 text-white px-8 py-3 rounded-full hover:bg-green-600 transition">
+                                        Buy Now
+                                    </a>
+                                    <button onclick="addToWishlist('3')" 
+                                            class="bg-white/20 text-white px-8 py-3 rounded-full hover:bg-white/30 transition">
+                                        Add to Wishlist
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carousel Controls -->
+            <button class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/30 p-2 rounded-full hover:bg-white/50 transition"
+                    onclick="moveCarousel(-1)">
+                <i class="fas fa-chevron-left text-white text-xl"></i>
+            </button>
+            <button class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/30 p-2 rounded-full hover:bg-white/50 transition"
+                    onclick="moveCarousel(1)">
+                <i class="fas fa-chevron-right text-white text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold mb-8">Popular Categories</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <a href="/category/action" class="group">
+                    <div class="relative rounded-lg overflow-hidden">
+                        <img src="/images/categories/action.jpg" alt="Action Games" class="w-full h-48 object-cover">
+                        <div class="absolute inset-0 bg-black/50 group-hover:bg-black/70 transition flex items-center justify-center">
+                            <span class="text-white text-xl font-bold">Action</span>
+                        </div>
+                    </div>
+                </a>
+                <!-- Add more categories similarly -->
+            </div>
+        </div>
+    </section>
+
+    <!-- New Releases Section -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold">New Releases</h2>
+                <a href="/games/new" class="text-green-600 hover:text-green-700">View All</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[10px] p-[10px] bg-gray-50">
+                <% games.forEach(game => { %>
+                    <a href="/gamedetail/<%=game._id%>" class="w-64 overflow-hidden" >
+                        <div class="w-64 overflow-hidden">
+                            <!-- Game Image -->
+                            <img src="<%= game.media.coverImage %>" 
+                                 alt="<%= game.title %>" 
+                                 class="w-full h-auto object-contain">
+                      
+                            <!-- Game Title -->
+                            <div  class="mt-2 px-4 pb-2">
+                              <h3 class="text-lg font-bold text-black truncate"><%= game.title %></h3>
+                            </div>
+                      
+                            <!-- Add to Cart Button -->
+                            <div class="px-4 pb-4">
+                              <button onclick="addToCart('<%= game._id %>')" 
+                                class="w-full py-1.5 px-4 border border-dark-600 text-dark-600 text-sm rounded-md hover:bg-yellow-400 hover:text-black transition-colors duration-300">
+                                Add to Cart
+                              </button>
+                            </div>
+                          </div>
+                    </a>
+                
+                <% }); %>
+              </div>
+              
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">GameZone</h3>
+                    <p class="text-gray-400">Your ultimate gaming destination</p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/about" class="text-gray-400 hover:text-white">About Us</a></li>
+                        <li><a href="/contact" class="text-gray-400 hover:text-white">Contact</a></li>
+                        <li><a href="/faq" class="text-gray-400 hover:text-white">FAQ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Newsletter</h4>
+                    <form class="flex">
+                        <input type="email" placeholder="Enter your email" 
+                               class="px-4 py-2 rounded-l-lg focus:outline-none">
+                        <button class="bg-green-500 text-white px-4 py-2 rounded-r-lg hover:bg-green-600">
+                            Subscribe
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 GameZone. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.hero-carousel > div');
+        const totalSlides = slides.length;
+
+        function moveCarousel(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            document.querySelector('.hero-carousel').style.transform = 
+                `translateX(-${currentSlide * 100}%)`;
         }
-    
-        function removeScreenshot(index) {
-            const input = document.getElementById('screenshots');
-            const preview = document.getElementById('screenshotsPreview');
-            
-            // Create a new FileList without the removed screenshot
-            const dt = new DataTransfer();
-            const files = Array.from(input.files);
-            
-            files.forEach((file, i) => {
-                if (i !== index) dt.items.add(file);
+
+        // Auto-advance carousel
+        setInterval(() => moveCarousel(1), 5000);
+
+        // Cart functionality
+        function addToCart(gameId) {
+            fetch('/api/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ gameId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    alert('Game added to cart!');
+                }
             });
-            
-            input.files = dt.files;
-            
-            // Remove the preview
-            preview.querySelector('.grid').children[index].remove();
         }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            
+        // Wishlist functionality
+        function addToWishlist(gameId) {
+            fetch('/api/wishlist/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ gameId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    alert('Game added to wishlist!');
+                }
+            });
         }
 
-        const selectBtn = document.getElementById('platformSelectBtn');
-  const selectMenu = document.getElementById('platformSelectMenu');
-  const platformInput = document.getElementById('platformInput');
-  const selectedText = document.getElementById('selectedPlatform');
+        
+  history.pushState(null, null, location.href);
+  window.onpopstate = function () {
+    history.pushState(null, null, location.href);
+  };
 
-  selectBtn.addEventListener('click', () => {
-    selectMenu.classList.toggle('hidden');
-  });
 
-  selectMenu.querySelectorAll('div[data-value]').forEach(item => {
-    item.addEventListener('click', () => {
-      const value = item.getAttribute('data-value');
-      platformInput.value = value;
-      selectedText.textContent = item.textContent;
-      selectMenu.classList.add('hidden');
-    });
-  });
-
-  window.addEventListener('click', (e) => {
-    if (!selectBtn.contains(e.target) && !selectMenu.contains(e.target)) {
-      selectMenu.classList.add('hidden');
-    }
-  });
     </script>
 </body>
 </html>

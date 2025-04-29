@@ -17,7 +17,7 @@ export const getHomePage = async (req, res) => {
     res.set('Expires', '0');
 
     // Fetch all games from the database
-    const games = await Game.find();
+    const games = await Game.find().limit(8);
 
     // Render the home page
     res.render('user/home', { games: games });
