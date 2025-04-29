@@ -52,14 +52,14 @@
             color: #94a3b8;
             font-size: 0.75rem;
             margin-top: 0.25rem;
-                }
+        }
 
-                .file-upload {
+        .file-upload {
             border: 2px dashed #404040;
-                    border-radius: 1rem;
-                    padding: 2rem;
-                    text-align: center;
-                    transition: all 0.3s ease;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
             background: #2a2a2a;
             cursor: pointer;
         }
@@ -157,18 +157,160 @@
         .status-badge.warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
         .status-badge.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
         .status-badge.info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+        /* Sidebar styles */
+        .sidebar {
+            background-color: #2a2a2a;
+            width: 18rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 50;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0 !important;
+            }
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 60;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            background-color: #2a2a2a;
+            border: 1px solid #404040;
+        }
+
+        .nav-group-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .nav-group-content.show {
+            max-height: 500px;
+        }
+
+        .nav-group-toggle {
+            transition: transform 0.3s ease;
+        }
+
+        .nav-group-toggle.rotated {
+            transform: rotate(180deg);
+        }
+
+        /* Updated image preview styles */
+        .preview-container {
+            width: 100%;
+            margin-top: 1rem;
+            background: #333;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .preview-image {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #screenshotsContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .screenshot-preview {
+            position: relative;
+            background: #333;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .screenshot-preview img {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .screenshot-remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        #addScreenshotBtn {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #404040;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #2a2a2a;
+            transition: all 0.3s ease;
+        }
+
+        #addScreenshotBtn:hover {
+            border-color: #818cf8;
+            background: rgba(129, 140, 248, 0.1);
+        }
     </style>
 </head>
 <body class="flex h-screen">
    
-    <%- include('partials/sidebar') %>
+    <!-- Sidebar Placeholder - This would be replaced by the server with actual sidebar content -->
+    <aside class="sidebar">
+        <!-- Sidebar content would be included here by the server -->
+        <div class="p-5">
+            <div class="flex items-center space-x-3 mb-8">
+                <span class="text-xl font-bold">GameZone Admin</span>
+            </div>
+            
+            <!-- Navigation items would be rendered here -->
+            <nav class="space-y-4">
+                <!-- This is a placeholder for the actual sidebar content -->
+            </nav>
+        </div>
+    </aside>
+
     <!-- Mobile Sidebar Toggle -->
     <button class="sidebar-toggle lg:hidden">
         <i class="fas fa-bars text-gray-600"></i>
     </button>
 
     <!-- Main Content -->
-    <div class="flex-1 ml-72 p-8 main-content bg-[#1f1f1f]">
+    <div class="flex-1 ml-0 lg:ml-72 p-8 main-content bg-[#1f1f1f]">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
@@ -182,7 +324,7 @@
         <form class="space-y-6" method="POST" action="/admin/addgame" enctype="multipart/form-data">
             <!-- Basic Info Section -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Basic Information</h2>
+                <h2 class="text-xl font-semibold text-white mb-4">Basic Information</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="form-label">Game Title</label>
@@ -192,7 +334,7 @@
                     <div>
                         <label class="form-label">Price</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-400"></span>
+                            <span class="absolute left-3 top-2.5 text-gray-400">$</span>
                             <input type="number" name="price" step="0.01" class="form-input pl-10" required>
                             <p class="helper-text">Set the retail price for the game</p>
                         </div>
@@ -202,143 +344,93 @@
 
             <!-- Media Section -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Media</h2>
-                <div class="space-y-6">
-                    <!-- Game Cover Image -->
-                    <div>
-                        <label class="form-label">Game Cover Image</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="file-upload cursor-pointer">
-                                <input type="file" id="imageUpload" name="coverImage" accept="image/*" class="hidden" required>
-                                <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                                    <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                                    <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
-                                </div>
+                <h2 class="text-xl font-semibold text-white mb-4">Media</h2>
+                
+                <!-- Cover Image Section -->
+                <div class="mb-6">
+                    <label class="form-label block mb-2">Game Cover Image</label>
+                    <p class="helper-text mb-3">Upload a high-quality cover image in 16:9 aspect ratio</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <label for="coverImageUpload" class="file-upload block h-full">
+                            <input type="file" id="coverImageUpload" name="coverImage" accept="image/*" class="hidden" required>
+                            <div class="flex flex-col items-center justify-center h-full">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                             </div>
-                            <div id="previewContainer" class="hidden">
-                                <div class="card p-4">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Cover Preview</h3>
-                                    <div class="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-                                        <img src="" alt="Preview" class="w-full h-full object-cover">
-                                        <button type="button" onclick="clearPreview()" 
-                                                class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                        </label>
+                        
+                        <div id="coverPreviewContainer" class="preview-container hidden">
+                            <div class="relative">
+                                <img id="coverPreviewImage" src="" alt="Cover Preview" class="preview-image">
+                                <button type="button" onclick="clearCoverPreview()" 
+                                        class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+                                    <i class="fas fa-times"></i>
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Screenshots Section -->
+                <div class="mb-6">
+                    <label class="form-label">Screenshots</label>
+                    <p class="helper-text mb-3">Upload up to 4 screenshots in 16:9 aspect ratio</p>
+                    
+                    <div class="file-upload" id="screenshotDropzone">
+                        <input type="file" id="screenshotUpload" name="screenshots" accept="image/*" class="hidden" multiple>
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-gray-400">Drag and drop screenshots here or click to browse</p>
+                            <p class="text-sm text-gray-500 mt-2">Supported formats: JPG, PNG, WebP</p>
+                        </div>
+                    </div>
+                    
+                    <div id="screenshotsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div id="addScreenshotBtn" onclick="document.getElementById('screenshotUpload').click()">
+                            <i class="fas fa-plus text-2xl text-gray-400 mb-2"></i>
+                            <span class="text-gray-400">Add Screenshot</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Add this script section before the closing body tag -->
-            <script>
-                const imageUpload = document.getElementById('imageUpload');
-                const previewContainer = document.getElementById('previewContainer');
-                const previewImage = previewContainer.querySelector('img');
-
-                imageUpload.addEventListener('change', function() {
-                    const file = this.files[0];
-
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImage.src = e.target.result;
-                            previewContainer.classList.remove('hidden');
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-
-                function clearPreview() {
-                    imageUpload.value = '';
-                    previewImage.src = '';
-                    previewContainer.classList.add('hidden');
-                }
-
-                // Drag and drop functionality
-                const dropZone = document.querySelector('.file-upload');
-
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, preventDefaults, false);
-                });
-
-                function preventDefaults(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, highlight, false);
-                });
-
-                ['dragleave', 'drop'].forEach(eventName => {
-                    dropZone.addEventListener(eventName, unhighlight, false);
-                });
-
-                function highlight() {
-                    dropZone.classList.add('border-accent-color', 'bg-accent-color/5');
-                }
-
-                function unhighlight() {
-                    dropZone.classList.remove('border-accent-color', 'bg-accent-color/5');
-                }
-
-                dropZone.addEventListener('drop', handleDrop, false);
-
-                function handleDrop(e) {
-                    const dt = e.dataTransfer;
-                    const file = dt.files[0];
-
-                    if (file) {
-                        imageUpload.files = dt.files;
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImage.src = e.target.result;
-                            previewContainer.classList.remove('hidden');
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                }
-            </script>
-
             <!-- Details Section -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Game Details</h2>
+                <h2 class="text-xl font-semibold text-white mb-4">Game Details</h2>
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div class="relative w-full">
-  <label class="block mb-2 text-sm font-medium text-gray-700">Platform</label>
+                        <div class="relative w-full">
+                            <label class="form-label">Platform</label>
 
-  <button type="button" id="platformSelectBtn" class="w-full flex justify-between items-center bg-white border border-gray-300 text-gray-700 text-sm rounded-lg px-4 py-2 shadow-sm focus:outline-none">
-    <span id="selectedPlatform">Select Platform</span>
-    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-    </svg>
-  </button>
+                            <button type="button" id="platformSelectBtn" class="w-full flex justify-between items-center form-input">
+                                <span id="selectedPlatform">Select Platform</span>
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
 
-  <div id="platformSelectMenu" class="absolute mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg hidden z-10">
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="ps5">PlayStation 5</div>
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="xbox">Xbox Series X</div>
-    <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="pc">PC</div>
-  </div>
-
-  <input type="hidden" name="platform" id="platformInput"> 
-</div>
-
-                          
-                            <div>
-                                <label class="form-label">Category</label>
-                                <select name="category" class="form-input">
-                                    <option value="">Select Category</option>
-                                    <% category.forEach(category=>{%>
-                                     <option value="<%=category._id%>"><%=category.categoryName%></option>
-                                    <%})%>
-                                   
-                                </select>
+                            <div id="platformSelectMenu" class="absolute mt-1 w-full rounded-lg shadow-lg hidden z-10">
+                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="ps5">PlayStation 5</div>
+                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="xbox">Xbox Series X</div>
+                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="pc">PC</div>
                             </div>
+
+                            <input type="hidden" name="platform" id="platformInput"> 
+                        </div>
+                          
+                        <div>
+                            <label class="form-label">Category</label>
+                            <select name="category" class="form-input">
+                                <option value="">Select Category</option>
+                                <% if (typeof category !== 'undefined' && Array.isArray(category)) { %>
+                                    <% category.forEach(function(cat) { %>
+                                        <option value="<%= cat._id %>"><%= cat.categoryName %></option>
+                                    <% }); %>
+                                <% } %>
+                            </select>
+                        </div>
                     </div>
                     <div>
                         <label class="form-label">Description</label>
@@ -379,16 +471,182 @@
     </div>
 
     <script>
-        // Sidebar Navigation Groups
-        document.querySelectorAll('.nav-group-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const content = header.nextElementSibling;
-                const toggle = header.querySelector('.nav-group-toggle');
-                
-                content.classList.toggle('show');
-                toggle.classList.toggle('rotated');
-            });
+        const MAX_SCREENSHOTS = 4;
+        let screenshotCount = 0;
+
+        // Handle cover image upload
+        document.getElementById('coverImageUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select an image file');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImage = document.getElementById('coverPreviewImage');
+                    previewImage.src = e.target.result;
+                    document.getElementById('coverPreviewContainer').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
         });
+
+        // Handle screenshot upload
+        document.getElementById('screenshotUpload').addEventListener('change', function(event) {
+            const files = Array.from(event.target.files);
+            const remainingSlots = MAX_SCREENSHOTS - screenshotCount;
+            
+            if (files.length > remainingSlots) {
+                alert(`You can only add ${remainingSlots} more screenshot${remainingSlots === 1 ? '' : 's'}`);
+                return;
+            }
+
+            files.forEach((file) => {
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select only image files');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const screenshotId = `screenshot-${Date.now()}`;
+                    const previewElement = document.createElement('div');
+                    previewElement.className = 'screenshot-preview';
+                    previewElement.dataset.id = screenshotId;
+                    
+                    previewElement.innerHTML = `
+                        <img src="${e.target.result}" alt="Screenshot" class="preview-image">
+                        <button type="button" class="screenshot-remove-btn" data-id="${screenshotId}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    // Create hidden input for the file
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'file';
+                    hiddenInput.name = 'screenshots';
+                    hiddenInput.classList.add('hidden');
+                    hiddenInput.dataset.id = screenshotId;
+                    
+                    // Store the original file
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    hiddenInput.files = dataTransfer.files;
+                    
+                    previewElement.appendChild(hiddenInput);
+                    
+                    // Insert before the add button
+                    const addButton = document.getElementById('addScreenshotBtn');
+                    document.getElementById('screenshotsContainer').insertBefore(previewElement, addButton);
+                    
+                    screenshotCount++;
+                    if (screenshotCount >= MAX_SCREENSHOTS) {
+                        addButton.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Clear the input to allow selecting the same file again
+            event.target.value = '';
+        });
+
+        // Handle screenshot removal
+        document.getElementById('screenshotsContainer').addEventListener('click', function(e) {
+            const removeBtn = e.target.closest('.screenshot-remove-btn');
+            if (removeBtn) {
+                const screenshotId = removeBtn.dataset.id;
+                const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
+                
+                if (previewElement) {
+                    previewElement.remove();
+                    screenshotCount--;
+                    
+                    if (screenshotCount < MAX_SCREENSHOTS) {
+                        document.getElementById('addScreenshotBtn').style.display = '';
+                    }
+                }
+            }
+        });
+
+        // Clear cover image
+        function clearCoverPreview() {
+            document.getElementById('coverPreviewImage').src = '';
+            document.getElementById('coverPreviewContainer').classList.add('hidden');
+            document.getElementById('coverImageUpload').value = '';
+        }
+
+        // Handle drag and drop
+        function setupDragAndDrop(dropArea, fileInput) {
+            if (!dropArea) return;
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.classList.add('border-blue-500');
+                }, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, () => {
+                    dropArea.classList.remove('border-blue-500');
+                }, false);
+            });
+            
+            dropArea.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    fileInput.dispatchEvent(new Event('change'));
+                }
+            }, false);
+        }
+
+        // Initialize drag and drop
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDragAndDrop(document.querySelector('.file-upload'), document.getElementById('coverImageUpload'));
+            setupDragAndDrop(document.getElementById('addScreenshotBtn'), document.getElementById('screenshotUpload'));
+        });
+
+        function initPlatformDropdown() {
+            const platformSelectBtn = document.getElementById('platformSelectBtn');
+            const platformSelectMenu = document.getElementById('platformSelectMenu');
+            const platformInput = document.getElementById('platformInput');
+            const selectedPlatform = document.getElementById('selectedPlatform');
+
+            platformSelectBtn.addEventListener('click', () => {
+                platformSelectMenu.classList.toggle('hidden');
+            });
+
+            platformSelectMenu.querySelectorAll('div').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    const value = e.target.getAttribute('data-value');
+                    const text = e.target.textContent;
+                    selectedPlatform.textContent = text;
+                    platformInput.value = value;
+                    platformSelectMenu.classList.add('hidden');
+                });
+            });
+
+            // Close dropdown if clicked outside
+            document.addEventListener('click', (e) => {
+                if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
+                    platformSelectMenu.classList.add('hidden');
+                }
+            });
+        }
 
         // Mobile Sidebar Toggle
         const sidebarToggle = document.querySelector('.sidebar-toggle');
@@ -400,182 +658,28 @@
 
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 1024) {
                 if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
                     sidebar.classList.remove('show');
                 }
             }
         });
 
-        // Image Upload Preview
-        document.querySelectorAll('input[type="file"]').forEach(input => {
-            const preview = input.parentElement;
-            
-            input.addEventListener('change', e => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        preview.style.backgroundImage = `url(${e.target.result})`;
-                        preview.querySelector('div').style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            preview.addEventListener('click', () => input.click());
-            
-            preview.addEventListener('dragover', e => {
-                e.preventDefault();
-                preview.classList.add('border-indigo-500');
-            });
-            
-            preview.addEventListener('dragleave', e => {
-                e.preventDefault();
-                preview.classList.remove('border-indigo-500');
-            });
-            
-            preview.addEventListener('drop', e => {
-                e.preventDefault();
-                preview.classList.remove('border-indigo-500');
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                    input.files = e.dataTransfer.files;
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        preview.style.backgroundImage = `url(${e.target.result})`;
-                        preview.querySelector('div').style.display = 'none';
-                    };
-                    reader.readAsDataURL(file);
-                }
+        // Initialize nav group headers if they exist
+        document.addEventListener('DOMContentLoaded', () => {
+            const navGroupHeaders = document.querySelectorAll('.nav-group-header');
+            navGroupHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const toggle = header.querySelector('.nav-group-toggle');
+                    
+                    if (content && toggle) {
+                        content.classList.toggle('show');
+                        toggle.classList.toggle('rotated');
+                    }
+                });
             });
         });
-    </script>
-
-    <!-- Add this script section at the end of the body -->
-    <script>
-        function previewCoverImage(input) {
-            const preview = document.getElementById('coverImagePreview');
-            const previewImg = preview.querySelector('img');
-            const gameTitle = document.querySelector('input[name="title"]').value || 'Game Title';
-            const gameCategory = document.querySelector('select[name="category"]').value || 'Category';
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.classList.remove('hidden');
-                    
-                    // Update preview title and category
-                    preview.querySelector('h4').textContent = gameTitle;
-                    preview.querySelector('p').textContent = gameCategory;
-                }
-                
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-    
-        function removeCoverImage() {
-            const input = document.getElementById('coverImage');
-            const preview = document.getElementById('coverImagePreview');
-            
-            input.value = '';
-            preview.classList.add('hidden');
-            preview.querySelector('img').src = '';
-        }
-    
-        function previewScreenshots(input) {
-            const preview = document.getElementById('screenshotsPreview');
-            const previewContainer = preview.querySelector('.grid');
-            previewContainer.innerHTML = ''; // Clear existing previews
-            
-            if (input.files) {
-                const files = Array.from(input.files).slice(0, 5); // Limit to 5 files
-                
-                files.forEach((file, index) => {
-                    const reader = new FileReader();
-                    const previewItem = document.createElement('div');
-                    previewItem.className = 'relative group';
-                    
-                    reader.onload = function(e) {
-                        previewItem.innerHTML = `
-                            <div class="card p-4">
-                                <div class="relative aspect-video rounded-lg overflow-hidden shadow-lg">
-                                    <img src="${e.target.result}" alt="Screenshot ${index + 1}" 
-                                         class="w-full h-full object-cover">
-                                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button type="button" onclick="removeScreenshot(${index})" 
-                                                class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full 
-                                                       hover:bg-red-600 transition-colors">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="mt-2 flex items-center justify-between">
-                                    <span class="text-sm text-gray-500">Screenshot ${index + 1}</span>
-                                    <span class="text-xs text-gray-400">${formatFileSize(file.size)}</span>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    previewContainer.appendChild(previewItem);
-                    reader.readAsDataURL(file);
-                });
-            }
-        }
-    
-        function removeScreenshot(index) {
-            const input = document.getElementById('screenshots');
-            const preview = document.getElementById('screenshotsPreview');
-            
-            // Create a new FileList without the removed screenshot
-            const dt = new DataTransfer();
-            const files = Array.from(input.files);
-            
-            files.forEach((file, i) => {
-                if (i !== index) dt.items.add(file);
-            });
-            
-            input.files = dt.files;
-            
-            // Remove the preview
-            preview.querySelector('.grid').children[index].remove();
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            
-        }
-
-        const selectBtn = document.getElementById('platformSelectBtn');
-  const selectMenu = document.getElementById('platformSelectMenu');
-  const platformInput = document.getElementById('platformInput');
-  const selectedText = document.getElementById('selectedPlatform');
-
-  selectBtn.addEventListener('click', () => {
-    selectMenu.classList.toggle('hidden');
-  });
-
-  selectMenu.querySelectorAll('div[data-value]').forEach(item => {
-    item.addEventListener('click', () => {
-      const value = item.getAttribute('data-value');
-      platformInput.value = value;
-      selectedText.textContent = item.textContent;
-      selectMenu.classList.add('hidden');
-    });
-  });
-
-  window.addEventListener('click', (e) => {
-    if (!selectBtn.contains(e.target) && !selectMenu.contains(e.target)) {
-      selectMenu.classList.add('hidden');
-    }
-  });
     </script>
 </body>
 </html>

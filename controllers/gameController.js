@@ -1,7 +1,22 @@
 import Game from '../models/gameModel.js';
 import Category from '../models/CategoryModel.js';
+import cloudinary from '../config/cloudinaryConfig.js';
 
-// Add this new function to your existing controller
+
+
+
+const uploadToCloudinary = (fileBuffer)=>{
+    return new Promise((res,rej)=>{
+        const stream = cloudinary.uploader.upload_stream({folder:'games/screenshots'},(error,result)=>{
+            if(error) rej(error);
+            else res(result);
+        });
+        stream.end(fileBuffer);
+    })
+  };
+
+
+
 export const getAllGames = async (req, res) => {
     try {
         // const category = await Category.find();
@@ -14,9 +29,16 @@ export const getAllGames = async (req, res) => {
     }
 };
 
+
+// export const uploadImages = upload.fields([
+//     {name:'coverImage',maxCount:1},
+//     {naem:'Screenshots',maxCount:4},
+// ])
+
 export const addGame =async (req, res) => {
   try {
     const category = await Category.find()
+    console.log('successfully loaded')
     res.render('admin/addgame',{category}); // Render the form to add a game
   } catch (error) {
     console.error('Error:', error);
@@ -24,46 +46,92 @@ export const addGame =async (req, res) => {
   }
 };
 
-export const postAdd = async (req, res) => {
-    try {
-        const { title, price, platform, description, releaseDate, stockQuantity, status, category } = req.body;
-        const categories = await Category.find();
 
-        if (!title || !price || !platform || !description || !releaseDate || !stockQuantity || !status) {
+
+
+
+export const postGameDetails = async (req, res) => {
+    try {
+        console.log('testing');
+        const { title, price, platform, description, releaseDate, stockQuantity, status, category } = req.body;
+        console.log('process');
+        const categories = await Category.find();
+        console.log('process end');
+
+        if (!title || !price || !description || !releaseDate || !stockQuantity || !status) {
+            console.log('Error caught');
             return res.render('admin/addgame', { 
                 category: categories, 
                 err: 'Please fill all required fields' 
             });
         }
 
-        const coverImage = req.files?.coverImage?.[0];
-        const screenshots = req.files?.screenshots || [];
+        // Validate files
+        if (!req.files || !req.files.coverImage || !req.files.coverImage[0]) {
+            console.log('Error in cover image');
+            return res.render('admin/addgame', {
+                category: categories,
+                err: 'Cover image is required'
+            });
+        }
 
-        const newGame = new Game({
+        // Upload cover image
+        console.log('start');
+        const coverImageUpload = await uploadToCloudinary(req.files.coverImage[0].buffer, 'games/coverImages');
+        console.log('end');
+
+        // Upload screenshots if provided
+        let screenshotsUrls = [];
+        if (req.files.screenshots && req.files.screenshots.length > 0) {
+            console.log('Uploading screenshots...');
+            screenshotsUrls = await Promise.all(
+                req.files.screenshots.map(async (screenshot) => {
+                    const uploadedScreenshot = await uploadToCloudinary(screenshot.buffer, 'games/screenshots');
+                    return uploadedScreenshot.secure_url;
+                })
+            );
+        }
+        console.log('Screenshots uploaded:', screenshotsUrls);
+
+        console.log({
             title,
-            price: parseFloat(price),
-            platforms: platform.split(','), // Handle multiple platforms
+            price,
+            platforms: [platform],
             description,
-            releaseDate: new Date(releaseDate),
-            stockQuantity: parseInt(stockQuantity),
+            releaseDate,
+            stockQuantity,
             status,
             category,
             media: {
-                coverImage: coverImage ? `/uploads/games/${coverImage.filename}` : '',
-                screenshots: screenshots.map(file => `/uploads/games/${file.filename}`)
+                coverImage: coverImageUpload?.secure_url,
+                screenshots: screenshotsUrls
+            }
+        });
+
+        const newGame = new Game({
+            title,
+            price,
+            platforms: [platform], // Convert single platform to array
+            description,
+            releaseDate,
+            stockQuantity,
+            status,
+            category,
+            media: {
+                coverImage: coverImageUpload.secure_url,
+                screenshots: screenshotsUrls
             }
         });
 
         await newGame.save();
-        res.redirect('/admin/games');
+        console.log('Game added successfully:', newGame);
+        res.redirect('/admin/games'); // Redirect to games list after successful creation
 
-    } catch (err) {
-        console.error('Error adding game:', err);
-        const categories = await Category.find();
-        res.render('admin/addgame', { 
-            category: categories, 
-            err: 'Internal Server Error. Please try again later' 
+    } catch (error) {
+        console.error('Error adding game:', error);
+        res.render('admin/addgame', {
+            category: await Category.find(),
+            err: 'Failed to add game. Please try again.'
         });
     }
 };
- 

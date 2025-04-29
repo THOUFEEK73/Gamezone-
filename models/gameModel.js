@@ -18,12 +18,14 @@ const gameSchema = new mongoose.Schema({
         },
         screenshots: [{
             type: String,
-            required: true
+            required: true,
+            default:[],
         }]
     },
     platforms: {
         type: [String],
-        required: true
+        required: true,
+        defualt:[],
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
@@ -53,7 +55,7 @@ const gameSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'GameSeries'
     }
-});
+},{timestamps:true});
 
 const Game = mongoose.model('Game', gameSchema);
 export default Game;
