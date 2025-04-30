@@ -1,12 +1,13 @@
 import express from 'express';
-import {getDetailPage} from '../controllers/gameDetail.js'
+import {showAllGames,getDetailPage} from '../controllers/gameDetail.js'
 import isAthenticated from '../middleware/auth.js';
-const gameDetailRoutes = express.Router();
+const userRoutes = express.Router();
 
 
 
 
+userRoutes.get('/allgames',isAthenticated,showAllGames)
+userRoutes.get('/gamedetail/:id',isAthenticated,getDetailPage);
 
-gameDetailRoutes.get('/gamedetail/:id',isAthenticated,getDetailPage);
 
-export default gameDetailRoutes
+export default userRoutes

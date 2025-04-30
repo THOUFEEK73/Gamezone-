@@ -43,23 +43,32 @@
       <!-- Price -->
       <div class="mb-6">
         <h3 class="font-medium text-gray-700 mb-1">Price</h3>
-        <input type="range" min="0" max="100" value="50" class="w-full">
-        <p class="text-xs text-gray-500 mt-1">Up to $50</p>
+        <input id="price-range" type="range" min="0" max="20000" value="20000" class="w-full">
+        <p id="price-label" class="text-xs text-gray-500 mt-1">Up to ₹20,000</p>
       </div>
 
       <!-- Genre Dropdown -->
       <div class="mb-4">
-        <button onclick="toggleDropdown('genreDropdown')" class="flex justify-between items-center w-full font-medium text-gray-700">
+        <button onclick="toggleDropdown('genre-filters')" class="flex justify-between items-center w-full font-medium text-gray-700">
           Genre
           <svg class="w-4 h-4 ml-2 transition-transform" id="arrowGenre" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-        <div id="genreDropdown" class="mt-2 pl-2 space-y-1 text-sm hidden">
-          <label><input type="checkbox" class="mr-2">Action</label>
-          <label><input type="checkbox" class="mr-2">Adventure</label>
-          <label><input type="checkbox" class="mr-2">RPG</label>
-          <label><input type="checkbox" class="mr-2">Shooter</label>
+        <div id="genre-filters"   class="mt-3 pl-3 space-y-3 text-sm bg-white p-4 rounded-md shadow-sm hidden">
+          
+        
+          
+          <% category.forEach(category => { %>
+            <div class="block">
+              <input type="checkbox" id="action" class="genre-checkbox" value="<%=category._id%>" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+              <label for="action" class="ml-2 text-gray-700"><%=category.categoryName%></label>
+            </div>
+          <% }) %>
+          
+        
+          
+         
         </div>
       </div>
 
@@ -71,39 +80,75 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
           </svg>
         </button>
-        <div id="companyDropdown" class="mt-2 pl-2 space-y-1 text-sm hidden">
-          <label><input type="checkbox" class="mr-2">Sony</label>
-          <label><input type="checkbox" class="mr-2">Microsoft</label>
-          <label><input type="checkbox" class="mr-2">Nintendo</label>
-          <label><input type="checkbox" class="mr-2">Ubisoft</label>
+        <div id="companyDropdown" class="mt-3 pl-3 space-y-3 text-sm bg-white p-4 rounded-md shadow-sm hidden">
+          <div class="block">
+            <input type="checkbox" id="sony" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+            <label for="sony" class="ml-2 text-gray-700">Sony</label>
+          </div>
+          
+          <div class="block">
+            <input type="checkbox" id="microsoft" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+            <label for="microsoft" class="ml-2 text-gray-700">Microsoft</label>
+          </div>
+          
+          <div class="block">
+            <input type="checkbox" id="nintendo" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+            <label for="nintendo" class="ml-2 text-gray-700">Nintendo</label>
+          </div>
+          
+          <div class="block">
+            <input type="checkbox" id="ubisoft" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
+            <label for="ubisoft" class="ml-2 text-gray-700">Ubisoft</label>
+          </div>
         </div>
       </div>
     </aside>
 
     <!-- Product Grid -->
     <main class="flex-1 p-6">
-      <h2 class="text-2xl font-bold mb-6">All Games</h2>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <!-- Game Card -->
-        <div class="bg-white border rounded-lg shadow-md hover:shadow-xl transition duration-300 overflow-hidden">
-          <img src="https://via.placeholder.com/300x180" alt="Game Cover" class="w-full h-40 object-cover">
-          <div class="p-4">
-            <h3 class="text-lg font-semibold text-gray-800 truncate">Game Title</h3>
-            <p class="text-sm text-gray-500">Action | Sony</p>
-            <div class="mt-3 flex justify-between items-center">
-              <span class="text-indigo-600 font-bold">$49.99</span>
-              <button class="text-sm px-4 py-1.5 border border-indigo-500 text-indigo-500 rounded hover:bg-indigo-500 hover:text-white transition">
-                Add to Cart
-              </button>
-            </div>
+      <section class="py-12">
+        <div class="container mx-auto px-6">
+         
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <% games.forEach(game => { %>
+              <div class="text-center">
+                <!-- Game Card -->
+                <a href="/gamedetail/<%= game._id %>" class="block bg-white rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.03] transition duration-300 overflow-hidden">
+                  <div class="rounded-2x1 overflow-hidden">
+                    <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" class="w-full h-auto object-contain bg-white p-2">
+                  </div>
+                </a>
+          
+                <!-- Game Title -->
+                <h3 class="mt-2 text-sm font-semibold text-gray-900"><%= game.title %></h3>
+          
+                <!-- Game Type -->
+                <% if (game.type === 'trial') { %>
+                  <p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>
+                <% } else { %>
+                  <p class="text-xs text-gray-400 mt-1">Demo Tag</p>
+                <% } %>
+          
+                <!-- Pricing -->
+                <div class="mt-1">
+                  <% if (game.discountPrice) { %>
+                    <span class="text-sm text-red-600 font-semibold">Rs <%= game.discountPrice %></span>
+                    <span class="text-xs text-gray-400 line-through ml-1">Rs <%= game.price %></span>
+                  <% } else if (game.price === 0) { %>
+                    <span class="text-sm text-green-600 font-semibold">Free</span>
+                  <% } else { %>
+                    <span class="text-sm text-gray-800 font-semibold">Rs <%= game.price %></span>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
           </div>
+          
+          
+          
+          
         </div>
-
-        
-
-        <!-- Repeat for more games... -->
-      </div>
+      </section>
     </main>
     
   </div>
@@ -129,6 +174,7 @@
     </div>
 
     <!-- Categories -->
+    
     <div>
       <h3 class="text-lg font-semibold text-white mb-3">Categories</h3>
       <ul class="space-y-2 text-sm">
@@ -154,6 +200,84 @@
     © <%= new Date().getFullYear() %> GameZone. All rights reserved.
   </div>
 </footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const priceRange = document.getElementById('price-range');
+    const priceLabel = document.getElementById('price-label');
+    const genreCheckboxes = document.querySelectorAll('.genre-checkbox');
+    const gamesContainer = document.querySelector('.grid'); // <-- Add this line
+
+    const fetchFilteredGames = async () => {
+      const selectedGenres = Array.from(genreCheckboxes)
+        .filter(checkbox => checkbox.checked)
+        .map(checkbox => checkbox.value);
+
+      const maxPrice = priceRange.value;
+
+      try {
+        const response = await fetch('/filter-games', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            genres: selectedGenres,
+            maxPrice: maxPrice
+          })
+        });
+
+        const data = await response.json();
+        gamesContainer.innerHTML = '';
+
+        if (data.games.length > 0) {
+          data.games.forEach(game => {
+            const gameCard = `
+              <div class="text-center">
+                <a href="/gamedetail/${game._id}" class="block bg-white rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.03] transition duration-300 overflow-hidden">
+                  <div class="rounded-2x1 overflow-hidden">
+                    <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain bg-white p-2">
+                  </div>
+                </a>
+                <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
+                ${game.type === 'trial'
+                  ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
+                  : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
+                }
+                <div class="mt-1">
+                  ${
+                    game.discountPrice
+                      ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
+                         <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
+                      : game.price === 0
+                      ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
+                      : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
+                  }
+                </div>
+              </div>
+            `;
+            gamesContainer.innerHTML += gameCard;
+          });
+        } else {
+          gamesContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center">No games found matching your filters.</p>';
+        }
+      } catch (error) {
+        console.error('Error fetching filtered games:', error);
+      }
+    };
+
+    // Listen for price range changes
+    priceRange.addEventListener('input', () => {
+      priceLabel.textContent = `Up to ₹${priceRange.value}`;
+      fetchFilteredGames();
+    });
+
+    // Listen for genre checkbox changes
+    genreCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', fetchFilteredGames);
+    });
+  });
+</script>
 
 </body>
 </html>

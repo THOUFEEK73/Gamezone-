@@ -55,6 +55,10 @@ adminRoutes.post("/category/:Id", updateCategoryStatus);
 // Platform management
 adminRoutes.get("/platform", getPlatFormPage);
 
+// adminRotues.get('/allgames',isAthenticated,showAllGames)
+// adminRoutes.get('/gamedetail/:id',isAthenticated,getDetailPage);
+
+
 // Game management
 adminRoutes.get("/games", getAllGames);
 adminRoutes.get("/addgame", addGame);

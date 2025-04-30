@@ -27,16 +27,16 @@ export const getHomePage = async (req, res) => {
   }
 };
 
-export const getAllGames = async(req,res)=>{
-  try{
-      if(!req.session.userId &&!req.isAuthenticated()){
-        return res.redirect('/login');
-      }
-     const games = await Game.find();
-     res.render('user/allgames',{games});
-  }catch(error){
-    console.error('Error fetching games:',error);
-    res.status(500).send('Internal Server Error');
-  }
-}
+// export const getAllGames = async(req,res)=>{
+//   try{
+//       if(!req.session.userId &&!req.isAuthenticated()){
+//         return res.redirect('/login');
+//       }
+//      const games = await Game.find();
+//      res.render('user/allgames',{games});
+//   }catch(error){
+//     console.error('Error fetching games:',error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// }
 

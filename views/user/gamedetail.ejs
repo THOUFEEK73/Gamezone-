@@ -337,30 +337,36 @@
         <!-- Related Games Section -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[10px] p-[10px] bg-gray-50">
             <% if (relatedGames && relatedGames.length > 0) { %>
-                <% relatedGames.forEach(game => { %>
-                    <a href="/gamedetail/<%= game._id %>" class="w-64 overflow-hidden">
-                        <div class="w-64 overflow-hidden bg-white rounded-md shadow-sm hover:shadow-md transition-shadow duration-300">
-                            <!-- Game Image -->
-                            <img src="<%= game.media.coverImage %>" 
-                                 alt="<%= game.title %>" 
-                                 class="w-full h-auto object-contain">
-        
-                            <!-- Game Title -->
-                            <div class="mt-2 px-4 pb-2">
-                                <h3 class="text-lg font-bold text-black truncate"><%= game.title %></h3>
-                            </div>
-        
-                            <!-- Add to Cart Button -->
-                            <div class="px-4 pb-4">
-                            
-                            </div>
-                        </div>
-                    </a>
-                <% }); %>
+              <% relatedGames.forEach(game => { %>
+                <a href="/gamedetail/<%= game._id %>" class="w-64 overflow-hidden">
+                  <div class="w-64 overflow-hidden bg-white rounded-md shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <!-- Game Image -->
+                    <img src="<%= game.media.coverImage %>" 
+                         alt="<%= game.title %>" 
+                         class="w-full h-auto object-contain">
+          
+                    <!-- Game Title and Price -->
+                    <div class="mt-2 px-4 pb-2">
+                      <h3 class="text-lg font-bold text-black truncate"><%= game.title %></h3>
+                      <p class="text-green-600 font-semibold mt-1">$<%= game.price %></p>
+                    </div>
+          
+                    <!-- Add to Cart Button -->
+                    <div class="px-4 pb-4">
+                      <form action="/add-to-cart/<%= game._id %>" method="POST">
+                        <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                          Add to Cart
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </a>
+              <% }); %>
             <% } else { %>
-                <p class="text-gray-600 col-span-full text-center">No related games found.</p>
+              <p class="text-gray-600 col-span-full text-center">No related games found.</p>
             <% } %>
-        </div>
+          </div>
+          
         
         
     </div>

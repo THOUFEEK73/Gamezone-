@@ -1,6 +1,10 @@
 import Game from "../models/gameModel.js";
-import Category from "../models/CategoryModel.js";
 
+
+
+
+
+  
 
 export const getDetailPage = async(req ,res)=>{
     try{
@@ -14,7 +18,7 @@ export const getDetailPage = async(req ,res)=>{
         }
         const   relatedGames = await Game.find({
             category: game.category._id,
-            _id: { $ne: game._id } // Exclude the current game
+            _id: { $ne: game._id } 
         }).limit(4);
 
          res.render('user/gamedetail',{game,relatedGames})
