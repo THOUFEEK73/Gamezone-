@@ -328,16 +328,35 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="form-label">Game Title</label>
-                        <input type="text" name="title" class="form-input" required>
+                        <input type="text" name="title" class="form-input" value="<%=data.title%>" >
                         <p class="helper-text">Enter the official title of the game</p>
+                       
+                        <% if (typeof errors !== 'undefined' && errors.title) { %>
+                            <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                              <%= errors.title %>
+                            </div>
+                          <% } %>
+                          
+                          
+                        
+                          
+                          
                     </div>
                     <div>
                         <label class="form-label">Price</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">₹</span>
-                            <input type="number" name="price" step="0.01" class="form-input pl-10" required>
+                            <input type="number" name="price" step="0.01" class="form-input pl-10" value="<%=data.price%>">
                             <p class="helper-text">Set the retail price for the game</p>
                         </div>
+                        
+                        <% if (typeof errors !== 'undefined' && errors.price) { %>
+                            <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                              <%= errors.price %>
+                            </div>
+                          <% } %>
+                          
+                       
                         
                     </div>
                 </div>
@@ -354,7 +373,7 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <label for="coverImageUpload" class="file-upload block h-full">
-                            <input type="file" id="coverImageUpload" name="coverImage" accept="image/*" class="hidden" required>
+                            <input type="file" id="coverImageUpload" name="coverImage" accept="image/*" class="hidden" >
                             <div class="flex flex-col items-center justify-center h-full">
                                 <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
                                 <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
@@ -373,7 +392,9 @@
                         </div>
                     </div>
                 </div>
-                
+                <!-- <% if (typeof errors !== 'undefined' && errors.coverImage) { %>
+                    <span class="error" style="color:red"><%= errors.coverImage %></span>
+                  <% } %> -->
                 <!-- Screenshots Section -->
                 <div class="mb-6">
                     <label class="form-label">Screenshots</label>
@@ -424,27 +445,50 @@
                         <div>
                             <label class="form-label">Category</label>
                             <select name="category" class="form-input">
-                                <option value="">Select Category</option>
+                                <option value="" disabled selected>Select Category</option>
                                 <% if (typeof category !== 'undefined' && Array.isArray(category)) { %>
                                     <% category.forEach(function(cat) { %>
                                         <option value="<%= cat._id %>"><%= cat.categoryName %></option>
                                     <% }); %>
                                 <% } %>
                             </select>
+                            
+                            <% if (typeof errors !== 'undefined' && errors.category) { %>
+                                <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                  <%= errors.category %>
+                                </div>
+                              <% } %>
+                              
                         </div>
                     </div>
                     <div>
                         <label class="form-label">Description</label>
-                        <textarea name="description" rows="4" class="form-input"></textarea>
+                        <textarea name="description" rows="4" class="form-input">  <%= data ? data.description : game.description %></textarea>
                     </div>
+                    <% if (typeof errors !== 'undefined' && errors.description) { %>
+                        <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                          <%= errors.description %>
+                        </div>
+                      <% } %>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label class="form-label">Release Date</label>
                             <input type="date" name="releaseDate" class="form-input">
+                            <% if (typeof errors !== 'undefined' && errors.releaseDate) { %>
+                                <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                  <%= errors.releaseDate %>
+                                </div>
+                              <% } %>
                         </div>
+                       
                         <div>
                             <label class="form-label">Stock Quantity</label>
                             <input type="number" name="stockQuantity" class="form-input">
+                            <% if (typeof errors !== 'undefined' && errors.stockQuantity) { %>
+                                <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                  <%= errors.stockQuantity %>
+                                </div>
+                              <% } %>
                         </div>
                         <div>
                             <label class="form-label">Status</label>
@@ -453,6 +497,7 @@
                                 <option value="comingsoon">Coming Soon</option>
                                 <option value="outofstock">Out of Stock</option>
                             </select>
+                         
                         </div>
                     </div>
                 </div>

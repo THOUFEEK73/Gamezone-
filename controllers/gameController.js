@@ -38,8 +38,10 @@ export const getAllGames = async (req, res) => {
 export const addGame =async (req, res) => {
   try {
     const category = await Category.find()
-    console.log('successfully loaded')
-    res.render('admin/addgame',{category}); // Render the form to add a game
+
+    // res.render('admin/addgame',{category}); // Render the form to add a game
+    res.render('admin/addgame', { errors: {}, data: {}, category });
+
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Failed to render add game page' });
@@ -52,27 +54,52 @@ export const addGame =async (req, res) => {
 
 export const postGameDetails = async (req, res) => {
     try {
-        console.log('testing');
+        
         const { title, price, platform, description, releaseDate, stockQuantity, status, category } = req.body;
-        console.log('process');
+        req.session.formData = { title, price, description, releaseDate, stockQuantity, status, category };
+       
         const categories = await Category.find();
         console.log('process end');
+       const game = await Game.findOne();
+    
+        const errors ={};
 
-        if (!title || !price || !description || !releaseDate || !stockQuantity || !status) {
-            console.log('Error caught');
-            return res.render('admin/addgame', { 
-                category: categories, 
-                err: 'Please fill all required fields' 
-            });
+        if(!title || title.trim()===""){
+            errors.title = 'game title is required';
+            
+        }
+        if(!price || price.trim()===""){
+            errors.price = 'game price is required';
+        }
+         if(!description || description.trim()===""){
+            errors.description = 'game description is required';
+        }
+         if(!releaseDate || releaseDate.trim()===""){
+            errors.releaseDate = 'game release date is required';
+        }
+         if(!stockQuantity || stockQuantity.trim()===""){
+           errors.stockQuantity = 'game stock quantity is required';
+        }
+         if(!status || status.trim()===""){
+            errors.status = 'game status is required';
+        }
+         if(!category  || category.trim()===""){
+           errors.category = 'game category is required';
+        }
+
+        if(Object.keys(errors).length>0){
+            return res.render('admin/addgame',{errors,game,category:categories,data:req.session.formData || {}});
         }
 
         // Validate files
         if (!req.files || !req.files.coverImage || !req.files.coverImage[0]) {
             console.log('Error in cover image');
+            errors.coverImage = 'Cover image is required';
             return res.render('admin/addgame', {
                 category: categories,
-                err: 'Cover image is required'
+                errors: 'Cover image is required'
             });
+            
         }
 
         // Upload cover image
