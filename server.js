@@ -49,17 +49,12 @@ app.set("views", "views");
 // Routes
 app.use('/admin', adminRoutes);
 app.use("/", authRoutes);
-// app.use('/',userRoutes);
-// Mount admin routes 
 
 
 
 
 
-// app.use('/',addGamesRouts);
 
-// app.use('/',userManageRoutes);
-// app.use('/',categoriesRoutes);
 
 
 // Connect to MongoDB

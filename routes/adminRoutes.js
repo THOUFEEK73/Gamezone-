@@ -23,6 +23,7 @@ import {
 import isAdminAuthenticated from "../middleware/adminAuth.js";
 import upload from '../middleware/multerMiddleWare.js';
 import Category from "../models/CategoryModel.js";
+import {editGamePage,postEditGame} from "../controllers/editGameController.js"
 
 const adminRoutes = express.Router();
 
@@ -52,6 +53,34 @@ adminRoutes.post("/category/aa", postAllCategories);
 adminRoutes.post('/category/update/:id', updateCategory);
 adminRoutes.post("/category/:Id", updateCategoryStatus);
 
+adminRoutes.get('/editgame/:id',editGamePage);
+// adminRoutes.post('/editgame/:id',postEditGame);
+adminRoutes.post("/editgame/:id",
+  async (req, res, next) => {
+    upload(req, res, async function(err) {
+      if (err instanceof multer.MulterError) {
+        // A Multer error occurred when uploading
+        console.error('Multer error:', err);
+        const categories = await Category.find(); // Fetch categories again
+        return res.render('admin/addgame', {
+          category: categories,
+          err: 'Error uploading files: ' + err.message
+        });
+      } else if (err) {
+        // An unknown error occurred
+        console.error('Unknown error during file upload:', err);
+        const categories = await Category.find(); // Fetch categories again
+        return res.render('admin/addgame', {
+          category: categories,
+          err: 'An error occurred while uploading files'
+        });
+      }
+      // Everything went fine
+      next();
+    });
+  },
+  postEditGame
+);
 // Platform management
 adminRoutes.get("/platform", getPlatFormPage);
 
