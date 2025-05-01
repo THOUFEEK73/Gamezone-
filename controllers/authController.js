@@ -229,6 +229,15 @@ export const postLogin = async (req, res) => {
   }
 };
 
+export const forgotPasswordPage = (req,res)=>{
+  if(req.session.userId){
+    return res.redirect('/home');
+  }
+  const error = req.session.forgotPasswordError || null;
+  req.session.forgotPasswordError = null;
+  return res.render("user/forgot-password",{err:error});
+}
+
 
 // Google Auth Trigger
 export const googleAuth = (req, res, next) => {
@@ -271,43 +280,38 @@ export const googleCallback = (req, res, next) => {
             return res.redirect('/login?error=account_blocked');
         }
 
-    req.logIn(user, async (err) => {
-      if (err) {
-        console.error('Login error:', err);
-        return res.redirect('/login?error=login_failed');
-      }
+        try {
+            // Log in the user
+            await new Promise((resolve, reject) => {
+                req.logIn(user, (err) => {
+                    if (err) reject(err);
+                    resolve();
+                });
+            });
 
-      try {
-        console.log('User before session save:', user);
-        req.session.userId = user._id;
-        req.session.user = {
-          name: user.name,
-          email: user.email,
-        };
-      
+            // Set session variables
+            req.session.userId = user._id;
+            req.session.user = {
+                name: user.name,
+                email: user.email,
+            };
 
-        await new Promise((resolve, reject) => {
-          req.session.save((err) => {
-            if (err) reject(err);
-            resolve();
-          });
-        });
+            // Save session explicitly
+            await new Promise((resolve, reject) => {
+                req.session.save((err) => {
+                    if (err) reject(err);
+                    resolve();
+                });
+            });
 
-        // In your successful authentication handlers (postLogin, verifyOTP, googleCallback)
-        // Add this header before redirecting
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
-        res.set('Expires', '0');
-        
-       return res.redirect('/home');
+            console.log('Session after save:', req.session);
+            return res.redirect('/home');
 
-      } catch (error) {
-        console.error('Session save error:', error);
-        res.redirect('/login?error=session_error');
-      }
-    });
-
-  })(req, res, next);
+        } catch (error) {
+            console.error('Session/login error:', error);
+            return res.redirect('/login?error=session_error');
+        }
+    })(req, res, next);
 };
 
 // Logout (Passport)

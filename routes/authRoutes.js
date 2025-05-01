@@ -1,7 +1,7 @@
 
 import express from "express";
 
-import { getSignUpPage, getLoginPage, postSignUp, postLogin, verifyOTP, resendOTP, logout,googleAuth,googleCallback,logoutUser,authStatus } from "../controllers/authController.js";
+import { getSignUpPage, getLoginPage, postSignUp, postLogin, forgotPasswordPage,verifyOTP, resendOTP, logout,googleAuth,googleCallback,logoutUser,authStatus } from "../controllers/authController.js";
 import  isAuthenticated  from "../middleware/auth.js"
  
 import { getHomePage } from "../controllers/userController.js";
@@ -17,6 +17,7 @@ router.get("/signup", getSignUpPage);
 router.post("/signup", postSignUp);
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
+router.get('/forgot-password',forgotPasswordPage)
 
 router.get("/login", getLoginPage);
 router.post("/login", postLogin);
