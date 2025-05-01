@@ -70,6 +70,8 @@ export const postGameDetails = async (req, res) => {
         }
         if(!price || price.trim()===""){
             errors.price = 'game price is required';
+        }else if(parseFloat(price)<=0){
+            errors.price = 'price cannot be zero or negative';
         }
          if(!description || description.trim()===""){
             errors.description = 'game description is required';
@@ -77,8 +79,14 @@ export const postGameDetails = async (req, res) => {
          if(!releaseDate || releaseDate.trim()===""){
             errors.releaseDate = 'game release date is required';
         }
+        
+        // else if(!isValidDate(releaseDate)){
+        //     errors.releaseDate = 'Invalid date format. Please use YYYY-MM-DD.';
+        // }
          if(!stockQuantity || stockQuantity.trim()===""){
            errors.stockQuantity = 'game stock quantity is required';
+        }else if(parseInt(stockQuantity)<=0){
+            errors.stockQuantity = 'Stock quantity cannot be zero or negative';
         }
          if(!status || status.trim()===""){
             errors.status = 'game status is required';
@@ -86,6 +94,8 @@ export const postGameDetails = async (req, res) => {
          if(!category  || category.trim()===""){
            errors.category = 'game category is required';
         }
+
+      
 
         if(Object.keys(errors).length>0){
             return res.render('admin/addgame',{errors,game,category:categories,data:req.session.formData || {}});
@@ -97,7 +107,9 @@ export const postGameDetails = async (req, res) => {
             errors.coverImage = 'Cover image is required';
             return res.render('admin/addgame', {
                 category: categories,
-                errors: 'Cover image is required'
+                errors: 'Cover image is required',
+                data: req.session.formData || {},
+                game,
             });
             
         }

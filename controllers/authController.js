@@ -233,6 +233,7 @@ export const postLogin = async (req, res) => {
 // Google Auth Trigger
 export const googleAuth = (req, res, next) => {
   try {
+    console.log('google auth triggered')
   
     passport.authenticate('google', {
       scope: ['profile', 'email'],
@@ -240,6 +241,7 @@ export const googleAuth = (req, res, next) => {
       accessType: 'offline'
     })(req, res, next);
   } catch (error) {
+    console.error('Google authentication error:');
     console.error('Google authentication error:', error);
     return res.redirect('/login?error=auth_failed');
   }
