@@ -48,8 +48,8 @@ const gameSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
-        enum: ['available', 'outofstock', 'comingsoon'],
-        default: 'available'
+        enum: ['active', 'inactive'],
+        default: 'active'
     },
     gameSeries: {
         type: mongoose.Schema.Types.ObjectId,
@@ -66,6 +66,6 @@ const gameSchema = new mongoose.Schema({
     next();
    })
 
-
-const Game = mongoose.model('Game', gameSchema);
+// Check if the model exists before compiling it
+const Game = mongoose.models.Game || mongoose.model('Game', gameSchema);
 export default Game;

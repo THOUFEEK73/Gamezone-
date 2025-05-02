@@ -29,6 +29,20 @@
       background-color: rgba(39, 39, 42, 0.3);
       border-color: rgb(63, 63, 70);
     }
+
+    @keyframes countdown-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .countdown {
+      animation: countdown-pulse 1s infinite;
+    }
+
+    .countdown.urgent {
+      color: #ef4444;
+    }
   </style>
 </head>
 <body class="bg-gradient-to-b from-black via-zinc-900 to-black font-sans">
@@ -40,7 +54,13 @@
         <p class="text-zinc-400 hover:text-zinc-300 transition-colors">Verify your account</p>
       </div>
 
-      <p class="text-zinc-400 text-sm mb-8">Enter the 6-digit code sent to <%= email %></p>
+      <div class="flex justify-between items-center mb-6">
+        <p class="text-zinc-400 text-sm">Enter the 6-digit code sent to <%= email %></p>
+        <div class="text-right">
+          <div id="countdown" class="text-zinc-300 font-medium"></div>
+          <p class="text-xs text-zinc-500">Time remaining</p>
+        </div>
+      </div>
       
       <form id="otpForm" action="/verify-otp" method="POST">
         <input type="hidden" id="email" name="email" value="<%= email %>">
@@ -62,6 +82,7 @@
         <% } %>
 
         <button type="submit" 
+          id="verifyButton"
           class="w-full bg-white text-black hover:bg-zinc-200 font-semibold py-3 rounded-lg 
                  transition-all duration-300 transform hover:scale-[1.02] active:scale-95
                  focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
@@ -76,10 +97,13 @@
         <hr class="flex-grow border-zinc-800">
       </div>
 
-      <button onclick="resendOTP()" 
-        class="w-full bg-transparent border border-zinc-700 text-zinc-300 
-               hover:bg-zinc-800/50 hover:text-white font-semibold py-3 rounded-lg 
-               transition-all duration-300 transform hover:scale-[1.02] active:scale-95">
+      <button id="resendButton" 
+              onclick="resendOTP()" 
+              disabled
+              class="w-full bg-transparent border border-zinc-700 text-zinc-500
+                     hover:bg-zinc-800/50 hover:text-white font-semibold py-3 rounded-lg 
+                     transition-all duration-300 transform hover:scale-[1.02] active:scale-95
+                     disabled:opacity-50 disabled:cursor-not-allowed">
         Resend OTP
       </button>
 
@@ -88,6 +112,76 @@
   </div>
 
   <script>
+    // Constants
+    const OTP_TIMEOUT = 180; // 3 minutes in seconds
+    const RESEND_TIMEOUT = 30; // 30 seconds for resend button
+
+    // Initialize timers
+    let timeLeft = OTP_TIMEOUT;
+    let resendTimeLeft = RESEND_TIMEOUT;
+    let countdownInterval;
+    let resendCountdownInterval;
+
+    // Function to format time
+    function formatTime(seconds) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // Function to start OTP countdown
+    function startCountdown() {
+      const countdownElement = document.getElementById('countdown');
+      const verifyButton = document.getElementById('verifyButton');
+      
+      countdownInterval = setInterval(() => {
+        timeLeft--;
+        
+        // Update countdown display
+        countdownElement.textContent = formatTime(timeLeft);
+        
+        // Add urgent class when less than 30 seconds remain
+        if (timeLeft <= 30) {
+          countdownElement.classList.add('urgent', 'countdown');
+        }
+        
+        // Handle timeout
+        if (timeLeft <= 0) {
+          clearInterval(countdownInterval);
+          verifyButton.disabled = true;
+          verifyButton.classList.add('opacity-50', 'cursor-not-allowed');
+          countdownElement.textContent = 'OTP Expired';
+          disableOTPInputs();
+        }
+      }, 1000);
+    }
+
+    // Function to handle resend countdown
+    function startResendCountdown() {
+      const resendButton = document.getElementById('resendButton');
+      resendButton.disabled = true;
+      
+      resendCountdownInterval = setInterval(() => {
+        resendTimeLeft--;
+        resendButton.textContent = `Resend OTP (${resendTimeLeft}s)`;
+        
+        if (resendTimeLeft <= 0) {
+          clearInterval(resendCountdownInterval);
+          resendButton.disabled = false;
+          resendButton.textContent = 'Resend OTP';
+          resendTimeLeft = RESEND_TIMEOUT;
+        }
+      }, 1000);
+    }
+
+    // Function to disable OTP inputs
+    function disableOTPInputs() {
+      const inputs = document.querySelectorAll('.otp-input');
+      inputs.forEach(input => {
+        input.disabled = true;
+      });
+    }
+
     // Function to move to next input field
     function moveToNext(current, nextId) {
       if (current.value.length === current.maxLength) {
@@ -109,7 +203,16 @@
             otpInputs[index - 1].focus();
           }
         });
+
+        // Allow only numbers
+        input.addEventListener("input", (e) => {
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
       });
+
+      // Start the countdowns
+      startCountdown();
+      startResendCountdown();
     });
 
     // Function to display success animation
@@ -122,6 +225,28 @@
     // Resend OTP logic
     function resendOTP() {
       const email = document.getElementById('email').value;
+      
+      // Reset the main countdown
+      timeLeft = OTP_TIMEOUT;
+      clearInterval(countdownInterval);
+      startCountdown();
+      
+      // Reset the resend countdown
+      startResendCountdown();
+      
+      // Enable inputs and verify button
+      const verifyButton = document.getElementById('verifyButton');
+      verifyButton.disabled = false;
+      verifyButton.classList.remove('opacity-50', 'cursor-not-allowed');
+      
+      const inputs = document.querySelectorAll('.otp-input');
+      inputs.forEach(input => {
+        input.disabled = false;
+        input.value = '';
+      });
+      inputs[0].focus();
+
+      // Make the API call
       fetch('/resend-otp', {
         method: 'POST',
         headers: {

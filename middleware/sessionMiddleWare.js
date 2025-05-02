@@ -8,10 +8,9 @@ const sessionMiddleware = session({
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        sameSite: 'lax'  // Changed from 'strict' to 'lax' to allow Google OAuth redirects
+        sameSite: 'lax'
     },
-    name: 'sessionId',
-    rolling: true
+    name: 'sessionId'
 });
 
 export default sessionMiddleware;

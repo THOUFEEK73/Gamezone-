@@ -3,6 +3,8 @@ import Category from "../models/CategoryModel.js";
 
  export const editGamePage  = async(req,res)=>{
     try{
+        console.log('testing');
+        
         const gameId = req.params.id;
         const game = await Game.findById(gameId).populate('category');
         const categories = await Category.find();
@@ -23,10 +25,17 @@ import Category from "../models/CategoryModel.js";
 
 export const postEditGame = async (req, res) => {
     try {
-        console.log('Testing edit route');
+        
 
         const gameId = req.params.id;
         const { title, price, category, description, releaseDate, stockQuantity, status } = req.body;
+
+        const error ={};
+
+        if(parseFloat(price)<0){
+            error.price = 'Price must be greater than 0';
+            console.log('error');
+        }
 
         let coverImageUrl = null;
         let screenshotsUrls = [];

@@ -38,9 +38,10 @@ export const getAllGames = async (req, res) => {
 export const addGame =async (req, res) => {
   try {
     const category = await Category.find()
+    const data = await Game.find()
 
     // res.render('admin/addgame',{category}); // Render the form to add a game
-    res.render('admin/addgame', { errors: {}, data: {}, category });
+    res.render('admin/addgame', { errors: {}, data, category });
 
   } catch (error) {
     console.error('Error:', error);

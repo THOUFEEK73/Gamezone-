@@ -1,5 +1,6 @@
 
 import Game from '../models/gameModel.js';
+import Category from '../models/CategoryModel.js';
 import User from '../models/userModel.js';
 import _ from 'lodash';
 
@@ -15,9 +16,12 @@ export const getHomePage = async (req, res) => {
     res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
+     
+    // const category = await Category.find()
 
     // Fetch all games from the database
-    const games = await Game.find().limit(8);
+    const games = await Game.find({status:'active'}).populate({path:'category',match:{status:'active'}}).
+    then(games=>games.filter(game=>game.category))
 
     // Render the home page
     res.render('user/home', { games: games });

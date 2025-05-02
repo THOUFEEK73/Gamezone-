@@ -1,7 +1,13 @@
 
 import express from "express";
 
-import { getSignUpPage, getLoginPage, postSignUp, postLogin, forgotPasswordPage,verifyOTP, resendOTP, logout,googleAuth,googleCallback,logoutUser,authStatus } from "../controllers/authController.js";
+import { getSignUpPage, getLoginPage, postSignUp,
+     postLogin, forgotPasswordPage,postForgotPassword,
+     verifyOTP, resendOTP, logout,
+     googleAuth,googleCallback,
+     logoutUser,authStatus,getResetPassworPage,
+     postResetPassword 
+    } from "../controllers/authController.js";
 import  isAuthenticated  from "../middleware/auth.js"
  
 import { getHomePage } from "../controllers/userController.js";
@@ -18,6 +24,9 @@ router.post("/signup", postSignUp);
 router.post('/verify-otp', verifyOTP);
 router.post('/resend-otp', resendOTP);
 router.get('/forgot-password',forgotPasswordPage)
+router.post('/forgot-password',postForgotPassword)
+router.get('/reset-password/:token',getResetPassworPage)
+router.post('/reset-password',postResetPassword)
 
 router.get("/login", getLoginPage);
 router.post("/login", postLogin);
@@ -29,7 +38,7 @@ router.get('/logout', logoutUser);
 router.get('/status', authStatus);
 
 router.get('/home',isAuthenticated,getHomePage);
-// router.get('/allgames',isAuthenticated,getAllGames);
+
 
 
 

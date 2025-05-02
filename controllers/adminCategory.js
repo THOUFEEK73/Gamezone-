@@ -63,7 +63,7 @@ export const updateCategoryStatus = async (req, res) => {
     const categoryId = req.params.Id;
     const newStatus = req.body.status;
 
-    console.log(newStatus)
+    console.log('triggered')
    
     await Category.findByIdAndUpdate(categoryId, {
       status: newStatus,

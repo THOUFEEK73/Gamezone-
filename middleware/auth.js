@@ -3,13 +3,11 @@ import User from '../models/userModel.js';
 const isAuthenticated = async (req, res, next) => {
     try {
         
-        console.log('Session ID:', req.sessionID);
-        console.log('Session Data:', req.session);
-        console.log('sessionData',req.user)
+   
         
 
         if(!req.session.userId){
-            console.log('error triggered here')
+            
             return res.redirect('/login')
         }
 

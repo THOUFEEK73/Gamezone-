@@ -475,9 +475,9 @@
                         <div>
                             <label class="form-label">Status</label>
                             <select name="status" class="form-input">
-                                <option value="available" <%=game.status==='available'?'selected':''%>>Available</option>
-                                <option value="comingsoon" <%=game.status==='comingsoon'?'selected':''%>>Coming Soon</option>
-                                <option value="outofstock" <%= game.status === 'outofstock' ? 'selected' : '' %>>Out of Stock</option>
+                                <option value="active" <%=game.status==='Active'?'selected':''%>>Active</option>
+                                <option value="inactive" <%=game.status==='inactive'?'selected':''%>>InActive</option>
+                                <!-- <option value="outofstock" <%= game.status === 'outofstock' ? 'selected' : '' %>>Out of Stock</option> -->
                             </select>
                         </div>
                     </div>

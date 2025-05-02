@@ -24,6 +24,7 @@ import isAdminAuthenticated from "../middleware/adminAuth.js";
 import upload from '../middleware/multerMiddleWare.js';
 import Category from "../models/CategoryModel.js";
 import {editGamePage,postEditGame} from "../controllers/editGameController.js"
+import Game from "../models/gameModel.js";
 
 const adminRoutes = express.Router();
 
@@ -90,6 +91,47 @@ adminRoutes.get("/platform", getPlatFormPage);
 
 // Game management
 adminRoutes.get("/games", getAllGames);
+adminRoutes.post("/games/:id/toggle-status", async (req, res) => {
+  try {
+    console.log('toggle triggered')
+    const gameId = req.params.id;
+    const { status } = req.body;
+    
+    // Validate status
+    if (!['active', 'inactive'].includes(status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid status value' 
+      });
+    }
+
+    // Update the game status in the database
+    const updatedGame = await Game.findByIdAndUpdate(
+      gameId, 
+      { status }, 
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedGame) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Game not found' 
+      });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Game status updated successfully',
+      game: updatedGame
+    });
+  } catch (error) {
+    console.error('Error updating game status:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to update game status' 
+    });
+  }
+});
 adminRoutes.get("/addgame", addGame);
 adminRoutes.post("/addgame",
   async (req, res, next) => {
