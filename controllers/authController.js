@@ -35,14 +35,17 @@ export const getLoginPage = (req, res) => {
 
 // Logout User
 export const logout = (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Error destroying session:', err);
-      return res.status(500).json({ message: "Error destroying session" });
-    }
-    res.clearCookie('connect.sid');
-    return res.redirect('/login');
-  });
+  // req.session.destroy((err) => {
+  //   if (err) {
+  //     console.error('Error destroying session:', err);
+  //     return res.status(500).json({ message: "Error destroying session" });
+  //   }
+  //   res.clearCookie('connect.sid');
+  //   return res.redirect('/login');
+  // });
+
+  req.session.userId = null;
+  return res.redirect('/login')
 };
 
 // Post Signup

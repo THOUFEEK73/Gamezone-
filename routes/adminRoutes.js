@@ -25,14 +25,16 @@ import upload from '../middleware/multerMiddleWare.js';
 import Category from "../models/CategoryModel.js";
 import {editGamePage,postEditGame} from "../controllers/editGameController.js"
 import Game from "../models/gameModel.js";
+import noCache from "../middleware/Cache-Control.js";
 
 const adminRoutes = express.Router();
-
+adminRoutes.use(noCache);
 // Public routes
-adminRoutes.get("/login", getAdminLoginPage);
-adminRoutes.post("/login", postAdminLogin);
+adminRoutes.get("/login",noCache, getAdminLoginPage);
+adminRoutes.post("/login",noCache, postAdminLogin);
 
 // Middleware to protect all routes below
+
 adminRoutes.use(isAdminAuthenticated);
 
 // Logout route

@@ -51,12 +51,17 @@ export const postAdminLogin = async (req,res)=>{
 
 
 export const adminLogout = (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Error destroying admin session:', err);
-        return res.status(500).json({ message: "Error destroying session" });
-      }
-      res.clearCookie('connect.sid');
-      res.redirect('/admin/login');
-    });
+    req.session.adminId = null;
+        
+    return res.redirect('/admin/login');
+
+
+    // req.session.destroy((err) => {
+    //   if (err) {
+    //     console.error('Error destroying admin session:', err);
+    //     return res.status(500).json({ message: "Error destroying session" });
+    //   }
+    //   res.clearCookie('connect.sid');
+    //   res.redirect('/admin/login');
+    // });
   };
