@@ -172,15 +172,31 @@
         <!-- Pagination -->
         <div class="flex justify-center mt-6">
             <div class="flex space-x-1">
-                <button class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <button class="px-3 py-1 bg-purple-600 text-white rounded">1</button>
-                <button class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">2</button>
-                <button class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">3</button>
-                <button class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
-                    <i class="fas fa-chevron-right"></i>
-                </button>
+                <% if (currentPage > 1) { %>
+                    <a href="/admin/users?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                <% } else { %>
+                    <button class="px-3 py-1 bg-[#2a2a2a] text-gray-500 rounded cursor-not-allowed">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                <% } %>
+        
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <a href="/admin/users?page=<%= i %>" class="px-3 py-1 <%= currentPage === i ? 'bg-purple-600 text-white' : 'bg-[#2a2a2a] text-gray-300 hover:bg-[#333333]' %> rounded transition-colors">
+                        <%= i %>
+                    </a>
+                <% } %>
+        
+                <% if (currentPage < totalPages) { %>
+                    <a href="/admin/users?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                <% } else { %>
+                    <button class="px-3 py-1 bg-[#2a2a2a] text-gray-500 rounded cursor-not-allowed">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                <% } %>
             </div>
         </div>
     </div>

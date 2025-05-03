@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GameZone Admin - Add Game</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -288,7 +289,9 @@
     </style>
 </head>
 <body class="flex h-screen">
-   
+    <%- include('partials/sidebar') %>
+
+
     <!-- Sidebar Placeholder - This would be replaced by the server with actual sidebar content -->
     <aside class="sidebar">
         <!-- Sidebar content would be included here by the server -->
@@ -328,7 +331,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="form-label">Game Title</label>
-                        <input type="text" name="title" class="form-input" value="<%=data.title%>">  >
+                        <input type="text" name="title" class="form-input" value="<%=data.title%>"> 
                         <p class="helper-text">Enter the official title of the game</p>
                        
                         <% if (typeof errors !== 'undefined' && errors.title) { %>
@@ -345,7 +348,7 @@
                     <div>
                         <label class="form-label">Price</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-2.5 text-gray-400">₹</span>
+                            <span class="absolute left-3 top-2.5 text-gray-400">&#8377;</span>
                             <input type="number" name="price" step="0.01" class="form-input pl-10" value="<%=data.price%>">
                             <p class="helper-text">Set the retail price for the game</p>
                         </div>

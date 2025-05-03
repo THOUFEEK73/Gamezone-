@@ -1,7 +1,9 @@
-
-☐ implement proper admin add game
-☐ implement mange the game product
-
-☐ google athentication done
-☐ otp time 
-☐ forgot password done
+✔ User Signup Validations are fixed @done (5/3/2025, 10:27:27 AM)
+✔ implement flash middleware @done (5/3/2025, 10:27:54 AM)
+✔ analyse and fix the google Authentication issue @done (5/3/2025, 10:28:18 AM)
+✔ solve a array problem / solve a leetcode problem @done (5/3/2025, 3:40:27 PM)
+✔ learn anything new solutions or anything from a problem @done (5/3/2025, 3:40:29 PM)
+☐ add pagination to the user list
+☐ add pagination to the product (game) list
+☐ add search to the all products (games) list
+☐ add search to the home page

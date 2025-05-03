@@ -5,8 +5,15 @@ export const getAllUsersPage = async(req , res)=>{
         if(!req.session.admin){
             return res.redirect('/admin/login');
         }
-        const users = await User.find();
-        return res.render('admin/users',{users});
+       
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip  = (page - 1) * limit;
+        const totalUsers  = await User.countDocuments();
+        console.log(totalUsers)
+        const totalPages = Math.ceil(totalUsers / limit);
+        const users = await User.find().skip(skip).limit(limit)
+        return res.render('admin/users',{users:users,currentPage:page,totalPages});
 
     }catch(err){
         console.error("Error in getting all users page",err);

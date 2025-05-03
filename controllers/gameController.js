@@ -21,8 +21,14 @@ export const getAllGames = async (req, res) => {
     try {
         // const category = await Category.find();
         // console.log(category)
-        const games = await Game.find().populate('category','categoryName').exec();
-        res.render('admin/games', {games:games});
+        const page = parseInt(req.query.page) || 1;
+        const limit = 5;
+        const skip   = (page - 1) * limit;
+        const totalGames = await Game.countDocuments();
+        const totalPages = Math.ceil(totalGames / limit);
+
+        const games = await Game.find().skip(skip).limit(limit).populate('category','categoryName');
+        res.render('admin/games', {games:games,totalPages,currentPage:page});
     } catch (error) {
         console.error('Error fetching games:', error);
         res.status(500).json({ error: 'Failed to fetch games' });
