@@ -6,7 +6,7 @@ import OTP from "../models/otpModel.js";
 import { generateOTP } from "../utils/otp-functions.js";
 import crypto from 'crypto';
 import sendEmail from "../utils/mailer.js"; 
-import flash from 'connect-flash';// Adjust path as needed
+import flash from 'connect-flash';
 
 
 dotenv.config();
@@ -16,11 +16,12 @@ export const getSignUpPage = (req, res) => {
   if (req.session.userId) {
     return res.redirect('/home');
   }
-  const error = req.session.signupError || null;
-  const formData = req.session.formData || {};
-  req.session.signupError = null;
-  req.session.formData = null;
-  return res.render("user/signup", { err: error, formData });
+  
+   const formData = req.session.formData || {};
+
+  const error = req.flash('error');
+  
+  return res.render("user/signup", { error,formData });
 };
 
 // Get Login Page
@@ -54,36 +55,52 @@ export const postSignUp = async (req, res) => {
     const { name, email, phone, password, confirm_password } = req.body;
     req.session.formData = { name, email, phone };
 
-    if (!name || !email || !phone || !password || !confirm_password) {
-      req.session.signupError = 'All fields are required';
-      return res.redirect('/signup');
+    if(!name){
+      req.flash('error','Name is required')
+      return res.redirect('/signup')
     }
 
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
-      req.session.signupError = 'Phone number must be exactly 10 digits';
+      req.flash('error','Phone number must be exactly 10 digits');
+      return res.redirect('/signup');
+    }
+
+    if(phone ==='0000000000'){
+      req.flash('error','Phone number is not valide');
+      return res.redirect('/signup');
+    }
+
+    if(phone === '1234567890'){
+      req.flash('error','Phone number is not valide');
       return res.redirect('/signup');
     }
 
     if (password !== confirm_password) {
-      req.session.signupError = 'Passwords do not match';
+      req.flash('error','Passwords do not match');
       return res.redirect('/signup');
     }
 
+    if(!email){
+      req.flash('error','Email is required');
+      return res.redirect('/signup')
+    }
+
     if (password.length < 8) {
-      req.session.signupError = 'Password must be at least 8 characters long';
+       console.log('triggered')
+       req.flash('error','Password must be at least 8 characters long');
       return res.redirect('/signup');
     }
 
     const passwordRegex = /^(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
-      req.session.signupError = 'Password must contain at least one uppercase letter and one number';
+      req.flash('error','Password must contain at least one uppercase letter and one number');
       return res.redirect('/signup');
     }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      req.session.signupError = "User already exists";
+      req.flash('error',"User already exists");
       return res.redirect('/signup');
     }
 

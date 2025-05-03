@@ -26,17 +26,22 @@ import Category from "../models/CategoryModel.js";
 import {editGamePage,postEditGame} from "../controllers/editGameController.js"
 import Game from "../models/gameModel.js";
 import noCache from "../middleware/Cache-Control.js";
+import flash from 'connect-flash';
+
+
+
+
 
 const adminRoutes = express.Router();
 adminRoutes.use(noCache);
 // Public routes
 adminRoutes.get("/login",noCache, getAdminLoginPage);
 adminRoutes.post("/login",noCache, postAdminLogin);
-
+// adminRoutes.use(flash());
 // Middleware to protect all routes below
 
 adminRoutes.use(isAdminAuthenticated);
-
+adminRoutes.use(flash());
 // Logout route
 adminRoutes.get("/logout", adminLogout);
 

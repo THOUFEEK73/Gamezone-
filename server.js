@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import sessionMiddleware from "./middleware/sessionMiddleWare.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import passport from './config/passport.js'; 
+import flash from 'connect-flash';
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,8 @@ app.set("views", "views");
 app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(flash());
 
 // Add user to res.locals
 app.use((req, res, next) => {
