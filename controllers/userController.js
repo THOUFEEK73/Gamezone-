@@ -2,6 +2,7 @@
 import Game from '../models/gameModel.js';
 import Category from '../models/CategoryModel.js';
 import User from '../models/userModel.js';
+import { searchGames } from '../utils/searchFun.js';
 import _ from 'lodash';
 
 
@@ -20,7 +21,7 @@ export const getHomePage = async (req, res) => {
     // const category = await Category.find()
 
     // Fetch all games from the database
-    const games = await Game.find({status:'active'}).populate({path:'category',match:{status:'active'}}).
+    const games = await Game.find({status:'active'}).populate({path:'category',match:{status:'active'}}).limit(10).
     then(games=>games.filter(game=>game.category))
 
     // Render the home page
@@ -30,6 +31,32 @@ export const getHomePage = async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 };
+
+export const homePageSearch  = async(req,res)=>{
+  try {
+    const query = req.query.query || '';
+    const games = await searchGames(query);
+    return res.json({ games });
+} catch (error) {
+    console.error('Error handling search request:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+}
+  
+}
+
+export const allGameSearch = async(req,res) =>{
+  try{
+  
+    const query = req.query.query || '';
+    console.log('query is passing ',query);
+    const games = await searchGames(query)
+    console.log('triggererd')
+    return res.json(games)
+  }catch(error){
+    console.error('Error handling search request:',error);
+    res.status(500).render({'error':'Internal Server Error'});
+  }
+}
 
 // export const getAllGames = async(req,res)=>{
 //   try{

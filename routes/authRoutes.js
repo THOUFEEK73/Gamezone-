@@ -10,7 +10,7 @@ import { getSignUpPage, getLoginPage, postSignUp,
     } from "../controllers/authController.js";
 import  isAuthenticated  from "../middleware/auth.js"
  
-import { getHomePage } from "../controllers/userController.js";
+import { getHomePage,homePageSearch,allGameSearch } from "../controllers/userController.js";
 import {getDetailPage} from '../controllers/gameDetail.js'
 import { showAllGames } from "../controllers/AllGamesController.js";
 import  filterGames  from "../controllers/filterGamesController.js";
@@ -38,6 +38,8 @@ router.get('/logout', logoutUser);
 router.get('/status', authStatus);
 
 router.get('/home',isAuthenticated,getHomePage);
+router.get('/search',homePageSearch);
+router.get('/allsearch',allGameSearch);
 
 
 

@@ -140,7 +140,7 @@
             <!-- Search Bar -->
             <div class="relative">
               <input type="text" 
-                     placeholder="Search games..." 
+                     placeholder="Search games..."  id="searchInput"
                      class="w-72 px-4 py-2 rounded-full border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition duration-200 bg-gray-50">
               <button class="absolute right-3 top-2.5 text-gray-400 hover:text-indigo-600">
                 <i class="fas fa-search"></i>
@@ -292,7 +292,7 @@
         <section class="py-12">
           <div class="container mx-auto px-6">
            
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div id="result" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               <% games.forEach(game => { %>
                 <div class="text-center">
                   <!-- Game Card -->
@@ -424,12 +424,12 @@
           imageLoaded();
         } else {
           img.addEventListener('load', imageLoaded);
-          img.addEventListener('error', imageLoaded); // Handle error cases
+          img.addEventListener('error', imageLoaded); 
         }
       });
     });
 
-    // Your existing JavaScript code
+   
     document.addEventListener('DOMContentLoaded', () => {
       const priceRange = document.getElementById('price-range');
       const priceLabel = document.getElementById('price-label');
@@ -536,6 +536,74 @@
             isMenuOpen = false;
         }
     });
+
+
+    //search functionality
+
+     let debounceTimer;
+
+     async function searchGames(query){
+      try{        
+        console.log('searching games...')
+        const response = await fetch(`/allsearch?query=${query}`);
+        const data  = await response.json();
+        const resultsContainer = document.getElementById('result');
+        resultsContainer.innerHTML = '';
+        if(data.length >0){
+          data.forEach(game=>{
+
+            const gameCard = `
+                <div class="text-center">
+                  <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
+                    <div class="rounded-2xl overflow-hidden">
+                      <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
+                    </div>
+                  </a>
+                  <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
+                  ${game.type === 'trial'
+                    ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
+                    : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
+                  }
+                  <div class="mt-1">
+                    ${
+                      game.discountPrice
+                        ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
+                           <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
+                        : game.price === 0
+                        ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
+                        : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
+                    }
+                  </div>
+                </div>
+              `;
+
+              resultsContainer.insertAdjacentHTML('beforeend', gameCard);
+
+
+          })
+        }else{
+          resultsContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center">Game Not Found .</p>';
+        }
+      }catch(error){
+        console.error('Error fetching search results:', error);
+        
+      }
+     }
+
+     // debounce funtionn
+
+     document.getElementById('searchInput').addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+        
+            searchGames(query);
+      
+    }, 300); // 300ms debounce delay
+});
+
+
   </script>
 
 </body>
