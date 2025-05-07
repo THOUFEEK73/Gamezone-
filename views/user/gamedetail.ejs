@@ -392,7 +392,8 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Release Date</p>
-                                <p class="font-semibold"><%= game.releaseDate || 'Coming Soon' %></p>
+                                <p class="font-semibold"><%= game.releaseDate.toLocaleDateString('en-GB') %>
+                                </p>
                             </div>
                         </div>
                     </div>

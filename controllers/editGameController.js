@@ -1,21 +1,22 @@
 import Game from "../models/gameModel.js";
 import Category from "../models/CategoryModel.js";
+import { uploadToCloudinary } from "../utils/cloudinaryUtils.js";
 
- export const editGamePage  = async(req,res)=>{
+export const editGamePage = async(req,res)=>{
     try{
-        console.log('testing');
-        
         const gameId = req.params.id;
         const game = await Game.findById(gameId).populate('category');
         const categories = await Category.find();
-
-        // console.log('Game:',game);
         
         if(!game){
             return res.status(404).render('error',{message:'Game not found'});
         }
 
-        res.render('admin/editgame',{game,category:categories})
+        res.render('admin/editgame',{
+            game,
+            category: categories,
+            errors: {}
+        });
          
     }catch(error){
       console.error('Error fetching game details:',error);
@@ -25,22 +26,14 @@ import Category from "../models/CategoryModel.js";
 
 export const postEditGame = async (req, res) => {
     try {
-        
-
         const gameId = req.params.id;
-        const { title, price, category, description, releaseDate, stockQuantity, status } = req.body;
-
-        const error ={};
-
-        if(parseFloat(price)<0){
-            error.price = 'Price must be greater than 0';
-            console.log('error');
-        }
-
+        const { title, price, category, description, releaseDate, stockQuantity, status, platform, existingScreenshots } = req.body;
+        console.log(gameId)
+        // Upload images first if they exist
         let coverImageUrl = null;
         let screenshotsUrls = [];
 
-        // Upload cover image if exists
+        // Handle cover image upload
         if (req.files && req.files.coverImage && req.files.coverImage[0]) {
             const coverUpload = await uploadToCloudinary(
                 req.files.coverImage[0].buffer,
@@ -49,14 +42,136 @@ export const postEditGame = async (req, res) => {
             coverImageUrl = coverUpload.secure_url;
         }
 
-        // Upload screenshots if any
+        // Handle screenshots
+        screenshotsUrls = existingScreenshots ? 
+            (Array.isArray(existingScreenshots) ? existingScreenshots : [existingScreenshots]) : 
+            [];
+
         if (req.files && req.files.screenshots && req.files.screenshots.length > 0) {
-            screenshotsUrls = await Promise.all(
+            const newScreenshotUrls = await Promise.all(
                 req.files.screenshots.map(async (file) => {
                     const upload = await uploadToCloudinary(file.buffer, 'games/screenshots');
                     return upload.secure_url;
                 })
             );
+            screenshotsUrls = [...screenshotsUrls, ...newScreenshotUrls];
+        }
+         console.log('successfull')
+        // Store form data and uploaded images in session
+        req.session.formData = { 
+            title, 
+            price, 
+            description, 
+            releaseDate, 
+            stockQuantity, 
+            status, 
+            category,
+            platform,
+            media: {
+                coverImage: coverImageUrl,
+                screenshots: screenshotsUrls
+            }
+        };
+            
+        const categories = await Category.find();
+        const game = await Game.findById(gameId);
+        console.log('final test')
+        const errors = {};
+
+        // Validate title
+        if(!title || title.trim()===""){
+            errors.title = 'Game title is required';
+        } else if(title.length < 3) {
+            errors.title = 'Game title must be at least 3 characters long';
+        }
+
+        // Validate price
+        if(!price || price.trim()===""){
+            errors.price = 'Game price is required';
+        } else if(parseFloat(price) <= 0){
+            errors.price = 'Price must be greater than zero';
+        } else if(parseFloat(price) > 999999) {
+            errors.price = 'Price cannot exceed 999,999';
+        }
+
+        // Validate description
+        if(!description || description.trim()===""){
+            errors.description = 'Game description is required';
+        } 
+
+        // else if(description.length < 20) {
+        //     errors.description = 'Description must be at least 20 characters long';
+        // }
+
+        // Validate release date
+
+        if(game.releaseDate && !(game.releaseDate instanceof Date)){
+            game.releaseDate  = new Date(game.releaseDate);
+        }
+        if (!game.releaseDate || isNaN(new Date(game.releaseDate).getTime())) {
+            game.releaseDate = new Date(); // Default to the current date
+        }
+        if(!releaseDate || releaseDate.trim()===""){
+            errors.releaseDate = 'Release date is required';
+        } else {
+            const date = new Date(releaseDate);
+            if(isNaN(date.getTime())) {
+                errors.releaseDate = 'Please enter a valid date';
+            }
+        }
+
+        // Validate stock quantity
+        if(!stockQuantity || stockQuantity.trim()===""){
+           errors.stockQuantity = 'Stock quantity is required';
+        } else if(parseInt(stockQuantity) < 0){
+            errors.stockQuantity = 'Stock quantity cannot be negative';
+        } else if(parseInt(stockQuantity) > 99999) {
+            errors.stockQuantity = 'Stock quantity cannot exceed 99,999';
+        }
+
+        // Validate status
+        if(!status || status.trim()===""){
+            errors.status = 'Game status is required';
+        } else if(!['active', 'inactive'].includes(status.toLowerCase())) {
+            errors.status = 'Invalid status selected';
+        }
+
+        // Validate category
+        if(!category || category.trim()===""){
+           errors.category = 'Game category is required';
+        }
+
+        // Validate platform
+        if(!platform || platform.trim()===""){
+            errors.platform = 'Game platform is required';
+        } else if(!['ps5', 'xbox', 'pc'].includes(platform.toLowerCase())) {
+            errors.platform = 'Invalid platform selected';
+        }
+
+        // Validate cover image for new games
+        if (!game.media?.coverImage && (!req.files?.coverImage || !req.files.coverImage[0])) {
+            errors.coverImage = 'Cover image is required';
+        }
+
+        if (Object.keys(errors).length > 0) {
+            const formGame = { 
+                ...req.session.formData, 
+                _id: gameId,
+                media: {
+                    coverImage: coverImageUrl || game.media?.coverImage,
+                    screenshots: screenshotsUrls.length > 0 ? screenshotsUrls : game.media?.screenshots || []
+                }
+            };
+        
+            if (formGame.releaseDate) {
+                formGame.releaseDate = new Date(formGame.releaseDate);
+            }
+        
+            return res.render('admin/editgame', {
+                errors,
+                game: formGame,
+                category: categories
+            });
         }
 
         const updateGame = {
@@ -67,18 +182,16 @@ export const postEditGame = async (req, res) => {
             releaseDate,
             stockQuantity,
             status,
+            platforms: [platform],
+            media: {
+                coverImage: coverImageUrl || game.media?.coverImage,
+                screenshots: screenshotsUrls
+            }
         };
 
-        // Add media if uploaded
-        if (coverImageUrl || screenshotsUrls.length > 0) {
-            updateGame.media = {};
-            if (coverImageUrl) updateGame.media.coverImage = coverImageUrl;
-            if (screenshotsUrls.length > 0) updateGame.media.screenshots = screenshotsUrls;
-        }
-
         await Game.findByIdAndUpdate(gameId, updateGame);
+        req.session.formData = null; // Clear session data after successful update
         res.redirect('/admin/games');
-
     } catch (error) {
         console.error("Error updating game:", error);
         res.status(500).render('error', { message: 'Something went wrong' });

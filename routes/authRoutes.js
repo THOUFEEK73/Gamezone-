@@ -14,23 +14,24 @@ import { getHomePage,homePageSearch,allGameSearch } from "../controllers/userCon
 import {getDetailPage} from '../controllers/gameDetail.js'
 import { showAllGames } from "../controllers/AllGamesController.js";
 import  filterGames  from "../controllers/filterGamesController.js";
+import  noCache  from '../middleware/Cache-Control.js'
 const router = express.Router();
 
 
 // Existing routes
 
-router.get("/signup", getSignUpPage);
-router.post("/signup", postSignUp);
-router.post('/verify-otp', verifyOTP);
-router.post('/resend-otp', resendOTP);
-router.get('/forgot-password',forgotPasswordPage)
-router.post('/forgot-password',postForgotPassword)
-router.get('/reset-password/:token',getResetPassworPage)
-router.post('/reset-password',postResetPassword)
+router.get("/signup",noCache, getSignUpPage);
+router.post("/signup",noCache, postSignUp);
+router.post('/verify-otp',noCache, verifyOTP);
+router.post('/resend-otp',noCache, resendOTP);
+router.get('/forgot-password',noCache,forgotPasswordPage)
+router.post('/forgot-password',noCache,postForgotPassword)
+router.get('/reset-password/:token',noCache,getResetPassworPage)
+router.post('/reset-password',noCache,postResetPassword)
 
-router.get("/login", getLoginPage);
-router.post("/login", postLogin);
-router.get('/logout', logout);
+router.get("/login",noCache, getLoginPage);
+router.post("/login",noCache, postLogin);
+router.get('/logout',noCache, logout);
 
 router.get('/auth/google', googleAuth); 
 router.get('/auth/google/callback', googleCallback); 

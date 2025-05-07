@@ -285,6 +285,24 @@
             border-color: #818cf8;
             background: rgba(129, 140, 248, 0.1);
         }
+
+        /* Add these styles to your existing styles */
+        .form-input.border-red-500 {
+            border-color: #ef4444;
+        }
+
+        .form-input.border-red-500:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+
+        .text-red-500 {
+            color: #ef4444;
+        }
+
+        .file-upload.border-red-500 {
+            border-color: #ef4444;
+        }
     </style>
 </head>
 <body class="flex h-screen">
@@ -315,7 +333,7 @@
         <div class="flex justify-between items-center mb-8">
             <div>
                 <h1 class="text-3xl font-bold text-white">Edit the Game</h1>
-                <p class="text-gray-400 mt-2">Fill in the details below to add a new game to the store.</p>
+                <p class="text-gray-400 mt-2">Fill in the details below to Edit game to the store.</p>
             </div>
             
         </div>
@@ -328,17 +346,22 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="form-label">Game Title</label>
-                        <input value="<%=game.title%>" type="text" name="title" class="form-input" required>
+                        <input value="<%=game.title%>" type="text" name="title" class="form-input <%= errors && errors.title ? 'border-red-500' : '' %>">
                         <p class="helper-text">Enter the official title of the game</p>
+                        <% if (errors && errors.title) { %>
+                            <p class="text-red-500 text-sm mt-1"><%= errors.title %></p>
+                        <% } %>
                     </div>
                     <div>
                         <label class="form-label">Price</label>
                         <div class="relative">
                             <span class="absolute left-3 top-2.5 text-gray-400">₹</span>
-                            <input value="<%=game.price%>" type="number" name="price" step="0.01" class="form-input pl-10" required>
-                            <p class="helper-text">Set the retail price for the game</p>
+                            <input value="<%=game.price%>" type="number" name="price" step="0.01" class="form-input pl-10 <%= errors && errors.price ? 'border-red-500' : '' %>">
                         </div>
-                        
+                        <p class="helper-text">Set the retail price for the game</p>
+                        <% if (errors && errors.price) { %>
+                            <p class="text-red-500 text-sm mt-1"><%= errors.price %></p>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -351,35 +374,36 @@
                 <div class="mb-6">
                     <label class="form-label block mb-2">Game Cover Image</label>
                     <p class="helper-text mb-3">Upload a high-quality cover image in 16:9 aspect ratio</p>
-                  
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <!-- Upload box -->
-                      <label for="coverImageUpload" class="file-upload block h-full">
-                        <input type="file" id="coverImageUpload" name="coverImage" accept="image/*" class="hidden">
-                        <div class="flex flex-col items-center justify-center h-full">
-                          <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
-                          <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
-                          <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
-                        </div>
-                      </label>
-                  
-                      <!-- Existing image preview (only show if image exists) -->
-                      <% if (game && game.media && game.media.coverImage) { %>
-                        <div id="coverPreviewContainer" class="preview-container">
-                          <div class="relative">
-                            <img id="coverPreviewImage" src="<%= game.media.coverImage %>" alt="Cover Preview" class="preview-image" />
-                            <button type="button" onclick="clearCoverPreview()"
-                                    class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                              <i class="fas fa-times"></i>
-                            </button>
-                          </div>
-                        </div>
-                      <% } else { %>
-                        <!-- Hidden if no existing image -->
-                        <div id="coverPreviewContainer" class="preview-container hidden"></div>
-                      <% } %>
+                        <label for="coverImageUpload" class="file-upload block h-full <%= errors && errors.coverImage ? 'border-red-500' : '' %>">
+                            <input type="file" id="coverImageUpload" name="coverImage" accept="image/*" class="hidden">
+                            <div class="flex flex-col items-center justify-center h-full">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                <p class="text-sm text-gray-600">Click to upload or drag and drop</p>
+                                <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
+                            </div>
+                        </label>
+                        
+                        <!-- Existing image preview -->
+                        <% if ((game && game.media && game.media.coverImage) || (typeof errors !== 'undefined' && game.media?.coverImage)) { %>
+                            <div id="coverPreviewContainer" class="preview-container">
+                                <div class="relative">
+                                    <img id="coverPreviewImage" src="<%= game.media.coverImage %>" alt="Cover Preview" class="preview-image" />
+                                    <button type="button" onclick="clearCoverPreview()"
+                                            class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <div id="coverPreviewContainer" class="preview-container hidden"></div>
+                        <% } %>
                     </div>
-                  </div>
+                    <% if (errors && errors.coverImage) { %>
+                        <p class="text-red-500 text-sm mt-2"><%= errors.coverImage %></p>
+                    <% } %>
+                </div>
                   
                 
                 <!-- Screenshots Section -->
@@ -388,7 +412,7 @@
                     <p class="helper-text mb-3">Upload up to 4 screenshots in 16:9 aspect ratio</p>
                     
                     <div class="file-upload" id="screenshotDropzone">
-                      <input type="file" id="screenshotUpload" name="screenshots" accept="image/*" class="hidden" multiple onchange="previewScreenshots(event)">
+                      <input type="file" id="screenshotUpload" name="screenshots" accept="image/*" class="hidden" multiple>
                       <div class="flex flex-col items-center">
                         <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
                         <p class="text-gray-400">Drag and drop screenshots here or click to browse</p>
@@ -398,24 +422,28 @@
                     
                     <div id="screenshotsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <!-- Preview Area -->
-                      <% if (game && game.media && game.media.screenshots && game.media.screenshots.length > 0) { %>
-                        <% game.media.screenshots.forEach(function(screenshot) { %>
-                          <div class="relative">
-                            <img src="<%= screenshot %>" alt="Screenshot" class="preview-image" />
-                            <button type="button" onclick="removeScreenshot('<%= screenshot %>')"
-                                    class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
-                              <i class="fas fa-times"></i>
-                            </button>
+                      <% if ((game && game.media && game.media.screenshots && game.media.screenshots.length > 0) || 
+                            (typeof errors !== 'undefined' && game.media?.screenshots?.length > 0)) { %>
+                        <% game.media.screenshots.forEach(function(screenshot, index) { %>
+                          <div class="screenshot-preview" data-id="existing-<%= index %>">
+                            <div class="relative">
+                              <img src="<%= screenshot %>" alt="Screenshot" class="preview-image" />
+                              <button type="button" class="screenshot-remove-btn absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                      onclick="removeScreenshot('existing-<%= index %>')">
+                                <i class="fas fa-times"></i>
+                              </button>
+                              <input type="hidden" name="existingScreenshots[]" value="<%= screenshot %>">
+                            </div>
                           </div>
                         <% }) %>
                       <% } %>
+                      <div id="addScreenshotBtn" onclick="document.getElementById('screenshotUpload').click()" 
+                           class="cursor-pointer flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-400 rounded-lg hover:border-blue-500 transition-colors">
+                        <i class="fas fa-plus text-2xl text-gray-400 mb-2"></i>
+                        <span class="text-gray-400">Add Screenshot</span>
+                      </div>
                     </div>
-                  
-                    <div id="addScreenshotBtn" onclick="document.getElementById('screenshotUpload').click()">
-                      <i class="fas fa-plus text-2xl text-gray-400 mb-2"></i>
-                      <span class="text-gray-400">Add Screenshot</span>
-                    </div>
-                  </div>
+                </div>
                   
             </div>
 
@@ -445,40 +473,55 @@
                           
                         <div>
                             <label class="form-label">Category</label>
-                            <select name="category" class="form-input">
-                              <% if (typeof category !== 'undefined' && Array.isArray(category)) { %>
-                                <% category.forEach(function(cat) { %>
-                                    <option value="<%= cat._id %>" <%=cat._id.toString() === game.category._id.toString() ? 'selected' : '' %>>
-
-                                    <%= cat.categoryName %>
-                                  </option>
+                            <select name="category" class="form-input <%= errors && errors.category ? 'border-red-500' : '' %>">
+                                <option value="">Select Category</option>
+                                <% category.forEach(function(cat) {
+                                    const selectedCategoryId = game.category?._id?.toString() || game.category?.toString();
+                                %>
+                                    <option value="<%= cat._id %>" <%= cat._id.toString() === selectedCategoryId ? 'selected' : '' %>>
+                                        <%= cat.categoryName %>
+                                    </option>
                                 <% }); %>
-                              <% } %>
                             </select>
-                          </div>
+                            <% if (errors && errors.category) { %>
+                                <p class="text-red-500 text-sm mt-1"><%= errors.category %></p>
+                            <% } %>
+                        </div>
                           
                     </div>
                     <div>
                         <label class="form-label">Description</label>
-                        <textarea value="" name="description" rows="4" class="form-input"><%=game.description%></textarea>
+                        <textarea name="description" rows="4" class="form-input <%= errors && errors.description ? 'border-red-500' : '' %>"><%=game.description%></textarea>
+                        <% if (errors && errors.description) { %>
+                            <p class="text-red-500 text-sm mt-1"><%= errors.description %></p>
+                        <% } %>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="form-label">Release Date</label>
-                            <input type="date" name="releaseDate" class="form-input" value="<%= game.releaseDate.toISOString().split('T')[0] %>">
-
+                        <div class="mb-4">
+                            <label class="block text-gray-700 font-medium mb-2">Release Date</label>
+                            <input type="date" name="releaseDate" value="<%= game.releaseDate ? game.releaseDate.toISOString().split('T')[0] : '' %>" class="form-input w-full">
+                            <% if (errors && errors.releaseDate) { %>
+                                <p class="text-red-500 text-sm mt-1"><%= errors.releaseDate %></p>
+                            <% } %>
                         </div>
                         <div>
                             <label class="form-label">Stock Quantity</label>
-                            <input type="number" name="stockQuantity" class="form-input" value="<%= game.stockQuantity %>">
+                            <input type="number" name="stockQuantity" class="form-input <%= errors && errors.stockQuantity ? 'border-red-500' : '' %>" 
+                                   value="<%= game.stockQuantity %>">
+                            <% if (errors && errors.stockQuantity) { %>
+                                <p class="text-red-500 text-sm mt-1"><%= errors.stockQuantity %></p>
+                            <% } %>
                         </div>
                         <div>
                             <label class="form-label">Status</label>
-                            <select name="status" class="form-input">
+                            <select name="status" class="form-input <%= errors && errors.status ? 'border-red-500' : '' %>">
+                                <option value="">Select Status</option>
                                 <option value="active" <%=game.status==='Active'?'selected':''%>>Active</option>
                                 <option value="inactive" <%=game.status==='inactive'?'selected':''%>>InActive</option>
-                                <!-- <option value="outofstock" <%= game.status === 'outofstock' ? 'selected' : '' %>>Out of Stock</option> -->
                             </select>
+                            <% if (errors && errors.status) { %>
+                                <p class="text-red-500 text-sm mt-1"><%= errors.status %></p>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -500,163 +543,158 @@
     <script>
         const MAX_SCREENSHOTS = 4;
         let screenshotCount = 0;
-
-        // Handle cover image upload
-        document.getElementById('coverImageUpload').addEventListener('change', function(event) {
+    
+        function handleCoverImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
+                // Check if file is an image
                 if (!file.type.startsWith('image/')) {
                     alert('Please select an image file');
+                    event.target.value = '';
                     return;
                 }
-
+    
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     const previewImage = document.getElementById('coverPreviewImage');
                     previewImage.src = e.target.result;
                     document.getElementById('coverPreviewContainer').classList.remove('hidden');
                 };
                 reader.readAsDataURL(file);
             }
-        });
-
-        // Handle screenshot upload
-        document.getElementById('screenshotUpload').addEventListener('change', function(event) {
+        }
+    
+        function handleScreenshotUpload(event) {
             const files = Array.from(event.target.files);
-            const remainingSlots = MAX_SCREENSHOTS - screenshotCount;
-            
+            const currentScreenshots = document.querySelectorAll('.screenshot-preview').length;
+            const remainingSlots = MAX_SCREENSHOTS - currentScreenshots;
+    
             if (files.length > remainingSlots) {
                 alert(`You can only add ${remainingSlots} more screenshot${remainingSlots === 1 ? '' : 's'}`);
+                event.target.value = '';
                 return;
             }
-
+    
             files.forEach((file) => {
+                // Check if file is an image
                 if (!file.type.startsWith('image/')) {
                     alert('Please select only image files');
                     return;
                 }
-
+    
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    const screenshotId = `screenshot-${Date.now()}`;
+                reader.onload = function (e) {
+                    const screenshotId = `new-${Date.now()}`;
                     const previewElement = document.createElement('div');
                     previewElement.className = 'screenshot-preview';
                     previewElement.dataset.id = screenshotId;
-                    
+    
                     previewElement.innerHTML = `
-                        <img src="${e.target.result}" alt="Screenshot" class="preview-image">
-                        <button type="button" class="screenshot-remove-btn" data-id="${screenshotId}">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <div class="relative">
+                            <img src="${e.target.result}" alt="Screenshot" class="preview-image">
+                            <button type="button" class="screenshot-remove-btn absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                    onclick="removeScreenshot('${screenshotId}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     `;
+    
+                    // Create a hidden input for the file
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.name = 'screenshots';
+                    fileInput.style.display = 'none';
                     
-                    // Create hidden input for the file
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'file';
-                    hiddenInput.name = 'screenshots';
-                    hiddenInput.classList.add('hidden');
-                    hiddenInput.dataset.id = screenshotId;
-                    
-                    // Store the original file
+                    // Create a new DataTransfer object and add the file
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(file);
-                    hiddenInput.files = dataTransfer.files;
+                    fileInput.files = dataTransfer.files;
                     
-                    previewElement.appendChild(hiddenInput);
-                    
-                    // Insert before the add button
+                    previewElement.appendChild(fileInput);
+    
                     const addButton = document.getElementById('addScreenshotBtn');
                     document.getElementById('screenshotsContainer').insertBefore(previewElement, addButton);
-                    
-                    screenshotCount++;
-                    if (screenshotCount >= MAX_SCREENSHOTS) {
-                        addButton.style.display = 'none';
-                    }
+    
+                    updateScreenshotCount();
                 };
                 reader.readAsDataURL(file);
             });
-
-            // Clear the input to allow selecting the same file again
-            event.target.value = '';
-        });
-
-        // Handle screenshot removal
-        document.getElementById('screenshotsContainer').addEventListener('click', function(e) {
-            const removeBtn = e.target.closest('.screenshot-remove-btn');
-            if (removeBtn) {
-                const screenshotId = removeBtn.dataset.id;
-                const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
-                
-                if (previewElement) {
-                    previewElement.remove();
-                    screenshotCount--;
-                    
-                    if (screenshotCount < MAX_SCREENSHOTS) {
-                        document.getElementById('addScreenshotBtn').style.display = '';
-                    }
-                }
+            
+            event.target.value = ''; // Clear the input
+        }
+    
+        function removeScreenshot(screenshotId) {
+            const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
+            if (previewElement) {
+                previewElement.remove();
+                updateScreenshotCount();
             }
-        });
-
-        // Clear cover image
+        }
+    
+        function updateScreenshotCount() {
+            const currentScreenshots = document.querySelectorAll('.screenshot-preview').length;
+            const addButton = document.getElementById('addScreenshotBtn');
+            
+            if (currentScreenshots >= MAX_SCREENSHOTS) {
+                addButton.style.display = 'none';
+            } else {
+                addButton.style.display = 'flex';
+            }
+        }
+    
         function clearCoverPreview() {
             document.getElementById('coverPreviewImage').src = '';
             document.getElementById('coverPreviewContainer').classList.add('hidden');
             document.getElementById('coverImageUpload').value = '';
         }
-
-        // Handle drag and drop
+    
         function setupDragAndDrop(dropArea, fileInput) {
-            if (!dropArea) return;
-            
+            if (!dropArea || !fileInput) return;
+    
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 dropArea.addEventListener(eventName, preventDefaults, false);
             });
-            
+    
             function preventDefaults(e) {
                 e.preventDefault();
                 e.stopPropagation();
             }
-            
+    
             ['dragenter', 'dragover'].forEach(eventName => {
                 dropArea.addEventListener(eventName, () => {
                     dropArea.classList.add('border-blue-500');
                 }, false);
             });
-            
+    
             ['dragleave', 'drop'].forEach(eventName => {
                 dropArea.addEventListener(eventName, () => {
                     dropArea.classList.remove('border-blue-500');
                 }, false);
             });
-            
+    
             dropArea.addEventListener('drop', (e) => {
                 const dt = e.dataTransfer;
                 const files = dt.files;
-                
+    
                 if (files.length > 0) {
                     fileInput.files = files;
                     fileInput.dispatchEvent(new Event('change'));
                 }
             }, false);
         }
-
-        // Initialize drag and drop
-        document.addEventListener('DOMContentLoaded', function() {
-            setupDragAndDrop(document.querySelector('.file-upload'), document.getElementById('coverImageUpload'));
-            setupDragAndDrop(document.getElementById('addScreenshotBtn'), document.getElementById('screenshotUpload'));
-        });
-
+    
         function initPlatformDropdown() {
             const platformSelectBtn = document.getElementById('platformSelectBtn');
             const platformSelectMenu = document.getElementById('platformSelectMenu');
             const platformInput = document.getElementById('platformInput');
             const selectedPlatform = document.getElementById('selectedPlatform');
-
+    
+            if (!platformSelectBtn || !platformSelectMenu || !platformInput || !selectedPlatform) return;
+    
             platformSelectBtn.addEventListener('click', () => {
                 platformSelectMenu.classList.toggle('hidden');
             });
-
+    
             platformSelectMenu.querySelectorAll('div').forEach(item => {
                 item.addEventListener('click', (e) => {
                     const value = e.target.getAttribute('data-value');
@@ -666,34 +704,58 @@
                     platformSelectMenu.classList.add('hidden');
                 });
             });
-
-            // Close dropdown if clicked outside
+    
             document.addEventListener('click', (e) => {
                 if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
                     platformSelectMenu.classList.add('hidden');
                 }
             });
         }
-
-
-        // Initialize nav group headers if they exist
-        document.addEventListener('DOMContentLoaded', () => {
+    
+        function initNavToggles() {
             const navGroupHeaders = document.querySelectorAll('.nav-group-header');
             navGroupHeaders.forEach(header => {
                 header.addEventListener('click', () => {
                     const content = header.nextElementSibling;
                     const toggle = header.querySelector('.nav-group-toggle');
-                    
                     if (content && toggle) {
                         content.classList.toggle('show');
                         toggle.classList.toggle('rotated');
                     }
                 });
             });
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add event listeners
+            const coverImageUpload = document.getElementById('coverImageUpload');
+            const screenshotUpload = document.getElementById('screenshotUpload');
+            
+            if (coverImageUpload) {
+                coverImageUpload.addEventListener('change', handleCoverImageUpload);
+            }
+            
+            if (screenshotUpload) {
+                screenshotUpload.addEventListener('change', handleScreenshotUpload);
+            }
+    
+            // Setup drag and drop
+            setupDragAndDrop(
+                document.querySelector('.file-upload'), 
+                document.getElementById('coverImageUpload')
+            );
+            setupDragAndDrop(
+                document.getElementById('screenshotDropzone'), 
+                document.getElementById('screenshotUpload')
+            );
+    
+            initPlatformDropdown();
+            initNavToggles();
+
+            // Initialize screenshot count
+            updateScreenshotCount();
         });
-      
-
-
     </script>
+    
 </body>
 </html>

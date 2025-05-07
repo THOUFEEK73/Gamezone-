@@ -36,15 +36,6 @@ export const getLoginPage = (req, res) => {
 
 // Logout User
 export const logout = (req, res) => {
-  // req.session.destroy((err) => {
-  //   if (err) {
-  //     console.error('Error destroying session:', err);
-  //     return res.status(500).json({ message: "Error destroying session" });
-  //   }
-  //   res.clearCookie('connect.sid');
-  //   return res.redirect('/login');
-  // });
-
   req.session.userId = null;
   return res.redirect('/login')
 };
@@ -132,9 +123,10 @@ export const verifyOTP = async (req, res) => {
   try {
     const { email, otp1, otp2, otp3, otp4, otp5, otp6 } = req.body;
     const fullOTP = `${otp1}${otp2}${otp3}${otp4}${otp5}${otp6}`;
-    console.log('test')
+   
      console.log(fullOTP)
     const otpRecord = await OTP.findOne({ email });
+  
     if (!otpRecord) {
       return res.render("user/verify-otp", {
         email,

@@ -36,7 +36,7 @@ export const homePageSearch  = async(req,res)=>{
   try {
     const query = req.query.query || '';
     const games = await searchGames(query);
-    return res.json({ games });
+    return res.json({ games,status:'active' });
 } catch (error) {
     console.error('Error handling search request:', error);
     res.status(500).json({ error: 'Internal Server Error' });

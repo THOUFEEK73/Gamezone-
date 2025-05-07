@@ -5,7 +5,7 @@ import Category from "../models/CategoryModel.js";
 const filterGames = async(req,res)=>{
 
     try{
-        console.log('working')
+        
         const {genres,maxPrice}  = req.body;
         console.log(genres,maxPrice);
        const category = await Category.find();
@@ -17,7 +17,7 @@ const filterGames = async(req,res)=>{
             query.category = {$in:genres};
         }
 
-        const games = await Game.find(query).populate('category');
+        const games = await Game.find({...query,status:'active'}).populate('category');
         res.json({games});
 
     }catch(error){

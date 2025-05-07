@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Product Unavailable</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="min-h-screen bg-white to-blue-100 flex items-center justify-center">
+  <div class="bg-white shadow-2xl rounded-xl p-10 max-w-lg w-full text-center animate-fade-in">
+    <div class="flex justify-center mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-1.414 1.414A8 8 0 105.636 18.364l1.414-1.414a6 6 0 118.485-8.485z" />
+      </svg>
+    </div>
+    <h1 class="text-3xl font-extrabold text-black-600 mb-2">Product Not Available</h1>
+    <p class="text-red-400 text-lg mb-6"><%= message %></p>
+    <a href="/home" class="inline-block bg-green-600 text-white font-medium py-2 px-6 rounded-lg hover:bg-blue-700 transition duration-300">
+      Go Back to Home
+    </a>
+  </div>
+
+  <style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.4s ease-out;
+    }
+  </style>
+</body>
+</html>

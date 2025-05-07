@@ -1,24 +1,22 @@
 import multer from 'multer';
 
-//Stores the files temporarily in memroy before uploading to cloudinary
+// Stores the files temporarily in memory before uploading to cloudinary
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-    // Accept images only, including .avif
-    if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF|webp|WEBP|avif|AVIF)$/)) {
+    // Accept any image file type
+    if (!file.mimetype.startsWith('image/')) {
         req.fileValidationError = 'Only image files are allowed!';
         return cb(new Error('Only image files are allowed!'), false);
     }
     cb(null, true);
 };
 
-
 const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 40 * 1024 * 1024, // Increased to 20MB max file size
-        // files: 5 // Maximum number of files (1 cover + 4 screenshots)
+        fileSize: 10 * 1024 * 1024, // 10MB max file size
     }
 }).fields([
     { name: 'coverImage', maxCount: 1 },

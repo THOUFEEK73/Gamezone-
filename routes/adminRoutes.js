@@ -37,8 +37,7 @@ adminRoutes.use(noCache);
 // Public routes
 adminRoutes.get("/login",noCache, getAdminLoginPage);
 adminRoutes.post("/login",noCache, postAdminLogin);
-// adminRoutes.use(flash());
-// Middleware to protect all routes below
+
 
 adminRoutes.use(isAdminAuthenticated);
 adminRoutes.use(flash());
@@ -83,7 +82,7 @@ adminRoutes.post("/editgame/:id",
           err: 'An error occurred while uploading files'
         });
       }
-      // Everything went fine
+     
       next();
     });
   },

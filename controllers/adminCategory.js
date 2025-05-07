@@ -82,6 +82,10 @@ export const updateCategory = async(req,res)=>{
         try{
                 const categoryId =req.params.id;
                 const {categoryName} = req.body;
+                if(!categoryName || categoryName.trim() === "") {
+                  
+                        return res.status(400).json({success:false,message:"Category name is required"});
+                }
                 const existingCategory = await Category.findOne({categoryName});
                
                 if(existingCategory && existingCategory._id.toString()!==categoryId){

@@ -257,6 +257,11 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
     }, 300); // 300ms debounce delay
 });
 
+
+if(window.history.replaceState){
+  window.history.replaceState(null,null,window.location.href)
+}
+
   </script>
 
 </body>

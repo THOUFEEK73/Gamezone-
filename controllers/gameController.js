@@ -1,21 +1,6 @@
 import Game from '../models/gameModel.js';
 import Category from '../models/CategoryModel.js';
-import cloudinary from '../config/cloudinaryConfig.js';
-
-
-
-
-const uploadToCloudinary = (fileBuffer)=>{
-    return new Promise((res,rej)=>{
-        const stream = cloudinary.uploader.upload_stream({folder:'games/screenshots'},(error,result)=>{
-            if(error) rej(error);
-            else res(result);
-        });
-        stream.end(fileBuffer);
-    })
-  };
-
-
+import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
 
 export const getAllGames = async (req, res) => {
     try {
@@ -35,41 +20,31 @@ export const getAllGames = async (req, res) => {
     }
 };
 
-
 // export const uploadImages = upload.fields([
 //     {name:'coverImage',maxCount:1},
 //     {naem:'Screenshots',maxCount:4},
 // ])
 
-export const addGame =async (req, res) => {
-  try {
-    const category = await Category.find()
-    const data = await Game.find()
-
-    // res.render('admin/addgame',{category}); // Render the form to add a game
-    res.render('admin/addgame', { errors: {}, data, category });
-
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Failed to render add game page' });
-  }
+export const addGame = async (req, res) => {
+    try {
+        const category = await Category.find()
+        const data = await Game.find()
+        res.render('admin/addgame', { errors: {}, data, category });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Failed to render add game page' });
+    }
 };
-
-
-
-
 
 export const postGameDetails = async (req, res) => {
     try {
-        
         const { title, price, platform, description, releaseDate, stockQuantity, status, category } = req.body;
         req.session.formData = { title, price, description, releaseDate, stockQuantity, status, category };
        
         const categories = await Category.find();
-        console.log('process end');
-       const game = await Game.findOne();
+        const game = await Game.findOne();
     
-        const errors ={};
+        const errors = {};
 
         if(!title || title.trim()===""){
             errors.title = 'game title is required';
@@ -87,10 +62,7 @@ export const postGameDetails = async (req, res) => {
             errors.releaseDate = 'game release date is required';
         }
         
-        // else if(!isValidDate(releaseDate)){
-        //     errors.releaseDate = 'Invalid date format. Please use YYYY-MM-DD.';
-        // }
-         if(!stockQuantity || stockQuantity.trim()===""){
+        if(!stockQuantity || stockQuantity.trim()===""){
            errors.stockQuantity = 'game stock quantity is required';
         }else if(parseInt(stockQuantity)<=0){
             errors.stockQuantity = 'Stock quantity cannot be zero or negative';
@@ -101,8 +73,6 @@ export const postGameDetails = async (req, res) => {
          if(!category  || category.trim()===""){
            errors.category = 'game category is required';
         }
-
-      
 
         if(Object.keys(errors).length>0){
             return res.render('admin/addgame',{errors,game,category:categories,data:req.session.formData || {}});
@@ -118,7 +88,6 @@ export const postGameDetails = async (req, res) => {
                 data: req.session.formData || {},
                 game,
             });
-            
         }
 
         // Upload cover image
