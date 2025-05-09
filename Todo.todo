@@ -13,6 +13,17 @@
 ✔ add validation in editProduct @done (5/5/2025, 6:34:48 PM)
 ✔ fix add category validation @done (5/5/2025, 7:27:58 PM)
 ✔ fix edit category validation @done (5/5/2025, 7:28:00 PM)
-☐ solve a leetcode problem
-☐ fix search product bugs
-☐ check final validation
+✔ solve a leetcode problem @done (5/8/2025, 1:05:53 PM)
+✔ fix search product bugs @done (5/8/2025, 1:05:55 PM)
+✔ check final validation @done (5/8/2025, 1:05:57 PM) need to improve 
+
+
+✔ add company @done (5/8/2025, 1:08:11 PM)
+✔ add edit button and its functionality @done (5/9/2025, 9:09:30 AM)
+✔ add toggle button based on active and inactive @done (5/8/2025, 2:17:03 PM)
+☐ show related company names
+☐ add audio search (optional)
+☐ solve one leetcode problem
+☐ fix game detail page ui
+
+

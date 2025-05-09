@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose';
 
 const gameSchema = new mongoose.Schema({
@@ -22,10 +23,10 @@ const gameSchema = new mongoose.Schema({
             default: []
         }]
     },
-    platforms: {
-        type: [String],
+    company: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:'GameCompany',
         required: true,
-        default: []
     },
     category: {
         type: mongoose.Schema.Types.ObjectId,
@@ -47,7 +48,6 @@ const gameSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        required: true,
         enum: ['active', 'inactive'],
         default: 'active'
     },

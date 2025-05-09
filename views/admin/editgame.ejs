@@ -453,22 +453,29 @@
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="relative w-full">
-                            <label class="form-label">Platform</label>
-
-                            <button type="button" id="platformSelectBtn" class="w-full flex justify-between items-center form-input">
-                                <span id="selectedPlatform">Select Platform</span>
-                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            <div id="platformSelectMenu" class="absolute mt-1 w-full rounded-lg shadow-lg hidden z-10">
-                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="ps5">PlayStation 5</div>
-                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="xbox">Xbox Series X</div>
-                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="pc">PC</div>
+                           
+                        
+                            <div>
+                                <label class="form-label">Production</label>
+                                <select name="company" class="form-input" required>
+                                    <option value="" disabled <%= !game || !game.company ? 'selected' : '' %>>Select company</option>
+                                    <% if (typeof companies !== 'undefined' && Array.isArray(companies)) { %>
+                                        <% companies.forEach(function(com) { %>
+                                            <option value="<%= com._id %>" <%= game && game.company && game.company._id.toString() === com._id.toString() ? 'selected' : '' %>>
+                                                <%= com.name %>
+                                            </option>
+                                        <% }); %>
+                                    <% } %>
+                                </select>
+                            
+                                <% if (typeof errors !== 'undefined' && errors.company) { %>
+                                    <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                        <%= errors.company %>
+                                    </div>
+                                <% } %>
                             </div>
-
-                            <input type="hidden" name="platform" id="platformInput"> 
+                            
+                        
                         </div>
                           
                         <div>
@@ -514,14 +521,10 @@
                         </div>
                         <div>
                             <label class="form-label">Status</label>
-                            <select name="status" class="form-input <%= errors && errors.status ? 'border-red-500' : '' %>">
-                                <option value="">Select Status</option>
-                                <option value="active" <%=game.status==='Active'?'selected':''%>>Active</option>
-                                <option value="inactive" <%=game.status==='inactive'?'selected':''%>>InActive</option>
+                            <select name="status" class="form-input">
+                                <option value="active" <%= game && game.status === 'active' ? 'selected' : '' %>>Active</option>
+                                <option value="inactive" <%= game && game.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
                             </select>
-                            <% if (errors && errors.status) { %>
-                                <p class="text-red-500 text-sm mt-1"><%= errors.status %></p>
-                            <% } %>
                         </div>
                     </div>
                 </div>

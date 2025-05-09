@@ -1,6 +1,7 @@
 import Game from '../models/gameModel.js';
 import Category from '../models/CategoryModel.js';
 import { uploadToCloudinary } from '../utils/cloudinaryUtils.js';
+import gamecompany from '../models/gamecompany.js';
 
 export const getAllGames = async (req, res) => {
     try {
@@ -11,9 +12,10 @@ export const getAllGames = async (req, res) => {
         const skip   = (page - 1) * limit;
         const totalGames = await Game.countDocuments();
         const totalPages = Math.ceil(totalGames / limit);
+        const companies = await gamecompany.find()
 
         const games = await Game.find().skip(skip).limit(limit).populate('category','categoryName');
-        res.render('admin/games', {games:games,totalPages,currentPage:page});
+        res.render('admin/games', {games:games,totalPages,currentPage:page,company:companies});
     } catch (error) {
         console.error('Error fetching games:', error);
         res.status(500).json({ error: 'Failed to fetch games' });
@@ -27,9 +29,11 @@ export const getAllGames = async (req, res) => {
 
 export const addGame = async (req, res) => {
     try {
+        const companies = await gamecompany.find()
+       
         const category = await Category.find()
         const data = await Game.find()
-        res.render('admin/addgame', { errors: {}, data, category });
+        res.render('admin/addgame', { errors: {}, data, category,companies });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Failed to render add game page' });
@@ -38,9 +42,10 @@ export const addGame = async (req, res) => {
 
 export const postGameDetails = async (req, res) => {
     try {
-        const { title, price, platform, description, releaseDate, stockQuantity, status, category } = req.body;
-        req.session.formData = { title, price, description, releaseDate, stockQuantity, status, category };
-       
+        const { title, price, company, description, releaseDate, stockQuantity, status, category } = req.body;
+        req.session.formData = { title, price,company, description, releaseDate, stockQuantity, status, category };
+        console.log('this is the company',company)
+        console.log('this is category',category)
         const categories = await Category.find();
         const game = await Game.findOne();
     
@@ -91,9 +96,9 @@ export const postGameDetails = async (req, res) => {
         }
 
         // Upload cover image
-        console.log('start');
+      
         const coverImageUpload = await uploadToCloudinary(req.files.coverImage[0].buffer, 'games/coverImages');
-        console.log('end');
+     
 
         // Upload screenshots if provided
         let screenshotsUrls = [];
@@ -106,27 +111,12 @@ export const postGameDetails = async (req, res) => {
                 })
             );
         }
-        console.log('Screenshots uploaded:', screenshotsUrls);
-
-        console.log({
-            title,
-            price,
-            platforms: [platform],
-            description,
-            releaseDate,
-            stockQuantity,
-            status,
-            category,
-            media: {
-                coverImage: coverImageUpload?.secure_url,
-                screenshots: screenshotsUrls
-            }
-        });
+       
 
         const newGame = new Game({
             title,
             price,
-            platforms: [platform], // Convert single platform to array
+            company, 
             description,
             releaseDate,
             stockQuantity,
@@ -139,8 +129,8 @@ export const postGameDetails = async (req, res) => {
         });
 
         await newGame.save();
-        console.log('Game added successfully:', newGame);
-        res.redirect('/admin/games'); // Redirect to games list after successful creation
+      
+        res.redirect('/admin/games'); 
 
     } catch (error) {
         console.error('Error adding game:', error);

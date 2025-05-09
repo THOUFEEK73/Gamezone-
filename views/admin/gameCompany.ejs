@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameZone Admin - Game Companies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1f1f1f;
+            color: #ffffff;
+        }
+
+        .card {
+            background-color: #2a2a2a;
+            border: 1px solid #333333;
+            transition: all 0.2s ease;
+        }
+
+        .company-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #333333;
+            transition: all 0.2s ease;
+        }
+
+        .company-item:last-child {
+            border-bottom: none;
+        }
+
+        .company-item:hover {
+            background: #333333;
+        }
+
+        .company-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .action-btn {
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn {
+            color: #818cf8;
+        }
+
+        .edit-btn:hover {
+            background: rgba(129, 140, 248, 0.1);
+        }
+
+        .delete-btn {
+            color: #ef4444;
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .search-input {
+            background-color: #2a2a2a;
+            border: 1px solid #333333;
+            color: #ffffff;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            width: 100%;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #818cf8;
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.status-active {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-badge.status-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .modal {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .form-label {
+            color: #ffffff;
+        }
+
+        .form-input {
+            background-color: #333333;
+            border: 1px solid #404040;
+            color: #ffffff;
+        }
+
+        .form-input:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
+        }
+
+        .btn-cancel {
+            background: #333333;
+            color: #ffffff;
+            border: 1px solid #404040;
+        }
+
+        .btn-cancel:hover {
+            background: #404040;
+        }
+
+        .btn-submit {
+            background: #818cf8;
+            color: #ffffff;
+        }
+
+        .btn-submit:hover {
+            background: #6366f1;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="flex h-screen">
+    <%- include('partials/sidebar') %>
+
+    <!-- Main Content -->
+    <div class="flex-1 ml-72 p-8 main-content bg-[#1f1f1f]">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Game Companies</h1>
+                <p class="text-gray-400 mt-2">Manage your game companies</p>
+            </div>
+            <button id="addCompanyBtn" class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all duration-300">
+                <i class="fas fa-plus mr-2"></i>
+                Add New Company
+            </button>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="flex items-center bg-[#2a2a2a] rounded-lg overflow-hidden col-span-3">
+                <input type="text" id="searchInput" placeholder="Search companies..." class="bg-transparent px-4 py-2 w-full focus:outline-none text-white">
+            </div>
+            <select id="statusFilter" class="px-4 py-2 rounded-lg bg-[#2a2a2a] text-white border-none focus:outline-none">
+                <option value="all">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+
+        <!-- Companies List -->
+        <div class="bg-[#2a2a2a] rounded-lg overflow-hidden">
+            <%if (company && company.length > 0){%>
+                <%company.forEach(company=>{%>
+                    <div class="company-item">
+                        <div class="text-lg font-medium text-white">
+                            <%=company.name%>
+                        </div>
+                        <div class="company-actions">
+                            <span class="status-badge status-active">
+                                <i class="fas fa-circle text-xs"></i>
+                                <%=company.status ==='active' ? 'Active':'Inactive'%>
+                            </span>
+                            <button type="button" 
+                            class="action-btn edit-btn" 
+                            data-company-id="<%= company._id %>" 
+                            data-company-name="<%= company.name %>">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        
+                           
+                            <form action="/admin/company/toggle/<%=company._id%>" method="POST">
+                                <button class="status-toggle" data-company-id="1" data-status="active">
+                                    <i class="fas fa-toggle-<%=company.status==='active'?'on':'off'%>  text-<%=company.status==='active'? 'green-500':'red-500'%>"></i>
+                                </button>
+                            </form>
+                           
+                        </div>
+                    </div>
+                    <%});%>
+                    <%} else{%>
+                        <div class="company-item">
+                            <div class="text-lg font-medium text-gray-400">
+                                No companies found
+                            </div>
+                        </div>
+                    <%}%>
+             
+        
+         
+        </div>
+
+        <!-- Pagination -->
+     
+    </div>
+
+    <!-- Add Company Modal -->
+    <div id="addCompanyModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="modal-content bg-[#2a2a2a] p-6 rounded-xl w-full max-w-md mx-4">
+            <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-white" id="closeAddModal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-header mb-6">
+                <h2 class="text-2xl font-bold text-white">Add New Company</h2>
+            </div>
+            <form id="addCompanyForm" action="/admin/companies" method="POST">
+                <div class="mb-6">
+                    <label class="block text-gray-300 mb-2" for="companyName">Company Name</label>
+                    <input type="text" id="companyName" name="companyName" class="w-full px-4 py-2 rounded-lg bg-[#333333] border border-gray-600 text-white focus:outline-none focus:border-purple-500" placeholder="Enter company name" autocomplete="off">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelAdd" class="px-4 py-2 bg-[#333333] text-gray-300 rounded-lg hover:bg-[#404040] transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        Add Company
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Edit Company Modal -->
+<!-- Edit Company Modal -->
+<div id="editCompanyModal"
+    class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+    <div class="modal-content bg-[#2a2a2a] p-6 rounded-xl w-full max-w-md mx-4 relative">
+        <!-- Close modal (X) button -->
+        <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-white" id="closeEditCompanyModal">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="modal-header mb-6">
+            <h2 class="text-2xl font-bold text-white">Edit Company</h2>
+        </div>
+
+        <!-- ✅ Only one form here -->
+        <form id="editCompanyForm" action="/admin/company/edit/:id" method="POST">
+            <input type="hidden" id="editCompanyId" name="companyId">
+
+            <div class="mb-6">
+                <label class="block text-gray-300 mb-2" for="editCompanyName">Company Name</label>
+                <input type="text" id="editCompanyName" name="companyName"
+                    class="w-full px-4 py-2 rounded-lg bg-[#333333] border border-gray-600 text-white focus:outline-none focus:border-purple-500"
+                    placeholder="Enter company name" autocomplete="off">
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button type="button" id="cancelEditCompany"
+                    class="px-4 py-2 bg-[#333333] text-gray-300 rounded-lg hover:bg-[#404040] transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                    Update Company
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+    <script>
+        // Add Company Modal Functionality
+        const addCompanyModal = document.getElementById('addCompanyModal');
+        const addCompanyBtn = document.getElementById('addCompanyBtn');
+        const closeAddModal = document.getElementById('closeAddModal');
+        const cancelAdd = document.getElementById('cancelAdd');
+        const addCompanyForm = document.getElementById('addCompanyForm');
+
+        // Show modal
+        addCompanyBtn.addEventListener('click', () => {
+            addCompanyModal.classList.remove('hidden');
+            addCompanyModal.classList.add('flex');
+        });
+
+        // Hide modal function
+        const hideAddModal = () => {
+            addCompanyModal.classList.add('hidden');
+            addCompanyModal.classList.remove('flex');
+            addCompanyForm.reset(); // Reset the form when closing
+        };
+
+        // Close modal with X button
+        closeAddModal.addEventListener('click', hideAddModal);
+
+        // Close modal with Cancel button
+        cancelAdd.addEventListener('click', hideAddModal);
+
+        // Close modal when clicking outside
+        addCompanyModal.addEventListener('click', (e) => {
+            if (e.target === addCompanyModal) {
+                hideAddModal();
+            }
+        });
+
+
+
+
+
+        document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            const companyId = this.getAttribute('data-company-id');
+            const companyName = this.getAttribute('data-company-name');
+
+            // Set input values
+            document.getElementById('editCompanyId').value = companyId;
+            document.getElementById('editCompanyName').value = companyName;
+
+            // Update form action
+            document.getElementById('editCompanyForm').action = `/admin/company/edit/${companyId}`;
+
+            // Show modal
+            document.getElementById('editCompanyModal').classList.remove('hidden');
+        });
+    });
+
+    // Close modal
+    document.getElementById('closeEditCompanyModal').addEventListener('click', () => {
+        document.getElementById('editCompanyModal').classList.add('hidden');
+    });
+
+    document.getElementById('cancelEditCompany').addEventListener('click', () => {
+        document.getElementById('editCompanyModal').classList.add('hidden');
+    });
+     
+    </script>
+</body>
+</html> 

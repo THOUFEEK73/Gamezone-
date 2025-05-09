@@ -10,7 +10,7 @@ export const getAllUsersPage = async(req , res)=>{
         const limit = 5;
         const skip  = (page - 1) * limit;
         const totalUsers  = await User.countDocuments();
-        console.log(totalUsers)
+   
         const totalPages = Math.ceil(totalUsers / limit);
         const users = await User.find().skip(skip).limit(limit)
         return res.render('admin/users',{users:users,currentPage:page,totalPages});

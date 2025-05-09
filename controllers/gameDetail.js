@@ -1,3 +1,4 @@
+
 import Game from "../models/gameModel.js";
 
 
@@ -10,8 +11,8 @@ export const getDetailPage = async(req ,res)=>{
     try{
         const gameId = req.params.id;
        
-        
-        const game = await Game.findById(gameId).populate('category');
+       
+        const game = await Game.findById(gameId).populate('category').populate('company');
 
         if(!game || game.status !=='active'){
             return res.status(404).render('user/gameUnavailable',{message:'This game is currently unavailable'});
@@ -27,6 +28,6 @@ export const getDetailPage = async(req ,res)=>{
 
     }catch(err){
         console.error('Error fetching game details:',err);
-        res.status(500).send('Internal Server Error');  
+        res.status(500).render('error',{message:'Internal Server Error'});  
     }
 }

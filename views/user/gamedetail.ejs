@@ -406,7 +406,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Publisher</p>
-                                <p class="font-semibold"><%= game.publisher || 'Unknown' %></p>
+                                <p class="font-semibold"><%= game.company?.name || 'Unknown' %></p>
                             </div>
                         </div>
                     </div>
@@ -456,22 +456,6 @@
                     <% } %>
                 </div>
 
-                <!-- Platform Availability -->
-                <div class="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Available Platforms</h3>
-                    <div class="flex flex-wrap gap-3">
-                        <% game.platforms.forEach(platform => { %>
-                            <div class="flex items-center space-x-2 bg-indigo-50 px-4 py-2 rounded-lg">
-                                <% let platformIcon = 'desktop'; %>
-                                <% if (platform.toLowerCase().includes('ps')) platformIcon = 'playstation'; %>
-                                <% if (platform.toLowerCase().includes('xbox')) platformIcon = 'xbox'; %>
-                                <% if (platform.toLowerCase().includes('switch')) platformIcon = 'nintendo-switch'; %>
-                                <i class="fab fa-<%= platformIcon %> text-indigo-600"></i>
-                                <span class="font-medium text-gray-700"><%= platform %></span>
-                            </div>
-                        <% }); %>
-                    </div>
-                </div>
 
                 <!-- Game Rating -->
                 <div class="bg-white rounded-xl p-6 shadow-sm">
@@ -520,14 +504,11 @@
                     
                     <div class="space-y-4">
                         <!-- Platform Selection -->
-                        <div>
-                            <label class="block text-sm font-medium mb-2">Available Platforms:</label>
-                            <div class="flex flex-wrap gap-2">
-                                <% game.platforms.forEach(platform => { %>
-                                    <span class="platform-badge"><%= platform %></span>
-                                <% }); %>
-                            </div>
-                        </div>
+                     
+
+
+                         <span>Platform demo</span>
+
 
                         <!-- Stock Status -->
                         <div class="stock-status">

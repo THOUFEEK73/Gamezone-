@@ -47,7 +47,7 @@ router.get('/allsearch',allGameSearch);
 
 router.get('/allgames',isAuthenticated,showAllGames)
 router.get('/gamedetail/:id',isAuthenticated,getDetailPage);
-router.post('/filter-games',isAuthenticated,filterGames)
+router.post('/filter-games',filterGames)
 
 
 export default router;

@@ -427,23 +427,29 @@
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="relative w-full">
-                            <label class="form-label">Platform</label>
-
-                            <button type="button" id="platformSelectBtn" class="w-full flex justify-between items-center form-input">
-                                <span id="selectedPlatform">Select Platform</span>
-                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                </svg>
-                            </button>
-
-                            <div id="platformSelectMenu" class="absolute mt-1 w-full rounded-lg shadow-lg hidden z-10">
-                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="ps5">PlayStation 5</div>
-                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="xbox">Xbox Series X</div>
-                                <div class="px-4 py-2 hover:bg-gray-100 cursor-pointer" data-value="pc">PC</div>
+                           
+                        
+                            <div>
+                                <label class="form-label">Production</label>
+                                <select name="company" class="form-input">
+                                    <option value="" disabled selected>Select company</option>
+                                    <% if (typeof companies !== 'undefined' && Array.isArray(companies)) { %>
+                                        <% companies.forEach(function(com) { %>
+                                            <option value="<%= com._id %>"><%= com.name %></option>
+                                        <% }); %>
+                                    <% } %>
+                                </select>
+                                
+                                <% if (typeof errors !== 'undefined' && errors.company) { %>
+                                    <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                        <%= errors.company %>
+                                    </div>
+                                <% } %>
+                                  
                             </div>
-
-                            <input type="hidden" name="platform" id="platformInput"> 
+                        
                         </div>
+                        
                           
                         <div>
                             <label class="form-label">Category</label>
@@ -495,12 +501,13 @@
                         </div>
                         <div>
                             <label class="form-label">Status</label>
-                            <select name="status" class="form-input">
+                            <select name="status" class="form-input" required>
+                                <option value="" disabled selected>Choose status</option>
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
-                         
                         </div>
+                        
                     </div>
                 </div>
             </div>
@@ -712,8 +719,42 @@
                 });
             });
         });
+ 
 
+        // company drag and drop
+        document.addEventListener('DOMContentLoaded', () => {
+    const platformSelectBtn = document.getElementById('platformSelectBtn');
+    const platformSelectMenu = document.getElementById('platformSelectMenu');
+    const companyInput = document.getElementById('companyformInput');
+    const selectedPlatform = document.getElementById('selectedPlatform');
 
+    // Toggle the dropdown menu
+    platformSelectBtn.addEventListener('click', () => {
+        platformSelectMenu.classList.toggle('hidden');
+    });
+
+    // Handle selecting a company from the dropdown
+    platformSelectMenu.querySelectorAll('div').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const value = e.target.getAttribute('data-value');
+            const text = e.target.textContent;
+
+            // Update the selected company name and hidden input value
+            selectedPlatform.textContent = text;
+            companyInput.value = value;
+
+            // Hide the dropdown menu
+            platformSelectMenu.classList.add('hidden');
+        });
+    });
+
+    // Close the dropdown if clicked outside
+    document.addEventListener('click', (e) => {
+        if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
+            platformSelectMenu.classList.add('hidden');
+        }
+    });
+});
 
     </script>
 </body>

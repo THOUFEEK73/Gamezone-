@@ -222,14 +222,14 @@
       <!-- Sidebar -->
       <aside id="sidebar" class="w-full sm:w-64 p-6 bg-gray-50 border-b sm:border-r sm:border-b-0 border-gray-200 sm:h-screen sm:sticky sm:top-0 hidden sm:block">
         <h2 class="text-xl font-bold mb-4">Filters</h2>
-
+      
         <!-- Price -->
         <div class="mb-6">
           <h3 class="font-medium text-gray-700 mb-1">Price</h3>
           <input id="price-range" type="range" min="0" max="20000" value="20000" class="w-full">
           <p id="price-label" class="text-xs text-gray-500 mt-1">Up to ₹20,000</p>
         </div>
-
+      
         <!-- Genre Dropdown -->
         <div class="mb-4">
           <button onclick="toggleDropdown('genre-filters')" class="flex justify-between items-center w-full font-medium text-gray-700">
@@ -238,23 +238,21 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
           </button>
-          <div id="genre-filters"   class="mt-3 pl-3 space-y-3 text-sm bg-white p-4 rounded-md shadow-sm hidden">
-            
-          
-            
+          <div id="genre-filters" class="mt-3 pl-3 space-y-3 text-sm bg-white p-4 rounded-md shadow-sm hidden">
             <% category.forEach(category => { %>
               <div class="block">
-                <input type="checkbox" id="action" class="genre-checkbox" value="<%=category._id%>" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
-                <label for="action" class="ml-2 text-gray-700"><%=category.categoryName%></label>
+                <input
+                  type="checkbox"
+                  id="genre-<%= category._id %>"
+                  class="genre-checkbox form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                  value="<%= category._id %>"
+                >
+                <label for="genre-<%= category._id %>" class="ml-2 text-gray-700"><%= category.categoryName %></label>
               </div>
             <% }) %>
-            
-          
-            
-           
           </div>
         </div>
-
+      
         <!-- Company Dropdown -->
         <div class="mb-4">
           <button onclick="toggleDropdown('companyDropdown')" class="flex justify-between items-center w-full font-medium text-gray-700">
@@ -264,28 +262,22 @@
             </svg>
           </button>
           <div id="companyDropdown" class="mt-3 pl-3 space-y-3 text-sm bg-white p-4 rounded-md shadow-sm hidden">
-            <div class="block">
-              <input type="checkbox" id="sony" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
-              <label for="sony" class="ml-2 text-gray-700">Sony</label>
-            </div>
-            
-            <div class="block">
-              <input type="checkbox" id="microsoft" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
-              <label for="microsoft" class="ml-2 text-gray-700">Microsoft</label>
-            </div>
-            
-            <div class="block">
-              <input type="checkbox" id="nintendo" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
-              <label for="nintendo" class="ml-2 text-gray-700">Nintendo</label>
-            </div>
-            
-            <div class="block">
-              <input type="checkbox" id="ubisoft" class="form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out">
-              <label for="ubisoft" class="ml-2 text-gray-700">Ubisoft</label>
-            </div>
+            <% company.forEach(company => { %>
+              <div class="block">
+                <input
+                  type="checkbox"
+                  id="company-<%= company._id %>"
+                  class="company-checkbox form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+                  value="<%= company._id %>"
+                >
+                <label for="company-<%= company._id %>" class="ml-2 text-gray-700"><%= company.name %></label>
+              </div>
+            <% }) %>
           </div>
         </div>
       </aside>
+      
+      
 
       <!-- Product Grid -->
       <main class="flex-1 p-6">
@@ -431,81 +423,77 @@
 
    
     document.addEventListener('DOMContentLoaded', () => {
-      const priceRange = document.getElementById('price-range');
-      const priceLabel = document.getElementById('price-label');
-      const genreCheckboxes = document.querySelectorAll('.genre-checkbox');
-      const gamesContainer = document.querySelector('.grid'); // <-- Add this line
+  const priceRange = document.getElementById('price-range');
+  const priceLabel = document.getElementById('price-label');
+  const gamesContainer = document.querySelector('.grid');
 
-      const fetchFilteredGames = async () => {
-        const selectedGenres = Array.from(genreCheckboxes)
-          .filter(checkbox => checkbox.checked)
-          .map(checkbox => checkbox.value);
+  const fetchFilteredGames = async () => {
+    const selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox:checked')).map(cb => cb.value);
+    const selectedCompanies = Array.from(document.querySelectorAll('.company-checkbox:checked')).map(cb => cb.value);
+    const maxPrice = priceRange.value;
 
-        const maxPrice = priceRange.value;
+    try {
+      const response = await fetch('/filter-games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ genres: selectedGenres, companies: selectedCompanies, maxPrice })
+      });
 
-        try {
-          const response = await fetch('/filter-games', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              genres: selectedGenres,
-              maxPrice: maxPrice
-            })
-          });
+      const data = await response.json();
+      gamesContainer.innerHTML = '';
 
-          const data = await response.json();
-          gamesContainer.innerHTML = '';
-
-          if (data.games.length > 0) {
-            data.games.forEach(game => {
-              const gameCard = `
-                <div class="text-center">
-                  <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-                    <div class="rounded-2xl overflow-hidden">
-                      <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
-                    </div>
-                  </a>
-                  <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
-                  ${game.type === 'trial'
-                    ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
-                    : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
-                  }
-                  <div class="mt-1">
-                    ${
-                      game.discountPrice
-                        ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
-                           <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
-                        : game.price === 0
-                        ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
-                        : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
-                    }
-                  </div>
+      if (data.games.length > 0) {
+        data.games.forEach(game => {
+          const gameCard = `
+            <div class="text-center">
+              <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
+                <div class="rounded-2xl overflow-hidden">
+                  <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
                 </div>
-              `;
-              gamesContainer.innerHTML += gameCard;
-            });
-          } else {
-            gamesContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center">No games found matching your filters.</p>';
-          }
-        } catch (error) {
-          console.error('Error fetching filtered games:', error);
-        }
-      };
+              </a>
+              <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
+              ${game.type === 'trial'
+                ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
+                : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
+              }
+              <div class="mt-1">
+                ${
+                  game.discountPrice
+                    ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
+                       <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
+                    : game.price === 0
+                    ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
+                    : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
+                }
+              </div>
+            </div>
+          `;
+          gamesContainer.innerHTML += gameCard;
+        });
+      } else {
+        gamesContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center">No games found matching your filters.</p>';
+      }
+    } catch (error) {
+      console.error('Error fetching filtered games:', error);
+    }
+  };
 
-      // Listen for price range changes
-      priceRange.addEventListener('input', () => {
-        priceLabel.textContent = `Up to ₹${priceRange.value}`;
-        fetchFilteredGames();
-      });
+  // Price range change
+  priceRange.addEventListener('input', () => {
+    priceLabel.textContent = `Up to ₹${priceRange.value}`;
+    fetchFilteredGames();
+  });
 
-      // Listen for genre checkbox changes
-      genreCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', fetchFilteredGames);
-      });
-    });
+  // Delegate genre/company checkbox change
+  document.querySelector('#sidebar').addEventListener('change', (e) => {
+    if (e.target.classList.contains('genre-checkbox') || e.target.classList.contains('company-checkbox')) {
+      fetchFilteredGames();
+    }
+  });
+});
 
+
+    
     // Mobile Menu Functionality
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const mobileMenu = document.getElementById('mobileMenu');
@@ -602,6 +590,11 @@
       
     }, 300); // 300ms debounce delay
 });
+
+
+
+// Company filtering
+
 
 
   </script>

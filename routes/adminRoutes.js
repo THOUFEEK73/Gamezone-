@@ -20,6 +20,11 @@ import {
   getAllUsersPage, blockUser, searchUsers 
 } from '../controllers/adminUserController.js';
 
+import {
+  getCompanyPage,addGameCompany,toggleCompanyStatus,editCompany
+
+} from '../controllers/gameCompany.js';
+
 import isAdminAuthenticated from "../middleware/adminAuth.js";
 import upload from '../middleware/multerMiddleWare.js';
 import Category from "../models/CategoryModel.js";
@@ -59,6 +64,7 @@ adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category/aa", postAllCategories);
 adminRoutes.post('/category/update/:id', updateCategory);
 adminRoutes.post("/category/:Id", updateCategoryStatus);
+
 
 adminRoutes.get('/editgame/:id',editGamePage);
 // adminRoutes.post('/editgame/:id',postEditGame);
@@ -165,4 +171,16 @@ adminRoutes.post("/addgame",
   },
   postGameDetails
 );
+
+
+
+
+adminRoutes.get('/company',getCompanyPage);
+adminRoutes.post('/companies',addGameCompany)
+adminRoutes.post('/company/edit/:id',editCompany)
+adminRoutes.post('/company/toggle/:id',toggleCompanyStatus);
+// adminRoutes.post('/company/edit/:id',editCompany);
+// router.post('/company/toggle/:id',toggleCom)
+
+
 export default adminRoutes;

@@ -18,7 +18,7 @@ export const getHomePage = async (req, res) => {
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
      
-    // const category = await Category.find()
+   
 
     // Fetch all games from the database
     const games = await Game.find({status:'active'}).populate({path:'category',match:{status:'active'}}).limit(10).
@@ -57,17 +57,4 @@ export const allGameSearch = async(req,res) =>{
     res.status(500).render({'error':'Internal Server Error'});
   }
 }
-
-// export const getAllGames = async(req,res)=>{
-//   try{
-//       if(!req.session.userId &&!req.isAuthenticated()){
-//         return res.redirect('/login');
-//       }
-//      const games = await Game.find();
-//      res.render('user/allgames',{games});
-//   }catch(error){
-//     console.error('Error fetching games:',error);
-//     res.status(500).send('Internal Server Error');
-//   }
-// }
 

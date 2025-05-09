@@ -1,11 +1,13 @@
 import Game from "../models/gameModel.js";
 import Category from "../models/CategoryModel.js";
 import { uploadToCloudinary } from "../utils/cloudinaryUtils.js";
+import GameCompany from '../models/gamecompany.js';
 
 export const editGamePage = async(req,res)=>{
     try{
         const gameId = req.params.id;
-        const game = await Game.findById(gameId).populate('category');
+        const game = await Game.findById(gameId).populate('category').populate('company');
+        const companies = await GameCompany.find();
         const categories = await Category.find();
         
         if(!game){
@@ -15,7 +17,8 @@ export const editGamePage = async(req,res)=>{
         res.render('admin/editgame',{
             game,
             category: categories,
-            errors: {}
+            errors: {},
+            companies,
         });
          
     }catch(error){
@@ -27,7 +30,7 @@ export const editGamePage = async(req,res)=>{
 export const postEditGame = async (req, res) => {
     try {
         const gameId = req.params.id;
-        const { title, price, category, description, releaseDate, stockQuantity, status, platform, existingScreenshots } = req.body;
+        const { title, price, category, description, releaseDate, stockQuantity, status, company, existingScreenshots } = req.body;
         console.log(gameId)
         // Upload images first if they exist
         let coverImageUrl = null;
@@ -66,7 +69,7 @@ export const postEditGame = async (req, res) => {
             stockQuantity, 
             status, 
             category,
-            platform,
+            company,
             media: {
                 coverImage: coverImageUrl,
                 screenshots: screenshotsUrls
@@ -142,10 +145,8 @@ export const postEditGame = async (req, res) => {
         }
 
         // Validate platform
-        if(!platform || platform.trim()===""){
-            errors.platform = 'Game platform is required';
-        } else if(!['ps5', 'xbox', 'pc'].includes(platform.toLowerCase())) {
-            errors.platform = 'Invalid platform selected';
+        if(!company || company.trim()===""){
+            errors.company = 'Game company name is required';
         }
 
         // Validate cover image for new games
@@ -182,7 +183,7 @@ export const postEditGame = async (req, res) => {
             releaseDate,
             stockQuantity,
             status,
-            platforms: [platform],
+            company,
             media: {
                 coverImage: coverImageUrl || game.media?.coverImage,
                 screenshots: screenshotsUrls
