@@ -18,13 +18,23 @@ export const getDetailPage = async(req ,res)=>{
             return res.status(404).render('user/gameUnavailable',{message:'This game is currently unavailable'});
         }
 
-        
-        const   relatedGames = await Game.find({
-            category: game.category._id,
-            _id: { $ne: game._id } 
-        }).limit(4);
+        const relatedCompanies = await Game.find({
+                 company:game.company._id,
+                 _id:{$ne:game._id},
+                 status:'active'
+        }).limit(5)
 
-         res.render('user/gamedetail',{game,relatedGames})
+        
+        const relatedGames = await Game.find({
+                 category: game.category._id,
+             _id: { $ne: game._id }, //$ne this will exclude the game
+                 status:'active'  
+           
+        }).limit(5);
+
+    
+
+         res.render('user/gamedetail',{game,relatedGames,relatedCompanies});
 
     }catch(err){
         console.error('Error fetching game details:',err);

@@ -54,7 +54,7 @@
               <tr class="border-t border-gray-700 hover:bg-[#323232] transition">
                 <td class="px-6 py-4"><%= index + 1 %></td>
                 <td class="px-6 py-4">
-                  <img src="/uploads/games/<%= game.coverImage %>" alt="Game" class="w-10 h-10 rounded-full object-cover"/>
+                  <img id="coverPreviewImage" src="<%= game.media.coverImage %>" class="w-10 h-10 rounded-full object-cover"/>
                 </td>
                 <td class="px-6 py-4 font-medium text-white"><%= game.title %></td>
                 <td class="px-6 py-4 text-gray-300"><%= game.category? game.category.categoryName:'No Category Found' %></td>

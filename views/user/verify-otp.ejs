@@ -66,12 +66,12 @@
         <input type="hidden" id="email" name="email" value="<%= email %>">
         
         <div class="flex justify-between gap-3 mb-6">
-          <input type="text" maxlength="1" id="otp1" name="otp1" class="otp-input" oninput="moveToNext(this, 'otp2')" />
-          <input type="text" maxlength="1" id="otp2" name="otp2" class="otp-input" oninput="moveToNext(this, 'otp3')" />
-          <input type="text" maxlength="1" id="otp3" name="otp3" class="otp-input" oninput="moveToNext(this, 'otp4')" />
-          <input type="text" maxlength="1" id="otp4" name="otp4" class="otp-input" oninput="moveToNext(this, 'otp5')" />
-          <input type="text" maxlength="1" id="otp5" name="otp5" class="otp-input" oninput="moveToNext(this, 'otp6')" />
-          <input type="text" maxlength="1" id="otp6" name="otp6" class="otp-input" />
+          <input type="text" maxlength="1" id="otp1" name="otp1" class="otp-input" autocomplete="off" oninput="moveToNext(this, 'otp2')" />
+          <input type="text" maxlength="1" id="otp2" name="otp2" class="otp-input" autocomplete="off" oninput="moveToNext(this, 'otp3')" />
+          <input type="text" maxlength="1" id="otp3" name="otp3" class="otp-input" autocomplete="off" oninput="moveToNext(this, 'otp4')" />
+          <input type="text" maxlength="1" id="otp4" name="otp4" class="otp-input" autocomplete="off" oninput="moveToNext(this, 'otp5')" />
+          <input type="text" maxlength="1" id="otp5" name="otp5" class="otp-input" autocomplete="off" oninput="moveToNext(this, 'otp6')" />
+          <input type="text" maxlength="1" id="otp6" name="otp6" class="otp-input" autocomplete="off" />
         </div>
 
         <!-- Error Message -->

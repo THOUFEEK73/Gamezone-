@@ -123,23 +123,21 @@
     </div>
   </section>
 
-  <!-- New Releases -->
+  <!-- Games -->
   <section class="py-12">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-3xl font-bold text-gray-900">Games</h2>
         <a href="/allgames" class="text-indigo-600 hover:text-indigo-800 font-medium">View All</a>
       </div>
-
-      
   
       <div id="results" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
         <% games.forEach(game => { %>
           <div class="text-center">
             <!-- Game Card -->
-            <a href="/gamedetail/<%= game._id %>" class="block bg-white rounded-2xl shadow-lg hover:shadow-xl hover:scale-[1.04] transition duration-300 overflow-hidden">
-              <div class="h-60 sm:h-64 md:h-72 lg:h-80 flex items-center justify-center bg-white p-3">
-                <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" class="object-contain max-h-full w-full">
+            <a href="/gamedetail/<%= game._id %>" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
+              <div class="rounded-2xl overflow-hidden">
+                <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" class="w-full h-full object-cover">
               </div>
             </a>
   
@@ -169,6 +167,7 @@
       </div>
     </div>
   </section>
+  
   
 
   <!-- Footer -->

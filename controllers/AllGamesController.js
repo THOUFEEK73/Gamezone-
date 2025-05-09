@@ -9,7 +9,7 @@ export const showAllGames = async (req, res) => {
       if (!req.session.userId && !req.isAuthenticated()) {
         return res.redirect('/login');
       }
-      const companies = await gamecompany.find();
+      const companies = await gamecompany.find({status:'active'});
       const games = await Game.find({status:'active'}).populate({path:'category',match:{status:'active'}})
       .then(games=>games.filter(game=>game.category));
       
