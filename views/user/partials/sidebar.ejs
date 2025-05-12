@@ -1,0 +1,63 @@
+<!-- Responsive Sidebar Wrapper -->
+<div>
+  <!-- Mobile Toggle Button -->
+  <button id="sidebar-toggle" class="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white shadow-md">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Overlay for mobile -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-30 z-40 hidden"></div>
+
+  <!-- Sidebar -->
+  <aside
+    id="sidebar"
+    class="fixed top-0 left-0 z-50 transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-300 w-72 bg-white rounded-r-2xl shadow-lg flex flex-col min-h-screen py-10 px-6"
+  >
+    <h2 class="text-2xl font-bold text-gray-800 mb-8">My Account</h2>
+    <nav class="flex flex-col gap-2">
+      <a href="/profile" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all duration-200">
+        <i class="fas fa-user"></i> Personal Information
+      </a>
+      <a href="/address" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all duration-200">
+        <i class="fas fa-map-marker-alt"></i> Address
+      </a>
+      <a href="/user/orders" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all duration-200">
+        <i class="fas fa-shopping-bag"></i> Orders
+      </a>
+      <a href="/user/wallet" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all duration-200">
+        <i class="fas fa-wallet"></i> Wallet
+      </a>
+      <a href="/user/password-change" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 transition-all duration-200">
+        <i class="fas fa-key"></i> Password Change
+      </a>
+      <a href="/user/logout" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:text-red-600 transition-all duration-200 mt-4">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </nav>
+  </aside>
+</div>
+
+<!-- Sidebar Active Highlight Script -->
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const currentPath = window.location.pathname;
+
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      const href = link.getAttribute('href');
+
+      // Match full path or if currentPath starts with the link's href
+      if (currentPath === href || currentPath.startsWith(href + '/')) {
+        link.classList.add('bg-black', 'text-white', 'font-semibold');
+      } else {
+        link.classList.remove('bg-black', 'text-white', 'font-semibold');
+      }
+
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.sidebar-link').forEach(l => {
+          l.classList.remove('bg-black', 'text-white', 'font-semibold');
+        });
+        link.classList.add('bg-black', 'text-white', 'font-semibold');
+      });
+    });
+  });
+</script>

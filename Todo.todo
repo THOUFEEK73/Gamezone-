@@ -21,9 +21,16 @@
 ✔ add company @done (5/8/2025, 1:08:11 PM)
 ✔ add edit button and its functionality @done (5/9/2025, 9:09:30 AM)
 ✔ add toggle button based on active and inactive @done (5/8/2025, 2:17:03 PM)
-☐ show related company names
-☐ add audio search (optional)
-☐ solve one leetcode problem
-☐ fix game detail page ui
+✔ show related company names @done (5/9/2025, 12:53:34 PM)
+✘ add audio search (optional) @cancelled (5/10/2025, 10:19:03 AM)
+✘ solve one leetcode problem @cancelled (5/10/2025, 10:18:59 AM)
+✘ fix game detail page ui @cancelled (5/9/2025, 12:53:49 PM)
+
+
+☐ fix the user profile email verication via otp 
+☐ try to make it responsive
+☐ complete one leetcode question
+
+
 
 

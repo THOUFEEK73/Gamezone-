@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile</title>
+  <link rel="stylesheet" href="/styles/styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+  <div class="flex flex-col lg:flex-row min-h-screen">
+    <%- include('partials/sidebar') %>
+      <main class="flex-1 flex justify-center p-2 sm:p-4">
+        <section class="max-w-4xl w-full bg-white p-4 sm:p-8 rounded-2xl shadow mt-4 sm:mt-8">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <h2 class="text-2xl font-semibold">Personal Information</h2>
+            <button id="edit-btn"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition focus:ring-2 focus:ring-blue-200">
+              Edit
+            </button>
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-8">
+            <div class="flex justify-center md:justify-start">
+              <img src="/images/user.jpg" alt="User" class="w-24 h-24 rounded-full object-cover border shadow" />
+            </div>
+            <div class="flex-1 grid grid-cols-1 gap-4">
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-500 mb-1">Name</p>
+                <p class="text-md font-medium">
+                  <%= user.name %>
+                </p>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-500 mb-1">Email Address</p>
+                <p class="text-md font-medium">
+                  <%= user.email %>
+                </p>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-500 mb-1">Mobile Number</p>
+                <p class="text-md font-medium">
+                  <%= user.phone %>
+                </p>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-sm text-gray-500 mb-1">Your Referral Code</p>
+                <div class="flex items-center justify-between">
+                  <p class="text-lg font-semibold text-gray-800" id="referral-code">OXY9BA5BD</p>
+                  <div class="flex items-center gap-4 text-gray-500">
+                    <button id="copy-btn" class="hover:text-gray-700 cursor-pointer" title="Copy"><i
+                        class="fas fa-copy"></i></button>
+                    <button id="share-btn" class="hover:text-gray-700 cursor-pointer" title="Share"><i
+                        class="fas fa-share-alt"></i></button>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2" id="copy-feedback">Share this code with friends and get ₹200 in
+                  your wallet when they sign up!</p>
+              </div>
+
+              <% if (messages.success && messages.success.length> 0) { %>
+                <div id="flash-message"
+                  class="fixed bottom-8 right-60 z-50 px-4 py-3 rounded-md bg-green-500 text-white shadow-lg transition-opacity duration-500">
+                  <%= messages.success[0] %>
+                </div>
+                <% } %>
+
+                  <% if (messages.error && messages.error.length> 0) { %>
+                    <div id="flash-message"
+                      class="fixed bottom-8 right-60 z-50 px-4 py-3 rounded-md bg-red-500 text-white shadow-lg transition-opacity duration-500">
+                      <%= messages.error[0] %>
+                    </div>
+                    <% } %>
+            </div>
+          </div>
+        </section>
+      </main>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg relative">
+      <button onclick="closeModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black">&times;</button>
+      <h2 class="text-xl font-semibold mb-4">Edit Profile</h2>
+      <form action="/edit-profile" method="POST" class="space-y-4" id="edit-form">
+        <div class="flex justify-center">
+          <img src="/images/user.jpg" alt="Profile" class="w-20 h-20 rounded-full object-cover shadow" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Name</label>
+          <input type="text" name="name" value="<%= user.name %>" class="w-full px-3 py-2 border rounded-lg" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input type="email" name="email" value="<%= user.email %>" class="w-full px-3 py-2 border rounded-lg"
+            required />
+          <button type="button" id="edit-email-btn" class="mt-2 text-blue-600 hover:underline text-sm">Verify
+            Email</button>
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Phone</label>
+          <input type="text" name="phone" value="<%= user.phone %>" class="w-full px-3 py-2 border rounded-lg"
+            required />
+        </div>
+        <div class="text-right">
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Email Verification Modal -->
+  <div id="emailVerificationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg relative">
+      <button onclick="closeEmailModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black">&times;</button>
+      <h2 class="text-xl font-semibold mb-4">Verify Your Email</h2>
+      <form id="verificationForm" class="space-y-4">
+        <input type="hidden" name="email" id="hiddenNewEmail" />
+        <label class="block text-sm font-medium">Enter the 6-digit verification code</label>
+        <input type="text" name="verificationCode" maxlength="6" 
+          class="w-full px-3 py-2 border rounded-lg text-center tracking-widest font-mono text-lg" 
+          required pattern="[0-9]{6}" />
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
+          Verify
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const originalEmail = "<%= user.email %>";
+    const editForm = document.getElementById("edit-form");
+    const editEmailBtn = document.getElementById("edit-email-btn");
+
+    document.getElementById("edit-btn").addEventListener("click", () => {
+      document.getElementById("editProfileModal").classList.remove("hidden");
+    });
+
+    function closeModal() {
+      document.getElementById("editProfileModal").classList.add("hidden");
+    }
+
+    function closeEmailModal() {
+      document.getElementById("emailVerificationModal").classList.add("hidden");
+    }
+
+    editForm.addEventListener("submit", async function (e) {
+      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
+
+      if (newEmail !== originalEmail) {
+        e.preventDefault();
+        document.getElementById('hiddenNewEmail').value = newEmail;
+        closeModal();
+        document.getElementById("emailVerificationModal").classList.remove("hidden");
+
+        try {
+          const res = await fetch("/send-verification-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: newEmail })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            alert(data.message || "Failed to send verification code");
+            return;
+          }
+          
+          alert("Verification code sent to your email");
+        } catch (err) {
+          console.error("Error sending OTP:", err);
+          alert("Something went wrong. Please try again.");
+        }
+      }
+    });
+
+    editEmailBtn.addEventListener("click", async () => {
+      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
+      if (newEmail && newEmail !== originalEmail) {
+        document.getElementById('hiddenNewEmail').value = newEmail;
+        closeModal();
+        
+        try {
+          const res = await fetch("/send-verification-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: newEmail })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            alert(data.message || "Failed to send verification code");
+            return;
+          }
+
+          document.getElementById("emailVerificationModal").classList.remove("hidden");
+          alert("Verification code sent to your email");
+        } catch (err) {
+          console.error("Error sending OTP:", err);
+          alert("Something went wrong. Please try again.");
+        }
+      } else {
+        alert("Please enter a new email to verify.");
+      }
+    });
+
+    // Handle OTP verification form submission
+    document.getElementById("verificationForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('hiddenNewEmail').value;
+      const verificationCode = this.querySelector('input[name="verificationCode"]').value;
+
+      try {
+        const res = await fetch("/verify-email", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ 
+            email, 
+            verificationCode 
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          // If verification successful, submit the edit form
+          document.getElementById('editProfileModal').classList.add('hidden');
+          document.getElementById('emailVerificationModal').classList.add('hidden');
+          editForm.submit();
+        } else {
+          alert(data.message || "Verification failed");
+        }
+      } catch (err) {
+        console.error("Error verifying email:", err);
+        alert("Something went wrong. Please try again.");
+      }
+    });
+
+    // Update the edit email button handler
+    editEmailBtn.addEventListener("click", async () => {
+      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
+      
+      if (!newEmail) {
+        alert("Please enter an email address");
+        return;
+      }
+
+      if (newEmail === originalEmail) {
+        alert("Please enter a different email address");
+        return;
+      }
+
+      try {
+        const res = await fetch("/send-verification-code", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({ email: newEmail })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('hiddenNewEmail').value = newEmail;
+          document.getElementById('editProfileModal').classList.add('hidden');
+          document.getElementById('emailVerificationModal').classList.remove('hidden');
+          alert("Verification code sent to your email");
+        } else {
+          alert(data.message || "Failed to send verification code");
+        }
+      } catch (err) {
+        console.error("Error sending verification code:", err);
+        alert("Something went wrong. Please try again.");
+      }
+    });
+
+    setTimeout(() => {
+      const flash = document.getElementById('flash-message');
+      if (flash) {
+        flash.classList.add('opacity-0');
+        setTimeout(() => flash.remove(), 500);
+      }
+    }, 3000);
+</script>
+</body>
+
+</html>

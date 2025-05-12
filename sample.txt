@@ -1,29 +1,61 @@
+const originalEmail = "<%= user.email %>";
+    const editForm = document.getElementById("edit-form");
+    const editEmailBtn = document.getElementById("edit-email-btn");
 
-                <!-- Platform Availability -->
-                <!-- <div class="bg-white rounded-xl p-6 shadow-sm">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Available Platforms</h3>
-                    <div class="flex flex-wrap gap-3">
-                        <% game.platforms.forEach(platform => { %>
-                            <div class="flex items-center space-x-2 bg-indigo-50 px-4 py-2 rounded-lg">
-                                <% let platformIcon = 'desktop'; %>
-                                <% if (platform.toLowerCase().includes('ps')) platformIcon = 'playstation'; %>
-                                <% if (platform.toLowerCase().includes('xbox')) platformIcon = 'xbox'; %>
-                                <% if (platform.toLowerCase().includes('switch')) platformIcon = 'nintendo-switch'; %>
-                                <i class="fab fa-<%= platformIcon %> text-indigo-600"></i>
-                                <span class="font-medium text-gray-700"><%= platform %></span>
-                            </div>
-                        <% }); %>
-                    </div>
-                </div> -->
+    document.getElementById("edit-btn").addEventListener("click", () => {
+      document.getElementById("editProfileModal").classList.remove("hidden");
+    });
 
-               
+    function closeModal() {
+      document.getElementById("editProfileModal").classList.add("hidden");
+    }
 
+    function closeEmailModal() {
+      document.getElementById("emailVerificationModal").classList.add("hidden");
+    }
 
-                  <div>
-                            <label class="block text-sm font-medium mb-2">Procuction Company:</label>
-                            <div class="flex flex-wrap gap-2">
-                                <% game.company.forEach(com => { %>
-                                    <span class="platform-badge"><%= com %></span>
-                                <% }); %>
-                            </div>
-                        </div>
+    editForm.addEventListener("submit", async function (e) {
+      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
+
+      if (newEmail !== originalEmail) {
+        e.preventDefault();
+        document.getElementById('hiddenNewEmail').value = newEmail;
+        closeModal();
+        document.getElementById("emailVerificationModal").classList.remove("hidden");
+
+        try {
+          const res = await fetch("/send-verification-code", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: newEmail })
+          });
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            alert(data.message || "Failed to send verification code.");
+          }
+        } catch (err) {
+          console.error("Error sending OTP:", err);
+          alert("Something went wrong. Please try again.");
+        }
+      }
+    });
+
+    editEmailBtn.addEventListener("click", () => {
+      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
+      if (newEmail && newEmail !== originalEmail) {
+        document.getElementById('hiddenNewEmail').value = newEmail;
+        closeModal();
+        document.getElementById("emailVerificationModal").classList.remove("hidden");
+      } else {
+        alert("Please enter a new email to verify.");
+      }
+    });
+
+    setTimeout(() => {
+      const flash = document.getElementById('flash-message');
+      if (flash) {
+        flash.classList.add('opacity-0');
+        setTimeout(() => flash.remove(), 500);
+      }
+    }, 3000);

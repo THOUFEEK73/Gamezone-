@@ -4,7 +4,7 @@ import Category from '../models/CategoryModel.js';
 export const searchGames = async (query) => {
     try {
        
-        console.log('searched qurey is :',query)
+      
         const activeCategories = await Category.find({status:'active'}).select('_id');
         console.log(activeCategories)
         const filter = {
@@ -14,7 +14,7 @@ export const searchGames = async (query) => {
         if(query){
             const regex = new RegExp(query, 'i'); 
             filter.title = regex;
-            console.log('its not working')
+       
             // return await Game.find();
         }
       

@@ -51,6 +51,15 @@ export const postSignUp = async (req, res) => {
       return res.redirect('/signup')
     }
 
+    
+    if(!email){
+      req.flash('error','Email is required');
+      return res.redirect('/signup')
+    }
+    if(!phone){
+      req.flash('error','please enter 10 digit valid phone number')
+    }
+
     const phoneRegex = /^[0-9]{10}$/;
     if (!phoneRegex.test(phone)) {
       req.flash('error','Phone number must be exactly 10 digits');
@@ -72,10 +81,6 @@ export const postSignUp = async (req, res) => {
       return res.redirect('/signup');
     }
 
-    if(!email){
-      req.flash('error','Email is required');
-      return res.redirect('/signup')
-    }
 
     if (password.length < 8) {
        console.log('triggered')
@@ -183,8 +188,9 @@ export const resendOTP = async (req, res) => {
     const { email } = req.body;
 
     await OTP.deleteOne({ email });
-
+   console.log('function triggered')
     const otpSent = await generateOTP(email);
+    console.log('function triggered second')
 
     if (!otpSent) {
       return res.status(500).json({ message: "Failed to resend OTP. Please try again." });

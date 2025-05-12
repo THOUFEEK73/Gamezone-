@@ -29,7 +29,7 @@ export const getAllGames = async (req, res) => {
 
 export const addGame = async (req, res) => {
     try {
-        const companies = await gamecompany.find()
+        const companies = await gamecompany.find({status:'active'})
        
         const category = await Category.find()
         const data = await Game.find()
