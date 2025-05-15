@@ -27,9 +27,12 @@
 ✘ fix game detail page ui @cancelled (5/9/2025, 12:53:49 PM)
 
 
-☐ fix the user profile email verication via otp 
-☐ try to make it responsive
-☐ complete one leetcode question
+✔ fix the user profile email verication via otp @done (5/14/2025, 11:49:51 AM)
+✘ try to make it responsive @cancelled (5/14/2025, 11:49:57 AM)
+✘ complete one leetcode question @cancelled (5/15/2025, 12:18:23 PM)
+✔ implement user can add address @done (5/15/2025, 12:18:17 PM)
+☐ implement user can edit the address
+✔ implement user can delte the existing address permanently @done (5/15/2025, 12:41:46 PM)
 
 
 

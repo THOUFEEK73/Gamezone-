@@ -8,9 +8,14 @@
   <link rel="stylesheet" href="/styles/styles.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </head>
 
 <body class="bg-gray-100 min-h-screen">
+
+
+  
   <div class="flex flex-col lg:flex-row min-h-screen">
     <%- include('partials/sidebar') %>
       <main class="flex-1 flex justify-center p-2 sm:p-4">
@@ -91,14 +96,14 @@
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Name</label>
-          <input type="text" name="name" value="<%= user.name %>" class="w-full px-3 py-2 border rounded-lg" />
+          <input type="text" name="name" value="<%=user.name %>" class="w-full px-3 py-2 border rounded-lg" />
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" name="email" value="<%= user.email %>" class="w-full px-3 py-2 border rounded-lg"
-            required />
+          <input type="email" name="email" value="<%= user.email%>" class="w-full px-3 py-2 border rounded-lg"/>
           <button type="button" id="edit-email-btn" class="mt-2 text-blue-600 hover:underline text-sm">Verify
             Email</button>
+          <div id="emailError" class="text-red-600 text-xs mt-1"></div>
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Phone</label>
@@ -112,180 +117,178 @@
     </div>
   </div>
 
-  <!-- Email Verification Modal -->
-  <div id="emailVerificationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg relative">
-      <button onclick="closeEmailModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black">&times;</button>
-      <h2 class="text-xl font-semibold mb-4">Verify Your Email</h2>
-      <form id="verificationForm" class="space-y-4">
-        <input type="hidden" name="email" id="hiddenNewEmail" />
-        <label class="block text-sm font-medium">Enter the 6-digit verification code</label>
-        <input type="text" name="verificationCode" maxlength="6" 
-          class="w-full px-3 py-2 border rounded-lg text-center tracking-widest font-mono text-lg" 
-          required pattern="[0-9]{6}" />
-        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full">
-          Verify
-        </button>
-      </form>
-    </div>
-  </div>
+<!-- Email Verification Modal -->
+<div id="emailVerificationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg relative">
+    <button onclick="closeEmailModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black">&times;</button>
+    <h2 class="text-xl font-semibold mb-4">Verify Your Email</h2>
 
-  <script>
-    const originalEmail = "<%= user.email %>";
-    const editForm = document.getElementById("edit-form");
-    const editEmailBtn = document.getElementById("edit-email-btn");
+    <form id="verificationForm" class="space-y-4">
+      <input type="hidden" name="email" id="hiddenNewEmail" />
 
-    document.getElementById("edit-btn").addEventListener("click", () => {
-      document.getElementById("editProfileModal").classList.remove("hidden");
-    });
-
-    function closeModal() {
-      document.getElementById("editProfileModal").classList.add("hidden");
-    }
-
-    function closeEmailModal() {
-      document.getElementById("emailVerificationModal").classList.add("hidden");
-    }
-
-    editForm.addEventListener("submit", async function (e) {
-      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
-
-      if (newEmail !== originalEmail) {
-        e.preventDefault();
-        document.getElementById('hiddenNewEmail').value = newEmail;
-        closeModal();
-        document.getElementById("emailVerificationModal").classList.remove("hidden");
-
-        try {
-          const res = await fetch("/send-verification-code", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: newEmail })
-          });
-
-          const data = await res.json();
-          if (!res.ok) {
-            alert(data.message || "Failed to send verification code");
-            return;
-          }
-          
-          alert("Verification code sent to your email");
-        } catch (err) {
-          console.error("Error sending OTP:", err);
-          alert("Something went wrong. Please try again.");
-        }
-      }
-    });
-
-    editEmailBtn.addEventListener("click", async () => {
-      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
-      if (newEmail && newEmail !== originalEmail) {
-        document.getElementById('hiddenNewEmail').value = newEmail;
-        closeModal();
+      <label class="block text-sm font-medium">Enter the 6-digit verification code</label>
+      <input
+        type="text"
+        name="verificationCode"
+        maxlength="6"
+        class="w-full px-3 py-2 border rounded-lg text-center tracking-widest font-mono text-lg"
         
-        try {
-          const res = await fetch("/send-verification-code", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: newEmail })
-          });
+        pattern="[0-9]{6}"
+        autocomplete="off"
+      />
 
-          const data = await res.json();
-          if (!res.ok) {
-            alert(data.message || "Failed to send verification code");
-            return;
-          }
+      <!-- ✅ Feedback Area -->
+      <div id="verificationFeedback" class="text-center text-sm font-medium mb-2"></div>
 
-          document.getElementById("emailVerificationModal").classList.remove("hidden");
-          alert("Verification code sent to your email");
-        } catch (err) {
-          console.error("Error sending OTP:", err);
-          alert("Something went wrong. Please try again.");
-        }
-      } else {
-        alert("Please enter a new email to verify.");
-      }
-    });
+      <button type="submit"class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full"> Verify </button>
+    </form>
+  </div>
+</div>
 
-    // Handle OTP verification form submission
-    document.getElementById("verificationForm").addEventListener("submit", async function(e) {
+<script>
+  const originalEmail = "<%= user.email %>";
+  const editForm = document.getElementById("edit-form");
+  const editEmailBtn = document.getElementById("edit-email-btn");
+  const emailInput = editForm.querySelector('input[name="email"]');
+  const verificationForm = document.getElementById("verificationForm");
+  const emailVerificationModal = document.getElementById("emailVerificationModal");
+  const editProfileModal = document.getElementById("editProfileModal");
+  const hiddenNewEmail = document.getElementById("hiddenNewEmail");
+  const errorText = document.getElementById("errorText");
+  const verificationFeedback = document.getElementById("verificationFeedback");
+
+  document.getElementById("edit-btn").addEventListener("click", () => {
+    editProfileModal.classList.remove("hidden");
+  });
+
+  function closeModal() {
+    editProfileModal.classList.add("hidden");
+  }
+
+  function closeEmailModal() {
+    emailVerificationModal.classList.add("hidden");
+    verificationFeedback.textContent = "";
+    verificationFeedback.className = "text-center text-sm font-medium mb-2";
+  }
+
+  // Edit profile form submission
+  editForm.addEventListener("submit", async function (e) {
+    const newEmail = emailInput.value.trim();
+    document.getElementById("emailError").textContent = "";
+
+    if (newEmail !== originalEmail) {
       e.preventDefault();
-      const email = document.getElementById('hiddenNewEmail').value;
-      const verificationCode = this.querySelector('input[name="verificationCode"]').value;
-
-      try {
-        const res = await fetch("/verify-email", {
-          method: "POST",
-          headers: { 
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ 
-            email, 
-            verificationCode 
-          })
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          // If verification successful, submit the edit form
-          document.getElementById('editProfileModal').classList.add('hidden');
-          document.getElementById('emailVerificationModal').classList.add('hidden');
-          editForm.submit();
-        } else {
-          alert(data.message || "Verification failed");
-        }
-      } catch (err) {
-        console.error("Error verifying email:", err);
-        alert("Something went wrong. Please try again.");
-      }
-    });
-
-    // Update the edit email button handler
-    editEmailBtn.addEventListener("click", async () => {
-      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
-      
       if (!newEmail) {
-        alert("Please enter an email address");
+        document.getElementById("emailError").textContent = "Email is required.";
         return;
       }
-
-      if (newEmail === originalEmail) {
-        alert("Please enter a different email address");
-        return;
-      }
-
+      // Check with server if email is valid and send OTP
       try {
         const res = await fetch("/send-verification-code", {
           method: "POST",
-          headers: { 
-            "Content-Type": "application/json" 
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email: newEmail })
         });
-
         const data = await res.json();
-        if (res.ok) {
-          document.getElementById('hiddenNewEmail').value = newEmail;
-          document.getElementById('editProfileModal').classList.add('hidden');
-          document.getElementById('emailVerificationModal').classList.remove('hidden');
-          alert("Verification code sent to your email");
-        } else {
-          alert(data.message || "Failed to send verification code");
+        if (!res.ok || !data.success) {
+          document.getElementById("emailError").textContent = data.message || "Failed to send verification code.";
+          return;
         }
+        hiddenNewEmail.value = newEmail;
+        closeModal();
+        emailVerificationModal.classList.remove("hidden");
+        verificationFeedback.textContent = "OTP sent successfully!";
+        verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
       } catch (err) {
-        console.error("Error sending verification code:", err);
-        alert("Something went wrong. Please try again.");
+        document.getElementById("emailError").textContent = "Something went wrong. Try again.";
       }
-    });
+    }
+  });
 
-    setTimeout(() => {
-      const flash = document.getElementById('flash-message');
-      if (flash) {
-        flash.classList.add('opacity-0');
-        setTimeout(() => flash.remove(), 500);
+  // Separate "Verify Email" button
+  editEmailBtn.addEventListener("click", async () => {
+    const newEmail = emailInput.value.trim();
+    document.getElementById("emailError").textContent = "";
+
+    if (!newEmail) {
+      document.getElementById("emailError").textContent = "Email is required.";
+      return;
+    }
+    if (newEmail === originalEmail) return;
+
+    // Check with server if email is valid and send OTP
+    try {
+      const res = await fetch("/send-verification-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: newEmail })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        document.getElementById("emailError").textContent = data.message || "Failed to send verification code.";
+        return;
       }
-    }, 3000);
+      hiddenNewEmail.value = newEmail;
+      closeModal();
+      emailVerificationModal.classList.remove("hidden");
+      verificationFeedback.textContent = "OTP sent successfully!";
+      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
+    } catch (err) {
+      document.getElementById("emailError").textContent = "Something went wrong. Try again.";
+    }
+  });
+
+  // OTP verification
+  verificationForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const email = hiddenNewEmail.value;
+    const verificationCode = this.querySelector('input[name="verificationCode"]').value.trim();
+
+    try {
+      const res = await fetch("/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, verificationCode })
+      });
+
+      const data = await res.json();
+      console.log("Verification Response:", data);
+
+      if (res.ok && data.success) {
+        verificationFeedback.textContent = "Email verified successfully!";
+     
+        
+        verificationFeedback.classList.add("text-green-600");
+
+        
+
+        setTimeout(() => {
+          emailVerificationModal.classList.add("hidden");
+          editForm.submit(); // Resubmit profile form
+        }, 1000);
+      } else {
+        verificationFeedback.textContent = data.message || "Verification failed.";
+        verificationFeedback.classList.add("text-red-600");
+      }
+    } catch (err) {
+      console.error("Verification error:", err);
+      verificationFeedback.textContent = "An error occurred. Please try again.";
+      verificationFeedback.classList.add("text-red-600");
+    }
+  });
+
+  // Auto-hide flash messages
+  setTimeout(() => {
+    const flash = document.getElementById('flash-message');
+    if (flash) {
+      flash.classList.add('opacity-0');
+      setTimeout(() => flash.remove(), 500);
+    }
+  }, 3000);
 </script>
+
+
+
 </body>
 
 </html>
