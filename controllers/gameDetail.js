@@ -9,6 +9,8 @@ import Game from "../models/gameModel.js";
 
 export const getDetailPage = async(req ,res)=>{
     try{
+       
+        
         const gameId = req.params.id;
        
        

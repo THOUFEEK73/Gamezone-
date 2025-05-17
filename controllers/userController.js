@@ -1,4 +1,3 @@
-
 import Game from '../models/gameModel.js';
 import Category from '../models/CategoryModel.js';
 import User from '../models/userModel.js';
@@ -58,6 +57,7 @@ export const allGameSearch = async(req,res) =>{
     console.log('triggererd')
     return res.json(games)
   }catch(error){
+    console.error('Error handling search request:',error);
     console.error('Error handling search request:',error);
     res.status(500).render({'error':'Internal Server Error'});
   }
@@ -193,8 +193,11 @@ export const postAddress = async(req,res)=>{
     }
     const {type,name,phone,street,city,state,zipCode,country,isDefault} = req.body;
     console.log(name,phone)
-    const isDefaultValue = isDefault ==='true';
-    
+  
+    if(isDefault==='true' || isDefault===true){
+      await Address.updateMany({user:userId,isDefault:true},{$set:{isDefault:false}})
+    }
+
     const newAddress = new Address ({
       userId,
       type,
@@ -205,13 +208,14 @@ export const postAddress = async(req,res)=>{
       state,
       zipCode,
       country,
-      isDefault: isDefaultValue,
+      isDefault: !!isDefault,
     })
           await newAddress.save();
         res.status(200).json({message:'Address saved successfully'});
    
   }catch(error){
-
+    console.error('Error adding address:',error);
+    res.status(500).render('error',{message:'Internal Server Error'});
   }
 
 }
@@ -241,27 +245,97 @@ export const postEditAddress = async(req,res)=>{
     
 
       
-     const userId = req.sesion.userId;
+     const userId = req.session.userId;
      const addressId = req.params.id;
-     console.log('function triggered');
+     console.log(addressId);
      
          const { type, name, phone, street, city, state, zipCode, country, isDefault } = req.body;
 
             if (!userId) return res.status(401).render('error',{message});
 
-            await Address.updateOne({_id:addressId,userId},{
+            if(isDefault){
+              console.log('testingc');
+              
+              await Address.updateMany({user:userId},{$set:{isDefault:false}});
+            }
+            console.log('testing 2');
+            
+            await Address.findByIdAndUpdate(addressId,{
               type,
               name,
               phone,
               street,
               city,
               zipCode,
+              state,
               country,
-              isDefault:isDefault === 'true' || isDefault ===true
+              isDefault:!!isDefault
             })
 
-            console.log('updated')
+            
+
+        res.json({success:true});
 
 
+
+
+}
+
+
+// export const test =  async (req, res) => {
+//   const userId = req.session.user._id;
+//   const addressId = req.params.id;
+//   const {
+//     type, name, phone, street, zipCode,
+//     city, state, country, isDefault
+//   } = req.body;
+
+//   try {
+//     // If isDefault is true, set all others to false
+//     if (isDefault) {
+//       await Address.updateMany({ user: userId }, { $set: { isDefault: false } });
+//     }
+
+//     await Address.findByIdAndUpdate(addressId, {
+//       type,
+//       name,
+//       phone,
+//       street,
+//       zipCode,
+//       city,
+//       state,
+//       country,
+//       isDefault: !!isDefault
+//     });
+
+//     res.json({ success: true });
+//   } catch (err) {
+//     console.error('Edit address error:', err);
+//     res.status(500).json({ success: false, message: 'Server error' });
+//   }
+// };
+
+
+
+
+export const postSetDefault = async(req,res)=>{
+  console.log('function triggered');
+   const addressId = req.params.id;
+  const userId = req.session.user._id; 
+
+  try{
+
+    // throw new Error('...')
+
+    await Address.updateMany({user:userId},{$set:{isDefault:false}});
+
+    await Address.findByIdAndUpdate(addressId,{$set:{isDefault:true}});
+
+    res.redirect('/address')
+
+  }catch(error){
+    console.error('Error updating isDefault',error);
+    res.status(500).render('error',{message:'server error'})
+  }
 
 }

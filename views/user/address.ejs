@@ -63,11 +63,22 @@
                     address.type.slice(1) %></span>
                 </div>
                 <div class="flex items-center gap-3 text-gray-500">
-                  <button onclick="editAddress('<%= address._id %>')"
+
+                  <button class="openEditAddressModal"
+                    data-id="<%= address._id %>"
+                    data-type="<%= address.type %>"
+                    data-name="<%= address.name %>"
+                    data-phone="<%= address.phone %>"
+                    data-street="<%= address.street %>"
+                    data-zip="<%= address.zipCode %>"
+                    data-city="<%= address.city %>"
+                    data-state="<%= address.state %>"
+                    data-default="<%= address.isDefault %>"
                     title="Edit"
-                    class="p-1 rounded hover:bg-yellow-100 hover:text-yellow-600 transition duration-200">
-                    <i data-lucide="pencil-line" class="w-4 h-4"></i>
+                    class="openEditAddressModal p-1 rounded hover:bg-red-100 hover:text-red-600 transition duration-200">
+                    <i data-lucide="pen" class="w-4 h-4"></i>
                   </button>
+
                   <button onclick="deleteAddress('<%= address._id %>')"
                     title="Delete"
                     class="p-1 rounded hover:bg-red-100 hover:text-red-600 transition duration-200">
@@ -93,11 +104,22 @@
 
               <!-- Default Address Checkbox -->
               <div class="flex items-center mt-2">
-                <input type="checkbox" name="isDefault"
-                  class="accent-blue-600 h-4 w-4" <%=address.isDefault ?
-                  'checked' : '' %> />
-                <label class="ml-2 text-sm text-gray-600">Set as default
-                  address</label>
+
+                <form action="/setDefaultAddress/<%= address._id %>"
+                  method="POST" class="flex items-center mt-2">
+                  <input
+                    type="checkbox"
+                    name="isDefault"
+                    class="accent-blue-600 h-4 w-4"
+                    onchange="this.form.submit()"
+                    <%=address.isDefault ? 'checked disabled' : '' %>
+                  />
+                  <label class="ml-2 text-sm text-gray-600">
+                    <%= address.isDefault ? 'Default Address' :
+                    'Set as default address' %>
+                  </label>
+                </form>
+
               </div>
             </div>
             <% }) %>
@@ -107,9 +129,17 @@
             </div>
             <% } %>
           </div>
+     
         </section>
 
+   
+
+
       </main>
+   <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3"></div>
+
+
+
     </div>
 
     <!-- Address Form Modal -->
@@ -237,19 +267,32 @@
       </div>
     </div>
 
+    <!-- editForm details -->
 
-    <!-- edit model -->
+    <div id="editAddressModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-3 hidden">
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-3 border-b">
+          <h3 class="text-base font-semibold text-gray-800">Edit Address</h3>
+          <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
 
-     <form id="addressForm" class="p-3">
+        <!-- Modal Body - Edit Address Form -->
+        <form id="editAddressForm" class="p-3">
+          <input type="hidden" name="_id" id="editAddressId">
           <div class="space-y-3">
-            <!-- Two Column Layout for Small Form Fields -->
+
+            <!-- Two Column Layout -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- Address Type -->
               <div>
                 <label
                   class="block text-xs font-medium text-gray-700 mb-1">Address
                   Type*</label>
-                <select name="type"
+                <select name="type" id="edit-type"
                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   required>
                   <option value="home">Home</option>
@@ -264,10 +307,8 @@
               <div>
                 <label class="block text-xs font-medium text-gray-700 mb-1">Full
                   Name*</label>
-
-                <input type="text" name="name"
+                <input type="text" name="name" id="edit-name"
                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-                <div class="text-red-600 text-xs mt-1" id="nameError"></div>
               </div>
             </div>
 
@@ -275,7 +316,7 @@
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">Phone
                 Number*</label>
-              <input type="tel" name="phone"
+              <input type="tel" name="phone" id="edit-phone"
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
             </div>
 
@@ -283,85 +324,83 @@
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">Street
                 Address*</label>
-              <input type="text" name="street"
+              <input type="text" name="street" id="edit-street"
                 class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
             </div>
 
-            <!-- Two Column Layout for Zip/Country -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <!-- Zip Code -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Pin
-                  Code*</label>
-                <input type="text" name="zipCode" id="pincode"
-                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-                <small id="pincode-error" style="color: red;"></small>
-              </div>
+            <!-- Pin Code & Country -->
+           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">Pin Code*</label>
+    <input type="text" name="zipCode" id="edit-pincode"
+      class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+    <small id="edit-pincode-error" class="text-red-500 text-xs mt-1 block"></small>
+  </div>
 
-              <!-- Country -->
-              <div>
-                <label
-                  class="block text-xs font-medium text-gray-700 mb-1">Country</label>
-                <input type="text" name="country" value="INDIA"
-                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
-                  readonly />
-              </div>
-            </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">Country</label>
+    <input type="text" name="country" value="INDIA" readonly
+      class="w-full px-2 py-1.5 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm" />
+  </div>
+</div>
 
-            <!-- Two Column Layout for City/State -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <!-- City -->
-              <div>
-                <label
-                  class="block text-xs font-medium text-gray-700 mb-1">City</label>
-                <input type="text" name="city" id="city" readonly
-                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-              </div>
+<!-- City & State -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">City</label>
+    <input type="text" name="city" id="edit-city" readonly
+      class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm" />
+  </div>
 
-              <!-- State -->
-              <div>
-                <label
-                  class="block text-xs font-medium text-gray-700 mb-1">State*</label>
-                <input type="text" name="state" id="state" readonly
-                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-              </div>
-            </div>
-
-            <!-- Set as Default -->
-            <div class="flex items-center pt-1">
-              <input type="checkbox" name="isDefault" id="isDefault"
-                value="true"
-                class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-0" />
-              <label for="isDefault" class="text-xs text-gray-700">Set as
-                default address</label>
-            </div>
-          </div>
-
-          <div class="mt-4 flex justify-end gap-2">
-            <button type="button" id="cancelBtn"
-              class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              Cancel
-            </button>
-            <button type="submit"
-              class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow-sm text-xs font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-              update Address
-            </button>
-          </div>
-        </form>
-
-    <!-- Delete Confirmation Modal -->
-<div id="deleteConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs text-center">
-    <h3 class="text-lg font-semibold mb-4 text-gray-800">Delete Address</h3>
-    <p class="mb-6 text-gray-600">Are you sure you want to delete this address?</p>
-    <div class="flex justify-center gap-4">
-      <button id="cancelDeleteBtn" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">Cancel</button>
-      <button id="confirmDeleteBtn" class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white">Delete</button>
-    </div>
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">State*</label>
+    <input type="text" name="state" id="edit-state" readonly
+      class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm" />
   </div>
 </div>
 
 
+            <!-- Set as Default -->
+            <div class="flex items-center pt-1">
+              <input type="checkbox" name="isDefault" id="edit-isDefault"
+                value="true"
+                class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-0" />
+              <label for="edit-isDefault" class="text-xs text-gray-700">Set as
+                default address</label>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" id="editCancelBtn"
+              class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit"
+              class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow-sm text-xs font-medium hover:bg-blue-700">
+              Update Address
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+      <div
+        class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs text-center">
+        <h3 class="text-lg font-semibold mb-4 text-gray-800">Delete Address</h3>
+        <p class="mb-6 text-gray-600">Are you sure you want to delete this
+          address?</p>
+        <div class="flex justify-center gap-4">
+          <button id="cancelDeleteBtn"
+            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">Cancel</button>
+          <button id="confirmDeleteBtn"
+            class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white">Delete</button>
+        </div>
+      </div>
+    </div>
 
     <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -430,35 +469,73 @@
 
     // pincode api functionality
 
-    document.getElementById('pincode').addEventListener('input',async function(){
-      const pin  = this.value;
+    document.addEventListener('DOMContentLoaded', () => {
+  // For ADD NEW ADDRESS form
+  const addPincodeInput = document.getElementById('pincode');
+  if (addPincodeInput) {
+    addPincodeInput.addEventListener('input', async function () {
+      const pin = this.value;
       const errorElement = document.getElementById('pincode-error');
-      if(pin.length===6){
-        try{
-       const res = await fetch(`/location?pincode=${pin}`);
-        const data  = await res.json();
 
-        if(data.city && data.state){
-          document.getElementById('city').value = data.city;
-          document.getElementById('state').value = data.state;
-          errorElement.textContent = "";
-        }else{
+      if (pin.length === 6) {
+        try {
+          const res = await fetch(`/location?pincode=${pin}`);
+          const data = await res.json();
 
-          errorElement.textContent = 'Invalid or unknown pincode';
-          document.getElementById('city').value = '';
-          document.getElementById('state').value = '';
-
+          if (data.city && data.state) {
+            document.getElementById('city').value = data.city;
+            document.getElementById('state').value = data.state;
+            errorElement.textContent = "";
+          } else {
+            errorElement.textContent = 'Invalid or unknown pincode';
+            document.getElementById('city').value = '';
+            document.getElementById('state').value = '';
+          }
+        } catch (error) {
+          console.error('Fetch error', error);
+          errorElement.textContent = 'Server error. Try again.';
         }
-      }catch(error){
-        console.error('Fetch error',error);
-        errorElement.textContent = 'Server error.Try again.';
-        
-      }
-      }else{
+      } else {
         errorElement.textContent = "";
       }
-    })
+    });
+  }
 
+  // For EDIT ADDRESS form
+  const editPincodeInput = document.getElementById('edit-pincode');
+  if (editPincodeInput) {
+    editPincodeInput.addEventListener('input', async function () {
+      const pin = this.value;
+      const errorElement = document.getElementById('edit-pincode-error');
+
+      if (pin.length === 6) {
+        try {
+          const res = await fetch(`/location?pincode=${pin}`);
+          const data = await res.json();
+
+          if (data.city && data.state) {
+            document.getElementById('edit-city').value = data.city;
+            document.getElementById('edit-state').value = data.state;
+            errorElement.textContent = "";
+          } else {
+            errorElement.textContent = 'Invalid or unknown pincode';
+            document.getElementById('edit-city').value = '';
+            document.getElementById('edit-state').value = '';
+          }
+        } catch (error) {
+          console.error('Fetch error', error);
+          errorElement.textContent = 'Server error. Try again.';
+        }
+      } else {
+        errorElement.textContent = "";
+      }
+    });
+  }
+});
+
+
+
+  // address delete functionality
 
   let addressToDelete = null;
 
@@ -493,9 +570,155 @@ document.getElementById('confirmDeleteBtn').onclick = async function() {
 };
 
 
+const editModal = document.getElementById('editAddressModal');
+const cancelBtn = document.getElementById('editCancelBtn');
+const closeBtn = document.getElementById('closeModal');
+const openBtns = document.querySelectorAll('.openEditAddressModal');
 
+// Open modal for each edit button
+openBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('editAddressId').value = btn.dataset.id;
+    document.getElementById('edit-type').value = btn.dataset.type;
+    document.getElementById('edit-name').value = btn.dataset.name;
+    document.getElementById('edit-phone').value = btn.dataset.phone;
+    document.getElementById('edit-street').value = btn.dataset.street;
+    document.getElementById('edit-pincode').value = btn.dataset.zip;
+    document.getElementById('edit-city').value = btn.dataset.city;
+    document.getElementById('edit-state').value = btn.dataset.state;
+    document.getElementById('edit-isDefault').checked = btn.dataset.default === "true";
+
+    editModal.classList.remove('hidden');
+  });
+});
+
+// Close modal on cancel button
+cancelBtn.addEventListener('click', () => {
+  editModal.classList.add('hidden');
+});
+
+// Close modal on close (X) button
+closeBtn.addEventListener('click', () => {
+  editModal.classList.add('hidden');
+});
+
+// Close modal if user clicks outside the modal
+window.addEventListener('click', (e) => {
+  if (e.target === editModal) {
+    editModal.classList.add('hidden');
+  }
+});
+
+
+// editing user address 
+
+document.getElementById('editAddressForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+  const addressId = formData.get('_id');
+
+
+  const isDefault = form.querySelectorAll('#edit-isDefault').checked;
+
+  try{
+    const response = await fetch(`/editAddress/${addressId}`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+         type: formData.get('type'),
+          name: formData.get('name'),
+          phone: formData.get('phone'),
+          street: formData.get('street'),
+          zipCode: formData.get('zipCode'),
+          city: formData.get('city'),
+          state: formData.get('state'),
+          country: formData.get('country'),
+          isDefault
+      })
+    });
+
+    const result = await response.json();
+
+ if (result.success) {
+  localStorage.setItem('toastMessage', 'Address updated successfully');
+  localStorage.setItem('toastType', 'success');
+  location.reload(); // Reload to reflect changes
+} else {
+  showToast('Update failed', 'error');
+}
+
+  }catch(error){
+     console.error(error);
+     showToast('An Error occurred','error');
+  }
+
+  
+})
+
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    const colorClasses = type === 'success'
+      ? 'bg-white border-l-4 border-green-500 text-green-700'
+      : 'bg-white border-l-4 border-red-500 text-red-700';
+
+    const icon = type === 'success'
+      ? '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>'
+      : '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+
+    toast.className = `
+      flex items-start gap-3 w-80 px-4 py-3 rounded-xl shadow-lg animate-slide-in relative ${colorClasses}
+    `;
+
+    toast.innerHTML = `
+      <div class="pt-1">${icon}</div>
+      <div class="flex-1 text-sm font-medium">${message}</div>
+      <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-400 hover:text-black">
+        &times;
+      </button>
+    `;
+
+    document.getElementById('toast-container').appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.remove(), 400);
+    }, 4000);
+  }
+
+  // Display toast after reload
+  window.addEventListener('DOMContentLoaded', () => {
+    const message = localStorage.getItem('toastMessage');
+    const type = localStorage.getItem('toastType') || 'success';
+
+    if (message) {
+      showToast(message, type);
+      localStorage.removeItem('toastMessage');
+      localStorage.removeItem('toastType');
+    }
+  });
 
   </script>
+
+  <style>
+ @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  .animate-slide-in {
+    animation: slide-in 0.4s ease-out;
+  }
+</style>
   </body>
 
 </html>

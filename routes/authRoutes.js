@@ -10,7 +10,21 @@ import { getSignUpPage, getLoginPage, postSignUp,
     } from "../controllers/authController.js";
 import  isAuthenticated  from "../middleware/auth.js"
  
-import { getHomePage,homePageSearch,allGameSearch,getProfilePage,getAddressPage,postEditProfile,postVerifyEmail,sendVerificationCode,postAddress,deleteAddress,postEditAddress} from "../controllers/userController.js";
+import { getHomePage,
+    homePageSearch,
+    allGameSearch,
+    getProfilePage,
+    getAddressPage,
+    postEditProfile,
+    postVerifyEmail,
+    sendVerificationCode,
+    postAddress,
+    deleteAddress,
+    postSetDefault,
+    postEditAddress
+}
+from "../controllers/userController.js";
+
 import getLocationByPinCode from '../controllers/locationController.js'
 import {getDetailPage} from '../controllers/gameDetail.js'
 import { showAllGames } from "../controllers/AllGamesController.js";
@@ -53,7 +67,9 @@ router.post('/post-address',postAddress);
 
 router.get('/location',getLocationByPinCode)
 router.post('/deleteAddress/:id',deleteAddress);
+router.post('/setDefaultAddress/:id',postSetDefault)
 router.post('/editAddress/:id',postEditAddress)
+
 // router.get('/forgot-password',getforgorPassword)
 
 

@@ -4,12 +4,15 @@ const isAuthenticated = async (req, res, next) => {
     try {
         
    
+    
         
 
         if(!req.session.userId){
             
             return res.redirect('/login')
         }
+    
+        
 
         const user = await User.findById(req.session.userId);
         if(!user || !user.isVerified){

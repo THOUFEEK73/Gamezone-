@@ -1,61 +1,6 @@
-const originalEmail = "<%= user.email %>";
-    const editForm = document.getElementById("edit-form");
-    const editEmailBtn = document.getElementById("edit-email-btn");
+    <!-- <input type="checkbox" name="isDefault"
+                  class="accent-blue-600 h-4 w-4" <%=address.isDefault ?
+                  'checked' : '' %> /> -->
 
-    document.getElementById("edit-btn").addEventListener("click", () => {
-      document.getElementById("editProfileModal").classList.remove("hidden");
-    });
-
-    function closeModal() {
-      document.getElementById("editProfileModal").classList.add("hidden");
-    }
-
-    function closeEmailModal() {
-      document.getElementById("emailVerificationModal").classList.add("hidden");
-    }
-
-    editForm.addEventListener("submit", async function (e) {
-      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
-
-      if (newEmail !== originalEmail) {
-        e.preventDefault();
-        document.getElementById('hiddenNewEmail').value = newEmail;
-        closeModal();
-        document.getElementById("emailVerificationModal").classList.remove("hidden");
-
-        try {
-          const res = await fetch("/send-verification-code", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: newEmail })
-          });
-
-          const data = await res.json();
-          if (!res.ok || !data.success) {
-            alert(data.message || "Failed to send verification code.");
-          }
-        } catch (err) {
-          console.error("Error sending OTP:", err);
-          alert("Something went wrong. Please try again.");
-        }
-      }
-    });
-
-    editEmailBtn.addEventListener("click", () => {
-      const newEmail = editForm.querySelector('input[name="email"]').value.trim();
-      if (newEmail && newEmail !== originalEmail) {
-        document.getElementById('hiddenNewEmail').value = newEmail;
-        closeModal();
-        document.getElementById("emailVerificationModal").classList.remove("hidden");
-      } else {
-        alert("Please enter a new email to verify.");
-      }
-    });
-
-    setTimeout(() => {
-      const flash = document.getElementById('flash-message');
-      if (flash) {
-        flash.classList.add('opacity-0');
-        setTimeout(() => flash.remove(), 500);
-      }
-    }, 3000);
+                    <label class="ml-2 text-sm text-gray-600">Set as default
+                  address</label>
