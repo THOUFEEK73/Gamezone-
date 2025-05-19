@@ -1,5 +1,7 @@
 
 import Game from "../models/gameModel.js";
+import User from "../models/userModel.js";
+import Cart from '../models/cartModel.js'
 
 
 
@@ -12,7 +14,8 @@ export const getDetailPage = async(req ,res)=>{
        
         
         const gameId = req.params.id;
-       
+        const user = req.session.userId;
+
        
         const game = await Game.findById(gameId).populate('category').populate('company');
 
@@ -34,9 +37,33 @@ export const getDetailPage = async(req ,res)=>{
            
         }).limit(5);
 
+ 
+
+        // cart count 
+
+        const cartItems= await Cart.findOne({userId:user})
+            // Cart count logic
+            console.log(cartItems);
+            
+    
+     let cartCount = 0;
+
+  if(cartItems && cartItems.products.length>0){
+
+      cartCount = cartItems.products.reduce((total,item)=>total + item.quantity,0);
+
+  }
+
+
+
+  
+    
+        console.log('totalCount',cartCount);
+        
+       
     
 
-         res.render('user/gamedetail',{game,relatedGames,relatedCompanies});
+         res.render('user/gamedetail',{game,relatedGames,relatedCompanies,user,page:'gameDetail',cartCount});
 
     }catch(err){
         console.error('Error fetching game details:',err);

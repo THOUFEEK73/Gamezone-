@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wishlist</title>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-white text-gray-800">
+
+<%- include("partials/navbar", { page: page }) %>
+
+  <main class="pt-24 pb-10 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl font-bold mb-8">Your Wishlist</h1>
+
+      <!-- Remove this section to test the empty state -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div class="bg-gray-50 rounded-xl shadow hover:shadow-md transition p-4 flex flex-col justify-between">
+          <div>
+            <img src="https://via.placeholder.com/300x200" alt="Game 1" class="rounded-lg h-48 w-full object-cover mb-4">
+            <h2 class="text-xl font-semibold">God of War: Ragnarok</h2>
+            <p class="text-gray-500 text-sm mt-1">Action</p>
+          </div>
+          <div class="mt-4 flex justify-between items-center">
+            <span class="text-indigo-600 font-bold text-lg">₹3499</span>
+            <button class="text-red-500 hover:text-red-600 transition">
+              <i class="fas fa-trash-alt mr-1"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl shadow hover:shadow-md transition p-4 flex flex-col justify-between">
+          <div>
+            <img src="https://via.placeholder.com/300x200" alt="Game 2" class="rounded-lg h-48 w-full object-cover mb-4">
+            <h2 class="text-xl font-semibold">Horizon Forbidden West</h2>
+            <p class="text-gray-500 text-sm mt-1">Adventure</p>
+          </div>
+          <div class="mt-4 flex justify-between items-center">
+            <span class="text-indigo-600 font-bold text-lg">₹2999</span>
+            <button class="text-red-500 hover:text-red-600 transition">
+              <i class="fas fa-trash-alt mr-1"></i> Remove
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-xl shadow hover:shadow-md transition p-4 flex flex-col justify-between">
+          <div>
+            <img src="https://via.placeholder.com/300x200" alt="Game 3" class="rounded-lg h-48 w-full object-cover mb-4">
+            <h2 class="text-xl font-semibold">Elden Ring</h2>
+            <p class="text-gray-500 text-sm mt-1">RPG</p>
+          </div>
+          <div class="mt-4 flex justify-between items-center">
+            <span class="text-indigo-600 font-bold text-lg">₹3999</span>
+            <button class="text-red-500 hover:text-red-600 transition">
+              <i class="fas fa-trash-alt mr-1"></i> Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uncomment this block for empty wishlist state -->
+      <!--
+      <div class="text-center text-gray-500 mt-20">
+        <i class="fas fa-heart-broken text-5xl mb-4"></i>
+        <p class="text-xl">Your wishlist is empty.</p>
+        <a href="/store" class="mt-4 inline-block text-indigo-600 hover:underline">Browse games in the store →</a>
+      </div>
+      -->
+
+    </div>
+  </main>
+
+  <footer class="bg-white border-t mt-10 py-6 text-center text-sm text-gray-400">
+    © 2025 GameZone. All rights reserved.
+  </footer>
+
+</body>
+</html>

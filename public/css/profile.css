@@ -1,0 +1,143 @@
+* {
+  box-sizing: border-box;
+}
+
+
+/* Page-level container */
+main {
+    margin: 0 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background-color: #f9fafb;
+}
+
+/* Card container */
+.profile-card {
+  width: 100%;
+  max-width: 400px;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+}
+
+/* Edit button */
+.btn-edit {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: white;
+  color: #374151;
+  transition: 0.3s;
+}
+.btn-edit:hover {
+  background-color: #f3f4f6;
+}
+
+/* Avatar */
+.avatar-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 9999px;
+  object-fit: cover;
+  border: 3px solid #e5e7eb;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+}
+
+/* Info boxes */
+.info-box {
+  width: 100%;
+  background-color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+.label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+.value {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+/* Referral section */
+.referral-box {
+  width: 100%;
+  padding: 1rem;
+  background-color: #eef2ff;
+  border: 1px dashed #c7d2fe;
+  border-radius: 0.75rem;
+  text-align: center;
+}
+.referral-code {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #4338ca;
+  margin-bottom: 0.5rem;
+}
+.referral-icons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.referral-icons button {
+  font-size: 1rem;
+  color: #6b7280;
+  transition: 0.3s;
+}
+.referral-icons button:hover {
+  color: #4f46e5;
+}
+.referral-msg {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+/* Flash message */
+.flash-message {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  z-index: 50;
+}
+.flash-message.success {
+  background-color: #10b981;
+}
+.flash-message.error {
+  background-color: #ef4444;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}

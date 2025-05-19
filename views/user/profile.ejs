@@ -9,113 +9,122 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+ <link rel="stylesheet" href="/css/profile.css">
+
 
 </head>
 
 <body class="bg-gray-100 min-h-screen">
 
+<%- include('partials/navbar') %>
 
-  
   <div class="flex flex-col lg:flex-row min-h-screen">
     <%- include('partials/sidebar') %>
-      <main class="flex-1 flex justify-center p-2 sm:p-4">
-        <section class="max-w-4xl w-full bg-white p-4 sm:p-8 rounded-2xl shadow mt-4 sm:mt-8">
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-            <h2 class="text-2xl font-semibold">Personal Information</h2>
-            <button id="edit-btn"
-              class="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition focus:ring-2 focus:ring-blue-200">
-              Edit
-            </button>
-          </div>
+   <main class="flex items-center justify-center bg-gray-50 px-4 min-h-screen w-full">
 
-          <div class="flex flex-col md:flex-row gap-8">
-            <div class="flex justify-center md:justify-start">
-              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH87TKQrWcl19xly2VNs0CjBzy8eaKNM-ZpA&s" alt="User" class="w-24 h-24 rounded-full object-cover border shadow" />
-            </div>
-            <div class="flex-1 grid grid-cols-1 gap-4">
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-500 mb-1">Name</p>
-                <p class="text-md font-medium">
-                  <%= user.name %>
-                </p>
-              </div>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-500 mb-1">Email Address</p>
-                <p class="text-md font-medium">
-                  <%= user.email %>
-                </p>
-              </div>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-500 mb-1">Mobile Number</p>
-                <p class="text-md font-medium">
-                  <%= user.phone %>
-                </p>
-              </div>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-500 mb-1">Your Referral Code</p>
-                <div class="flex items-center justify-between">
-                  <p class="text-lg font-semibold text-gray-800" id="referral-code">OXY9BA5BD</p>
-                  <div class="flex items-center gap-4 text-gray-500">
-                    <button id="copy-btn" class="hover:text-gray-700 cursor-pointer" title="Copy"><i
-                        class="fas fa-copy"></i></button>
-                    <button id="share-btn" class="hover:text-gray-700 cursor-pointer" title="Share"><i
-                        class="fas fa-share-alt"></i></button>
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2" id="copy-feedback">Share this code with friends and get ₹200 in
-                  your wallet when they sign up!</p>
-              </div>
+ <div class="profile-page">
+ <div class="profile-card bg-white shadow-lg rounded-2xl p-6 w-full max-w-md">
 
-              <% if (messages.success && messages.success.length> 0) { %>
-                <div id="flash-message"
-                  class="fixed bottom-8 right-60 z-50 px-4 py-3 rounded-md bg-green-500 text-white shadow-lg transition-opacity duration-500">
-                  <%= messages.success[0] %>
-                </div>
-                <% } %>
+    <button class="btn-edit" id="edit-btn">Edit</button>
 
-                  <% if (messages.error && messages.error.length> 0) { %>
-                    <div id="flash-message"
-                      class="fixed bottom-8 right-60 z-50 px-4 py-3 rounded-md bg-red-500 text-white shadow-lg transition-opacity duration-500">
-                      <%= messages.error[0] %>
-                    </div>
-                    <% } %>
-            </div>
-          </div>
-        </section>
-      </main>
-  </div>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH87TKQrWcl19xly2VNs0CjBzy8eaKNM-ZpA&s"
+         alt="User Avatar" class="avatar-img" />
 
-  <!-- Edit Profile Modal -->
-  <div id="editProfileModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-    <div class="bg-white rounded-2xl p-6 w-full max-w-md shadow-lg relative">
-      <button onclick="closeModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black">&times;</button>
-      <h2 class="text-xl font-semibold mb-4">Edit Profile</h2>
-      <form action="/edit-profile" method="POST" class="space-y-4" id="edit-form">
-        <div class="flex justify-center">
-          <img src="/images/user.jpg" alt="Profile" class="w-20 h-20 rounded-full object-cover shadow" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Name</label>
-          <input type="text" name="name" value="<%=user.name %>" class="w-full px-3 py-2 border rounded-lg" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" name="email" value="<%= user.email%>" class="w-full px-3 py-2 border rounded-lg"/>
-          <button type="button" id="edit-email-btn" class="mt-2 text-blue-600 hover:underline text-sm">Verify
-            Email</button>
-          <div id="emailError" class="text-red-600 text-xs mt-1"></div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Phone</label>
-          <input type="text" name="phone" value="<%= user.phone %>" class="w-full px-3 py-2 border rounded-lg"
-            required />
-        </div>
-        <div class="text-right">
-          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">Save</button>
-        </div>
-      </form>
+    <div class="info-box">
+      <p class="label">Name</p>
+      <p class="value"><%= user.name %></p>
     </div>
+
+    <div class="info-box">
+      <p class="label">Email</p>
+      <p class="value"><%= user.email %></p>
+    </div>
+
+    <div class="info-box">
+      <p class="label">Phone</p>
+      <p class="value"><%= user.phone %></p>
+    </div>
+
+    <div class="referral-box">
+      <p class="referral-code" id="referral-code">OXY9BA5BD</p>
+      <div class="referral-icons">
+        <button id="copy-btn" title="Copy"><i class="fas fa-copy"></i></button>
+        <button id="share-btn" title="Share"><i class="fas fa-share-alt"></i></button>
+      </div>
+      <p class="referral-msg" id="copy-feedback">
+        Share this code with friends and get ₹200 in your wallet when they sign up!
+      </p>
+    </div>
+
+    <% if (messages.success && messages.success.length > 0) { %>
+      <div class="flash-message success"><%= messages.success[0] %></div>
+    <% } %>
+    <% if (messages.error && messages.error.length > 0) { %>
+      <div class="flash-message error"><%= messages.error[0] %></div>
+    <% } %>
   </div>
+</div>
+
+</main>
+
+  </div>
+
+ <!-- Edit Profile Modal -->
+<div id="editProfileModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden transition duration-300">
+  <div
+    class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative animate-fadeIn">
+    
+    <!-- Close Button -->
+    <button onclick="closeModal()" class="absolute top-3 right-4 text-gray-400 hover:text-black text-2xl">&times;</button>
+
+    <!-- Modal Header -->
+    <h2 class="text-xl font-semibold mb-4 text-center">Edit Profile</h2>
+
+    <!-- Form -->
+    <form action="/edit-profile" method="POST" class="space-y-5" id="edit-form">
+      
+      <!-- Avatar -->
+      <div class="flex justify-center">
+        <img src="/images/user.jpg" alt="Profile"
+          class="w-20 h-20 rounded-full object-cover shadow-md border-2 border-gray-200" />
+      </div>
+
+      <!-- Name Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <input type="text" name="name" value="<%= user.name %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      </div>
+
+      <!-- Email Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input type="email" name="email" value="<%= user.email %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <button type="button" id="edit-email-btn"
+          class="mt-2 text-blue-600 hover:underline text-sm">Verify Email</button>
+        <div id="emailError" class="text-red-600 text-xs mt-1"></div>
+      </div>
+
+      <!-- Phone Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+        <input type="text" name="phone" value="<%= user.phone %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+      </div>
+
+      <!-- Save Button -->
+      <div class="text-right">
+        <button type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 
 <!-- Email Verification Modal -->
 <div id="emailVerificationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">

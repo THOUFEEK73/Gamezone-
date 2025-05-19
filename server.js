@@ -8,6 +8,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import passport from './config/passport.js'; 
 import flash from 'connect-flash';
 
+
 dotenv.config();
 const app = express();
 
@@ -58,9 +59,21 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
+
+
+
+
 // Routes
 app.use('/admin', adminRoutes);
 app.use("/", authRoutes);
+
+
+
+
+
+
+
+
 
 // Connect to MongoDB
 const startServer = async () => {

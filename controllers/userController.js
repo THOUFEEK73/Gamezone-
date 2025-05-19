@@ -5,13 +5,17 @@ import { searchGames } from '../utils/searchFun.js';
 import OTP from '../models/otpModel.js';
 import {generateOTP} from '../utils/otp-functions.js';
 import Address  from '../models/addressModel.js';
+import Cart from '../models/cartModel.js'
 
 import _ from 'lodash';
+import { response } from 'express';
 
 
 
 export const getHomePage = async (req, res) => {
   try {
+
+    const userId = req.session.userId;
     // Check if user is authenticated
     if (!req.session.userId && !req.isAuthenticated()) {
       return res.redirect('/login');
@@ -27,9 +31,18 @@ export const getHomePage = async (req, res) => {
     // Fetch all games from the database
     const games = await Game.find({status:'active'}).populate({path:'category',match:{status:'active'}}).limit(10).
     then(games=>games.filter(game=>game.category))
+  const cart = await Cart.findOne({userId});
+    
+  
+     let cartCount = 0;
+      if(cart && cart.products.length>0){
+          cartCount = cart.products.reduce((total,item)=>total+item.quantity,0);
+      }
 
+    
+      
     // Render the home page
-    res.render('user/home', { games: games });
+    res.render('user/home', { games: games,page:'home',cartCount });
   } catch (error) {
     console.error('Error fetching games:', error);
     res.status(500).send('Internal Server Error');
@@ -79,7 +92,7 @@ export const getProfilePage = async (req, res) => {
       error: req.flash('error')
     };
 
-    res.render('user/profile', { user, messages });
+    res.render('user/profile', { user, messages,page:'profile' });
 
   } catch (error) {
     console.error('Error rendering profile page:', error);
@@ -93,7 +106,7 @@ export const getAddressPage =async (req,res)=>{
      const userId = req.session.userId;
      if(!userId) return res.redirect('/login');
      const address = await Address.find({userId});
-     res.render('user/address',{address})
+     res.render('user/address',{address,page:'address'})
   }catch(error){
    console.error('Error fetching address page ',error);
    res.status(500).send('Internal Server Error');
@@ -282,41 +295,6 @@ export const postEditAddress = async(req,res)=>{
 }
 
 
-// export const test =  async (req, res) => {
-//   const userId = req.session.user._id;
-//   const addressId = req.params.id;
-//   const {
-//     type, name, phone, street, zipCode,
-//     city, state, country, isDefault
-//   } = req.body;
-
-//   try {
-//     // If isDefault is true, set all others to false
-//     if (isDefault) {
-//       await Address.updateMany({ user: userId }, { $set: { isDefault: false } });
-//     }
-
-//     await Address.findByIdAndUpdate(addressId, {
-//       type,
-//       name,
-//       phone,
-//       street,
-//       zipCode,
-//       city,
-//       state,
-//       country,
-//       isDefault: !!isDefault
-//     });
-
-//     res.json({ success: true });
-//   } catch (err) {
-//     console.error('Edit address error:', err);
-//     res.status(500).json({ success: false, message: 'Server error' });
-//   }
-// };
-
-
-
 
 export const postSetDefault = async(req,res)=>{
   console.log('function triggered');
@@ -337,5 +315,105 @@ export const postSetDefault = async(req,res)=>{
     console.error('Error updating isDefault',error);
     res.status(500).render('error',{message:'server error'})
   }
+
+}
+
+
+
+
+// wish list
+
+export const getWishListPage = async(req,res)=>{
+     try{
+       const userId = req.session.userId;
+       console.log('function triggered');
+
+       res.render('user/wishlist',{page:'wishlist'});
+       
+     }catch(error){
+      console.error('Error while rendering whishList',error);
+      res.status(500).render('error',{message:'server Error please Try after Some time'});
+      
+     }
+}
+
+export const getCartPage = async(req,res)=>{
+  try{
+   
+    const userId = req.session.userId;
+    const cartItems = await Cart.findOne({userId,}).populate({path:'products.productId',populate:{path:'company',model:'GameCompany'}});
+  console.log("Populated Cart:", JSON.stringify(cartItems, null, 2));
+
+  let cartCount = 0;
+
+  if(cartItems && cartItems.products.length>0){
+
+      cartCount = cartItems.products.reduce((total,item)=>total + item.quantity,0);
+
+  }
+
+
+
+  
+
+
+    res.render('user/cart',{page:'cart',cart:cartItems,cartCount});
+    
+
+  }catch(error){
+
+    console.error('Error while rendering cart',error);
+    res.status(500).render('error',{message:'server Error please Try after Some time'});
+    
+
+  }
+}
+
+
+export const postAddCart = async(req,res)=>{
+
+    try{
+
+          const {productId} = req.body;
+    const userId = req.session.userId;
+
+
+      let cart = await Cart.findOne({userId});
+
+    
+      
+ 
+
+      if(!cart){
+         cart = new Cart({
+          userId,
+          products:[{productId,quantity:1}],
+       
+         })
+      }else{
+       
+        const existingProduct = cart.products.find((prd)=>prd.productId.toString()===productId.toString());
+          if(existingProduct){
+        existingProduct.quantity+=1;
+ 
+        
+        console.log('productCount',existingProduct);
+      }else{
+        cart.products.push({productId,quantity:1});
+      }
+      }
+
+  
+         
+       await cart.save();
+       res.status(200).json({message:'product added to cart'})
+
+    }catch(error){
+
+      console.error('Error adding product to cart',error);
+      res.status(500).render('error',{message:'server error please try after someTimes'});
+      
+
+    }
 
 }

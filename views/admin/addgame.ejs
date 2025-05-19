@@ -880,19 +880,19 @@
                         cropper.destroy();
                     }
                     
-                    cropper = new Cropper(cropImage, {
-                        aspectRatio: 16 / 9,
-                        viewMode: 2,
-                        dragMode: 'move',
-                        autoCropArea: 1,
-                        restore: false,
-                        guides: true,
-                        center: true,
-                        highlight: false,
-                        cropBoxMovable: true,
-                        cropBoxResizable: true,
-                        toggleDragModeOnDblclick: false,
-                    });
+                  cropper = new Cropper(cropImage, {
+    viewMode: 2,
+    dragMode: 'move',
+    autoCropArea: 1,
+    restore: false,
+    guides: true,
+    center: true,
+    highlight: false,
+    cropBoxMovable: true,
+    cropBoxResizable: true,
+    toggleDragModeOnDblclick: false,
+});
+
                 };
             };
             reader.readAsDataURL(file);
@@ -910,10 +910,7 @@
         function applyCrop() {
             if (!cropper) return;
 
-            const canvas = cropper.getCroppedCanvas({
-                width: 1920,  // 16:9 aspect ratio
-                height: 1080
-            });
+            const canvas = cropper.getCroppedCanvas();
 
             canvas.toBlob((blob) => {
                 const croppedFile = new File([blob], currentFile.name, {
@@ -921,7 +918,7 @@
                     lastModified: new Date().getTime()
                 });
 
-                if (currentCropType === 'cover') {
+                if (currentCropType === 'cover') {  
                     // Create a new DataTransfer object
                     const dataTransfer = new DataTransfer();
                     dataTransfer.items.add(croppedFile);

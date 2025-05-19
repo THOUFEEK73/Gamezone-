@@ -21,7 +21,10 @@ import { getHomePage,
     postAddress,
     deleteAddress,
     postSetDefault,
-    postEditAddress
+    postEditAddress,
+    getWishListPage,
+    getCartPage,
+    postAddCart
 }
 from "../controllers/userController.js";
 
@@ -72,6 +75,10 @@ router.post('/editAddress/:id',postEditAddress)
 
 // router.get('/forgot-password',getforgorPassword)
 
+router.get('/wishlist',isAuthenticated,getWishListPage);
+router.get('/cart',isAuthenticated,getCartPage)
+
+router.post('/cart/add',postAddCart)
 
 
 
