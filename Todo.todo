@@ -36,10 +36,20 @@
 ✔ solve one leetcode problem @done (5/16/2025, 10:03:28 AM)
 ✔ implement user can edit the address @done (5/17/2025, 10:55:27 AM)
 ✔ check the default validation too @done (5/17/2025, 10:55:29 AM)
-☐ implement wish list page
-☐ implement add to cart page
-☐ add to cart 
-☐ wishlist
+✔ implement wish list page @done (5/20/2025, 10:25:16 AM)
+✔ implement add to cart page @done (5/20/2025, 10:25:22 AM)
+✔ add to cart @done (5/20/2025, 10:25:24 AM)
+✘ wishlist functionality @cancelled (5/22/2025, 11:33:31 AM)
+✔ check the session properly and find the issue @done (5/20/2025, 11:08:18 AM)
+✔ add to cart Total and sub total amount @done (5/22/2025, 11:33:28 AM)
+
+
+Todays Bug fixes and new  Implementations
+✔ after cart is getting empty shows a error message @done (5/22/2025, 11:52:43 AM)
+✔ shows the user order details on profile order @done (5/23/2025, 2:24:15 AM)
+✔ implement order id based on orders @done (5/23/2025, 2:24:20 AM)
+
+
 
 
 

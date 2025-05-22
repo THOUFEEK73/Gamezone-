@@ -37,6 +37,7 @@ export const getLoginPage = (req, res) => {
 // Logout User
 export const logout = (req, res) => {
   req.session.userId = null;
+  res.clearCookie('sessionId')
   return res.redirect('/login')
 };
 

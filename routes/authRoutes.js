@@ -24,7 +24,14 @@ import { getHomePage,
     postEditAddress,
     getWishListPage,
     getCartPage,
-    postAddCart
+    postAddCart,
+    removeCart,
+    updateQuantity,
+    getCheckoutPage,
+    postPlaceCODOrder,
+    getOrderSuccessPage,
+    getOrderDetailPage
+    
 }
 from "../controllers/userController.js";
 
@@ -56,16 +63,16 @@ router.get('/auth/google/callback', googleCallback);
 router.get('/logout', logoutUser); 
 router.get('/status', authStatus);
 
-router.get('/home',isAuthenticated,getHomePage);
+router.get('/home',noCache,isAuthenticated,getHomePage);
 router.get('/search',homePageSearch);
-router.get('/allsearch',allGameSearch);
+router.get('/allsearch',allGameSearch); 
 
 
-router.get('/profile',getProfilePage);
+router.get('/profile',noCache,isAuthenticated,getProfilePage);
 router.post('/edit-profile',postEditProfile)
 router.post('/send-verification-code',sendVerificationCode);
 router.post('/verify-email', postVerifyEmail);
-router.get('/address',getAddressPage)
+router.get('/address',noCache,isAuthenticated,getAddressPage)
 router.post('/post-address',postAddress);
 
 router.get('/location',getLocationByPinCode)
@@ -75,16 +82,27 @@ router.post('/editAddress/:id',postEditAddress)
 
 // router.get('/forgot-password',getforgorPassword)
 
-router.get('/wishlist',isAuthenticated,getWishListPage);
-router.get('/cart',isAuthenticated,getCartPage)
+router.get('/wishlist',noCache,isAuthenticated,getWishListPage);
+router.get('/cart',noCache,isAuthenticated,getCartPage)
+router.get('/orderDetails',noCache,isAuthenticated,getOrderDetailPage)
 
 router.post('/cart/add',postAddCart)
+router.delete('/cart/remove/:id',removeCart)
+router.put('/cart/update-Quantity',updateQuantity)
+
+
+// router.get('/proceedTocheckout',isAuthenticated,proceedToCheckout )
+router.get('/checkout',noCache,isAuthenticated,getCheckoutPage)
+
+router.post('/placeOrder',postPlaceCODOrder)
+
+router.get('/orderSuccess',getOrderSuccessPage)
 
 
 
 
-router.get('/allgames',isAuthenticated,showAllGames)
-router.get('/gamedetail/:id',isAuthenticated,getDetailPage);
+router.get('/allgames',noCache,isAuthenticated,showAllGames)
+router.get('/gamedetail/:id',noCache,isAuthenticated,getDetailPage);
 router.post('/filter-games',filterGames)
 
 

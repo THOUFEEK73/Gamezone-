@@ -1,322 +1,271 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gamer's Hub - Cart</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        /* Custom CSS for enhanced styling */
-        body {
-            background-color: #ffffff;
-            color: #333333;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-.btn-primary {
-    background: linear-gradient(to right, #22c55e, #16a34a); /* from lime green to green */
-    transition: all 0.3s ease;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(to right, #15803d, #166534); /* darker greens on hover */
-    transform: scale(1.02);
-}
-
-
-        .quantity-input {
-            background-color: #ffffff;
-            border: 1px solid #d1d5db;
-        }
-
-        .header-bg {
-            background-color: #f3f4f6;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .game-image {
-            transition: all 0.3s ease;
-        }
-
-        .game-image:hover {
-            transform: scale(1.03);
-        }
-
-        .cart-table th {
-            background-color: #f3f4f6;
-            padding: 12px;
-            font-weight: 600;
-        }
-
-        .cart-table td {
-            padding: 16px 12px;
-            vertical-align: middle;
-        }
-
-        .cart-table tr {
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .cart-table tr:last-child {
-            border-bottom: none;
-        }
-
-        /* Table responsive styling */
-        @media (max-width: 768px) {
-            .cart-table thead {
-                display: none;
-            }
-
-            .cart-table tbody tr {
-                display: block;
-                margin-bottom: 1rem;
-                border: 1px solid #e5e7eb;
-                border-radius: 0.5rem;
-                padding: 1rem;
-            }
-
-            .cart-table tbody td {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem 0;
-                border-bottom: 1px solid #f3f4f6;
-            }
-
-            .cart-table tbody td:last-child {
-                border-bottom: none;
-            }
-
-            .cart-table tbody td:before {
-                content: attr(data-label);
-                font-weight: 600;
-            }
-
-            .mobile-grid {
-                display: grid;
-                grid-template-columns: 80px 1fr;
-                gap: 1rem;
-                align-items: center;
-            }
-
-            .mobile-product-info {
-                grid-column: span 2;
-                margin-top: 0.5rem;
-            }
-        }
-
-        /* Footer styling */
-        .footer-link:hover {
-            color: #4f46e5;
-        }
-
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f3f4f6;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #9ca3af;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
-        }
-    </style>
-</head>
-
-<body>
-    <%- include('partials/navbar') %>
-        <!-- Main Content -->
-        <main class="container mx-auto px-4 pb-12">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-lg md:text-xl font-semibold text-gray-800">
-                    Your Cart <span class="text-indigo-600">
-                        <%= cartCount %> items
-                    </span>
-                </h2>
-
-                <a href="/allgames" class="text-indigo-600 hover:text-indigo-800 transition duration-300">
-                    <i class="fas fa-arrow-left mr-2"></i>Continue Shopping
-                </a>
-            </div>
-
-            <!-- Cart content wrapper -->
-            <div class="flex flex-col lg:flex-row gap-8 cart-container">
-                <!-- Cart items table -->
-                <div class="w-full lg:w-2/3 overflow-x-auto">
-                    <table class="w-full cart-table bg-white rounded-lg shadow-sm">
-                        <thead>
-                            <tr>
-                                <th class="text-left">Product</th>
-                                <th class="text-center">Price</th>
-                                <th class="text-center">Quantity</th>
-                                <th class="text-center">Total</th>
-                                <th class="text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-
-                            <% if(cart && cart.products.length> 0){%>
-                                <% cart.products.forEach((item)=>{%>
-
-                                    <tr>
-                                        <td data-label="Product" class="w-2/5">
-                                            <div class="flex items-center gap-4 mobile-grid">
-                                                <div class="relative">
-                                                    <img src="<%= item.productId.media.coverImage %>" alt="Game Cover"
-                                                        class="rounded-md w-20 h-20 object-cover game-image">
-
-                                                    <!-- <span class="absolute top-0 left-0 bg-indigo-600 text-white text-xs px-2 py-1 rounded">-20%</span> -->
-                                                </div>
-                                                <div class="mobile-product-info">
-                                                    <h3 class="text-lg font-semibold">
-                                                        <%=item.productId.title%>
-                                                    </h3>
-                                                    <small>
-                                                        <%= item.productId.company.name || 'Unknown' %>
-                                                    </small>
-                                                    <p class="text-green-600 mt-1">In Stock</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td data-label="Price" class="text-center">
-                                            <div class="price">
-                                                <!-- <p class="line-through text-gray-400 text-sm"><%= item.productId.price %></p> -->
-                                                <p class="font-bold text-indigo-600">&#8377;<%= item.productId.price %>
-                                                </p>
-                                            </div>
-                                        </td>
-                                        <td data-label="Quantity" class="text-center">
-                                            <div class="quantity flex items-center justify-center">
-                                                <button
-                                                    class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-l border border-gray-300">-</button>
-                                                <input type="text" value="<%=item.quantity%>"
-                                                    class="quantity-input w-12 text-center py-1 border-t border-b border-gray-300 focus:outline-none focus:ring focus:ring-indigo-300">
-                                                <button
-                                                    class="bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-r border border-gray-300">+</button>
-                                            </div>
-                                        </td>
-                                        <td data-label="Total" class="text-center font-bold text-indigo-600">&#8377;4799
-                                        </td>
-                                        <td data-label="Action" class="text-center">
-                                            <button class="text-red-500 hover:text-red-700 transition duration-300">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    <% }) %>
-                                        <% }else{%>
-                                            <tr>
-                                                <td colspan="5" class="text-center py-10 text-gray-500">Your cart is
-                                                    empty.</td>
-                                            </tr>
-                                            <%}%>
-
-
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Order Summary -->
-                <div class="w-full lg:w-1/3">
-                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-xl font-bold mb-4 border-b border-gray-200 pb-2 text-gray-800">Order Summary
-                        </h3>
-
-                        <div class="space-y-3 mb-6">
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Subtotal</span>
-                                <span class="text-gray-800">$167.97</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Discount</span>
-                                <span class="text-green-600">-$12.00</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Tax</span>
-                                <span class="text-gray-800">$10.08</span>
-                            </div>
-                        </div>
-
-                        <div class="flex justify-between font-bold text-lg border-t border-gray-200 pt-4 mb-6">
-                            <span class="text-gray-800">Total</span>
-                            <span class="text-indigo-600">$166.05</span>
-                        </div>
-
-                      <div class="mb-4">
-  <label for="promo" class="block text-xs font-semibold mb-1 text-gray-700 uppercase tracking-wide">Promo Code</label>
-  <div class="flex rounded-xl bg-gray-100 shadow-inner overflow-hidden transition duration-300">
-    <input
-      type="text"
-      id="promo"
-      placeholder="Enter promo code"
-      class="flex-grow bg-transparent px-4 py-2 text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-0"
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GameZone - Shopping Cart</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"
+      rel="stylesheet"
     />
-    <button
-      type="button"
-      class="bg-green-500 hover:bg-green-600 text-white font-semibold px-5 py-2 transition duration-300"
-    >
-      Apply
-    </button>
-  </div>
-</div>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/cart.css" />
+    <style>
+      /* Custom CSS for enhanced styling */
+      body {
+        background-color: #ffffff;
+        color: #333333;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+    </style>
+  </head>
 
+  <body>
+    <%- include('partials/navbar') %>
 
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+      <!-- Cart Header -->
+      <div class="cart-header py-6 border-b border-gray-200">
+        <div
+          class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6"
+        >
+          <div>
+            <h1
+              class="text-2xl font-bold text-gray-900 flex flex-wrap items-center gap-2"
+            >
+              🎮 GameZone Cart
+              <span
+                class="text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-1.5 rounded-full shadow-md tracking-wide"
+              >
+                <%= cartCount %> items
+              </span>
+            </h1>
+          </div>
+
+          <a
+            href="/allgames"
+            class="inline-flex items-center gap-2 px-4 py-2 text-indigo-600 font-medium border border-indigo-200 rounded-xl hover:bg-indigo-50 transition duration-300"
+          >
+            <span class="text-lg">🎮</span>
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+
+      <!-- Cart Content -->
+      <div class="cart-container">
+        <div class="flex flex-col lg:flex-row gap-8">
+          <!-- Cart Items -->
+          <div class="w-full lg:w-2/3">
+            <% if(cart && cart.products.length> 0) { %>
+            <div class="overflow-x-auto">
+              <table class="cart-table w-full">
+                <thead>
+                  <tr>
+                    <th>Products</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% cart.products.forEach((item)=> { %>
+                  <tr>
+                    <td data-label="Product">
+                      <div class="product-info">
+                        <a
+                          href="/gamedetail/<%= item.productId._id %>"
+                          class="block hover:scale-[1.03] transition duration-300 overflow-hidden"
+                        >
+                          <img
+                            src="<%= item.productId.media.coverImage %>"
+                            alt="<%= item.productId.title %>"
+                            class="product-image"
+                          />
+                          <div class="product-details">
+                            <h3 class="font-semibold text-gray-900">
+                              <%= item.productId.title %>
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                              <%= item.productId.company.name || 'Unknown' %>
+                            </p>
+                            <span
+                              class="inline-block mt-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full"
+                            >
+                              In Stock
+                            </span>
+                          </div>
+                        </a>
+                      </div>
+                    </td>
+
+                    <td data-label="Price">
+                      <div class="text-gray-900 font-medium">
+                        ₹<%= item.productId.price %>
+                      </div>
+                    </td>
+                    <td data-label="Quantity">
+                      <div class="quantity-control">
                         <button
-                            class="btn-primary w-full py-3 rounded-lg font-bold text-white mb-4 flex items-center justify-center">
-                            <i class="fas fa-credit-card mr-2"></i> Checkout Now
+                          class="quantity-btn"
+                          onclick="updateQuantity('<%= item._id %>', 'decrease')"
+                        >
+                          <i class="fas fa-minus"></i>
                         </button>
-
-                        <div class="text-center text-sm text-gray-600 mt-4">
-                            <p>Secure Checkout</p>
-                            <div class="flex justify-center space-x-2 mt-2">
-                                <i class="fab fa-cc-visa text-xl"></i>
-                                <i class="fab fa-cc-mastercard text-xl"></i>
-                                <i class="fab fa-cc-amex text-xl"></i>
-                                <i class="fab fa-cc-paypal text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Recommendation section -->
-                    <div class="mt-6 bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-800">You might also like</h3>
-                        <div class="border-b border-gray-200 pb-3 mb-3 flex items-center gap-3">
-                            <img src="/api/placeholder/80/80" alt="Racing Legends 2025"
-                                class="rounded w-16 h-16 object-cover">
-                            <div class="flex-1">
-                                <h4 class="font-medium text-gray-800">Racing Legends 2025</h4>
-                                <p class="text-indigo-600 font-bold">$49.99</p>
-                            </div>
-                            <button
-                                class="text-xs bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded text-white transition duration-300">Add</button>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <img src="/api/placeholder/80/80" alt="Tactical Ops 4"
-                                class="rounded w-16 h-16 object-cover">
-                            <div class="flex-1">
-                                <h4 class="font-medium text-gray-800">Tactical Ops 4</h4>
-                                <p class="text-indigo-600 font-bold">$44.99</p>
-                            </div>
-                            <button
-                                class="text-xs bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded text-white transition duration-300">Add</button>
-                        </div>
-                    </div>
-                </div>
+                        <input
+                          type="text"
+                          value="<%= item.quantity %>"
+                          class="quantity-input"
+                          readonly
+                        />
+                        <button
+                          class="quantity-btn"
+                          onclick="updateQuantity('<%= item._id %>', 'increase')"
+                        >
+                          <i class="fas fa-plus"></i>
+                        </button>
+                      </div>
+                    </td>
+                    <td data-label="Total">
+                      <div class="font-semibold text-indigo-600">
+                        <span>₹<%=item.quantity * item.productId.price%></span>
+                      </div>
+                    </td>
+                    <td data-label="Action">
+                      <button
+                        onclick="removeItem('<%= item._id %>',this)"
+                        class="text-red-500 hover:text-red-700 transition-colors duration-200"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <% }); %>
+                </tbody>
+              </table>
             </div>
-        </main>
+            <% } else { %>
+            <div class="empty-cart">
+              <div class="empty-cart-icon">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+              <h2 class="text-xl font-semibold text-gray-700 mb-2">
+                Your cart is empty
+              </h2>
+              <p class="text-gray-500 mb-6">
+                Looks like you haven't added any games to your cart yet.
+              </p>
+              <a
+                href="/allgames"
+                class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+              >
+                Browse Games
+                <i class="fas fa-arrow-right ml-2"></i>
+              </a>
+            </div>
+            <% } %>
+          </div>
 
+          <div id="toast" class="toast success">
+            <i class="fas fa-check-circle toast-icon"></i>
+            <span id="toast-message"></span>
+          </div>
 
+          <!-- Order Summary -->
+          <div class="w-full lg:w-1/3">
+ 
+          <% if (subTotal > 0) { %>
+  <div class="order-summary">
+    <div class="order-summary-header">
+      <h2 class="text-xl font-bold text-gray-900">Order Summary</h2>
+    </div>
 
-</body>
+    <div class="summary-item">
+      <span>Subtotal</span>
+      <span>₹ <%= subTotal %></span>
+    </div>
+    <div class="summary-item">
+      <span>Discount</span>
+      <span class="text-green-600">-₹0.00</span>
+    </div>
 
+    <div class="summary-total">
+      <span>Total</span>
+      <span>₹ <%= subTotal %></span>
+    </div>
+
+    <div class="checkout-btn-wrapper mt-4">
+      <a href="/checkout">
+        <button class="checkout-btn">
+          <i class="fas fa-lock mr-2"></i> Proceed to Checkout
+        </button>
+      </a>
+    </div>
+
+    <div class="text-center py-4">
+      <p class="text-sm text-gray-500 mb-2">Secure Checkout</p>
+      <div class="payment-icons">
+        <i class="fab fa-cc-visa"></i>
+        <i class="fab fa-cc-mastercard"></i>
+        <i class="fab fa-cc-amex"></i>
+        <i class="fab fa-cc-paypal"></i>
+      </div>
+    </div>
+  </div>
+  
+            <!-- Recommendations -->
+            <div class="recommendations">
+              <div class="order-summary-header">
+                <h2 class="text-lg font-semibold text-gray-900">
+                  Recommended for You
+                </h2>
+              </div>
+
+              <div class="recommendation-item">
+                <img
+                  src="/api/placeholder/80/80"
+                  alt="Racing Legends 2025"
+                  class="recommendation-image"
+                />
+                <div class="flex-1">
+                  <h3 class="font-medium text-gray-900">Racing Legends 2025</h3>
+                  <p class="text-indigo-600 font-semibold">₹2,999</p>
+                </div>
+                <button class="add-to-cart-btn">Add</button>
+              </div>
+
+              <div class="recommendation-item">
+                <img
+                  src="/api/placeholder/80/80"
+                  alt="Tactical Ops 4"
+                  class="recommendation-image"
+                />
+                <div class="flex-1">
+                  <h3 class="font-medium text-gray-900">Tactical Ops 4</h3>
+                  <p class="text-indigo-600 font-semibold">₹1,999</p>
+                </div>
+                <button class="add-to-cart-btn">Add</button>
+              </div>
+            </div>
+<% } %>
+
+           
+
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="/js/cart.js"></script>
+
+    <script src="public/js/cart.js"></script>
+  </body>
 </html>

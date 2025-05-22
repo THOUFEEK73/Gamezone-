@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameZone - Checkout</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/checkout.css">
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #333333;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background-color: #d1d5db;
+      /* Tailwind gray-300 */
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <%- include('partials/navbar') %>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <!-- Page Title -->
+      <h1 class="text-2xl font-bold mb-6">Checkout</h1>
+
+      <!-- Layout -->
+      <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+        <!-- Left Panel -->
+        <div class="w-full lg:w-2/3 space-y-6 overflow-y-auto pr-1 custom-scrollbar max-h-[calc(100vh-100px)]">
+          <!-- Order Items -->
+          <div class="bg-white border border-gray-200 rounded-xl p-6 shadow space-y-4">
+            <h2 class="text-xl font-semibold mb-4">Order Items</h2>
+            <h6 class="text-sm text-gray-600 font-semibold mb-4 tracking-wide">
+              Review Your Items Before Placing The Order
+            </h6>
+
+            <% cart.products.forEach(item=> { %>
+              <div class="flex items-center gap-4 py-3 border-b">
+                <img src="<%= item.productId.media.coverImage %>" alt="<%= item.productId.title %>"
+                  class="w-16 h-16 rounded object-cover">
+
+                <div class="flex-1">
+                  <h3 class="text-base font-semibold text-gray-800">
+                    <%= item.productId.title %>
+                  </h3>
+                  <p class="text-sm text-gray-600 font-medium">
+                    Qty: <%= item.quantity %>
+                  </p>
+                </div>
+
+                <div class="text-sm font-bold text-indigo-600">
+                  ₹<%= item.quantity * item.productId.price %>
+                </div>
+              </div>
+              <% }) %>
+
+          </div>
+
+          <!-- Shipping Address -->
+          
+         <div class="bg-white border border-gray-200 rounded-xl p-6 shadow space-y-4">
+  <h2 class="text-xl font-semibold mb-4">Shipping Address</h2>
+  <div class="flex gap-4 flex-wrap">
+    <% address.forEach(address => { %>
+     <div class="bg-white border border-gray-200 rounded-xl shadow px-4 py-3 w-64">
+
+        <div class="flex justify-between items-start mb-2">
+          <div class="flex items-center text-blue-600 font-medium gap-2">
+            <i class="fas fa-home text-sm"></i>
+            <span>
+              <%= address.type.charAt(0).toUpperCase() + address.type.slice(1) %>
+            </span>
+          </div>
+          <button class="openEditAddressModal text-gray-500 hover:text-blue-600" data-id="<%= address._id %>">
+            <i data-lucide="pen" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="text-gray-800 text-sm space-y-1 mb-2">
+          <p class="font-semibold">
+            <%= address.name %>
+          </p>
+          <p>
+            <%= address.street %>
+          </p>
+          <p>
+            <%= address.city %>, <%= address.state %> - <%= address.zipCode %>
+          </p>
+          <p class="text-gray-600">
+            <i class="fas fa-phone-alt text-blue-500 text-xs"></i>
+            <%= address.phone %>
+          </p>
+        </div>
+        <form action="/setDefaultAddress/<%= address._id %>" method="POST" class="flex items-center gap-2">
+          <input type="checkbox" name="isDefault" class="accent-blue-600 h-4 w-4" onchange="this.form.submit()"
+            <%= address.isDefault ? 'checked disabled' : '' %> />
+          <label class="text-xs text-gray-600">
+            <%= address.isDefault ? 'Default Address' : 'Set as default address' %>
+          </label>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+</div>
+
+
+<!-- Payment Methods -->
+<div class="space-y-3" id="payment-methods">
+  <label class="flex items-start gap-3 p-4 border rounded-lg cursor-pointer bg-gray-50 border-black/10">
+    <input type="radio" name="paymentMethod" value="cod" checked class="mt-1 accent-indigo-600">
+    <div>
+      <h3 class="font-semibold text-gray-800">Cash on Delivery</h3>
+      <p class="text-sm text-gray-500">Pay when you receive your order</p>
+    </div>
+  </label>
+  <label class="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:border-indigo-400 transition">
+    <input type="radio" name="paymentMethod" value="online" class="mt-1 accent-indigo-600">
+    <div>
+      <h3 class="font-semibold text-gray-800">Online Payment</h3>
+      <p class="text-sm text-gray-500">Pay securely with Razorpay</p>
+    </div>
+  </label>
+  <label class="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:border-indigo-400 transition">
+    <input type="radio" name="paymentMethod" value="wallet" class="mt-1 accent-indigo-600">
+    <div>
+      <h3 class="font-semibold text-gray-800">Wallet Balance</h3>
+      <p class="text-sm text-gray-500">Available balance: ₹799</p>
+    </div>
+  </label>
+</div>
+
+
+
+
+        </div>
+
+        <!-- Order Summary (Responsive) -->
+
+        <div class="w-full lg:w-1/3">
+          <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg space-y-6">
+            <h2 class="text-xl font-bold text-gray-800">Order Summary</h2>
+
+            <div class="space-y-4 text-[15px] text-gray-700">
+              <!-- Subtotal -->
+              <div class="flex justify-between border-b border-gray-200 pb-2">
+                <span>Subtotal</span>
+                <span class="font-medium text-gray-900">₹<%= subTotal %></span>
+              </div>
+
+              <!-- Delivery Charge -->
+              <div class="flex justify-between items-center border-b border-gray-200 pb-2 text-sm text-gray-700">
+                <span class="font-medium text-gray-600">Delivery Charge</span>
+                <span class="font-semibold text-red-600">₹1000</span>
+              </div>
+
+
+              <!-- Coupon Field -->
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <input type="text" name="couponCode" placeholder="Enter coupon code"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring focus:border-blue-300">
+                  <button type="button" id="toggleCoupons">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" stroke-width="2"
+                      viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Hidden Available Coupons -->
+                <div id="availableCoupons"
+                  class="hidden bg-gray-50 p-3 border border-dashed border-gray-300 rounded-md text-sm space-y-2">
+                  <p class="text-gray-800 font-medium">Available Coupons:</p>
+                  <ul class="list-disc ml-5 text-gray-600">
+                    <li><strong>WELCOME10</strong> – Get ₹10 off</li>
+                    <li><strong>FREESHIP</strong> – Free delivery</li>
+                    <li><strong>GAMER20</strong> – 20% off on games</li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Total -->
+              <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200">
+                <span>Total</span>
+                <span class="text-gray-900">₹<%= subTotal %></span>
+              </div>
+            </div>
+
+            <!-- Place Order -->
+            <!-- <form action="/placeOrderBtn" method="POST" id="checkout-form-desktop"> -->
+              <button type="submit" id="placeOrderBtn"
+                class="w-full mt-2 bg-black hover:bg-gray-900 text-white text-sm py-3 rounded-lg font-semibold tracking-wide transition">
+                Place Order
+              </button>
+            <!-- </form> -->
+          </div>
+        </div>
+
+
+
+      </div>
+    </div>
+
+  
+    <script>
+      document.getElementById('toggleCoupons').addEventListener('click', function () {
+        const couponDiv = document.getElementById('availableCoupons');
+        couponDiv.classList.toggle('hidden');
+      });
+    </script>
+  
+  <script src="/js/checkOut.js"></script>
+
+</body>
+
+</html>
