@@ -10,6 +10,7 @@ import Order from "../models/orderModel.js";
 
 import _ from "lodash";
 import { response } from "express";
+import { compareSync } from "bcryptjs";
 
 export const getHomePage = async (req, res) => {
   try {
@@ -553,6 +554,8 @@ export const postPlaceCODOrder = async (req, res) => {
   try {
 
     const userId = req.session.userId;
+    const {shippingAddress} = req.body;
+    console.log(shippingAddress)
     // const {couponCode} = req.body;
 
     const cartItems = await Cart.findOne({ userId }).populate(
@@ -571,7 +574,9 @@ export const postPlaceCODOrder = async (req, res) => {
 
     for(const item of cartItems.products){
       const game = await Game.findById(item.productId._id);
-
+  if (!game || game.stockQuantity < item.quantity) {
+    return res.status(400).render('error', { message: `Not enough stock for ${game ? game.title : 'a product'}` });
+  }
       if(game){
         game.stockQuantity -= item.quantity;
         await game.save()
@@ -602,13 +607,17 @@ for (const item of cartItems.products) {
     });
   }
 }
-const groupedItems = Array.from(productMap.values());
+const groupedItems = Array.from(productMap.values()).map(item=>({
+  ...item,
+  status:'Pending',
+}))
     const order = new Order({
       userId: userId,
       items: groupedItems,
       paymentMethod: "cod",
       totalAmount,
-      orderId:orderId
+      orderId:orderId,
+      shippingAddress:shippingAddress
     });
 
     await order.save();
@@ -656,4 +665,72 @@ export const getOrderDetailPage = async(req,res)=>{
 }
 
 
+export const getViewOrderPage = async(req,res)=>{
+     try{
+         
+      const orderId = req.params.id;
+      const userId = req.session.userId;
+      console.log('triggered')
 
+    const order = await Order.findOne({ _id: orderId, userId })
+      .populate('items.productId').populate('shippingAddress')
+      .lean();
+
+  console.log(order)
+
+console.log(order)
+      if(!order){
+        return res.status(404).rendere('error',{message:'Order not found'});
+      }
+
+
+   
+
+
+
+      res.render('user/viewOrder',{page:'viewOrder',order});
+
+     }catch(error){
+
+     }
+}
+
+
+
+export const postCancelStatus = async(req,res)=>{
+  try{
+    
+  console.log('helooo');
+  
+
+    const {orderId,itemId} = req.body;
+
+     await Order.updateOne(
+      { _id: orderId, "items._id": itemId },
+      { $set: { "items.$.status": "Cancelled" } }
+    );
+
+    res.json({success:true});
+   console.log('triggered the logic');
+   
+
+
+  }catch(error){
+    console.error('Error updating status',error);
+    res.status(500).render('error',{message:'Server is down please try after some times'});
+    
+  }
+}
+
+export const postReturnStatus = async(req,res)=>{
+  try{
+    const {orderId} = req.body;
+    console.log(orderId);
+    await Order.findByIdAndUpdate(orderId,{status:'Returned'})
+    res.json({success:true});
+
+  }catch(error){
+    console.error('Error updating status',error);
+      res.status(500).render('error',{message:'Server is down please try after some times'});
+  }
+}

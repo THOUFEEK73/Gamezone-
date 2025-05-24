@@ -30,7 +30,9 @@ import { getHomePage,
     getCheckoutPage,
     postPlaceCODOrder,
     getOrderSuccessPage,
-    getOrderDetailPage
+    getOrderDetailPage,
+    getViewOrderPage,
+    postCancelStatus
     
 }
 from "../controllers/userController.js";
@@ -97,6 +99,10 @@ router.get('/checkout',noCache,isAuthenticated,getCheckoutPage)
 router.post('/placeOrder',postPlaceCODOrder)
 
 router.get('/orderSuccess',getOrderSuccessPage)
+
+router.get('/viewOrder/:id',getViewOrderPage)
+
+router.post('/cancel-item',postCancelStatus)
 
 
 

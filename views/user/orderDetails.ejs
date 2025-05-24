@@ -48,9 +48,15 @@
           <td class="px-6 py-4">
             <span class="bg-green-100 text-green-600 text-xs px-3 py-1 rounded-full">Delivered</span>
           </td>
-          <td class="px-6 py-4">
-            <a href="#" class="text-blue-600 hover:underline">View</a>
-          </td>
+        <td class="px-6 py-4">
+          <a href="/viewOrder/<%=order._id%>">
+             <button  class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-5 py-2 rounded-full shadow-md hover:from-blue-600 hover:to-indigo-700 transition duration-300">
+    View
+  </button>
+          </a>
+ 
+</td>
+
         </tr>
         <%})%>
      

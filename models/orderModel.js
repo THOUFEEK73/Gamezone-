@@ -6,24 +6,41 @@ const orderSchema = new mongoose.Schema({
         ref:'User'
     },
     items:[{
-        productsId:{
-            type:mongoose.Schema.Types.ObjectId,
-            ref:'Game'
-        },
+             productId:{
+               type:mongoose.Schema.Types.ObjectId,
+               ref:'Game',
+               required:true,
+               
+           },
         quantity:Number,
         // total:Number,
+         status: {
+      type: String,
+      enum: [
+        'Pending',
+        'Shipped',
+        'Out for Delivery',
+        'Delivered',
+        'Cancelled',
+        'Returned'
+      ],
+      default: 'Pending'
+    }
     }
 ],
 
 
 shippingAddress:{
-    name:String,
-    phone:Number,
-    city:String,
-    state:String,
-    zipCode:String,
-    country:String,
-    type:String
+    // name:String,
+    // phone:Number,
+    // city:String,
+    // state:String,
+    // zipCode:String,
+    // country:String,
+    // type:String
+      type: mongoose.Schema.Types.ObjectId,
+  ref: 'Address',
+  required: true
 
 },
 
@@ -35,7 +52,11 @@ orderId:{
 },
 
   paymentMethod: { type: String, enum: ['cod', 'online', 'wallet'], default: 'cod' },
-  status: { type: String, enum: ['Placed', 'Cancelled', 'Returned'], default: 'Placed' },
+
+
+
+  
+
   totalAmount: Number,
   createdAt: { type: Date, default: Date.now }
 });

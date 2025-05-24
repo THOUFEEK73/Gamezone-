@@ -25,6 +25,10 @@ import {
 
 } from '../controllers/gameCompany.js';
 
+import {
+  getOrdersPage,postOrderStatus,getOrderDetailPage
+} from '../controllers/adminOrderManagement.js';
+
 import isAdminAuthenticated from "../middleware/adminAuth.js";
 import upload from '../middleware/multerMiddleWare.js';
 import Category from "../models/CategoryModel.js";
@@ -64,6 +68,10 @@ adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category/aa", postAllCategories);
 adminRoutes.post('/category/update/:id', updateCategory);
 adminRoutes.post("/category/:Id", updateCategoryStatus);
+
+adminRoutes.get('/orders',getOrdersPage)
+adminRoutes.post('/orders/:orderId/item/:itemId/status',postOrderStatus)
+adminRoutes.get('/UserorderDetail/:id',getOrderDetailPage)
 
 
 adminRoutes.get('/editgame/:id',editGamePage);
