@@ -169,8 +169,10 @@
         console.log('loggedd')
         pendingReturn = {orderId,itemId};
         document.getElementById('returnReasonModel').classList.remove('hidden');
-      }else{
-        //for cancel , do as before
+      }else if(action==="cancel"){
+           if (confirm('Are you sure you want to cancel this order item?')) {
+        sendOrderAction(orderId, itemId, 'cancel');
+      }
       }
 
     }
@@ -199,7 +201,7 @@
       try{
 
         const url = action === 'return' ? '/return-item' : '/cancel-item';
-
+            console.log('triggering')
         const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

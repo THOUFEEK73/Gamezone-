@@ -700,18 +700,37 @@ console.log(order)
 export const postCancelStatus = async(req,res)=>{
   try{
     
-  console.log('helooo');
+
   
 
     const {orderId,itemId} = req.body;
 
-     await Order.updateOne(
-      { _id: orderId, "items._id": itemId },
-      { $set: { "items.$.status": "Cancelled" } }
-    );
+    const order = await Order.findById(orderId);
+
+      if (!order) return res.json({ success: false, error: 'Order not found' });
+
+          const item = order.items.id(itemId);
+    if (!item) return res.json({ success: false, error: 'Item not found' });
+
+ if (['Cancelled', 'Delivered', 'Returned'].includes(item.status)) {
+      return res.json({ success: false, error: 'Cannot cancel this item' });
+    }
+
+    item.status = 'Cancelled';
+    await order.save();
+
+    const product = await Game.findById(item.productId);
+    if(product){
+      product.stockQuantity += item.quantity;
+      await product.save();
+    }
+    //  await Order.updateOne(
+    //   { _id: orderId, "items._id": itemId },
+    //   { $set: { "items.$.status": "Cancelled" } }
+    // );
 
     res.json({success:true});
-   console.log('triggered the logic');
+  
    
 
 
