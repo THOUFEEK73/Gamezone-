@@ -32,7 +32,8 @@ import { getHomePage,
     getOrderSuccessPage,
     getOrderDetailPage,
     getViewOrderPage,
-    postCancelStatus
+    postCancelStatus,
+    postReturnStatus,
     
 }
 from "../controllers/userController.js";
@@ -102,6 +103,7 @@ router.get('/orderSuccess',getOrderSuccessPage)
 
 router.get('/viewOrder/:id',getViewOrderPage)
 
+router.post('/return-item',postReturnStatus)
 router.post('/cancel-item',postCancelStatus)
 
 

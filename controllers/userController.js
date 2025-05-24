@@ -724,9 +724,23 @@ export const postCancelStatus = async(req,res)=>{
 
 export const postReturnStatus = async(req,res)=>{
   try{
-    const {orderId} = req.body;
-    console.log(orderId);
-    await Order.findByIdAndUpdate(orderId,{status:'Returned'})
+    const {orderId,itemId,reason} = req.body;
+    console.log(reason);
+    const order = await Order.findById(orderId);
+    if(!order)
+      return res.json({ success: false, error: 'Order not found' });
+
+    const item = order.items.id(itemId);
+     if (!item) return res.json({ success: false, error: 'Item not found' });
+
+     if(item.status!=='Delivered'){
+      return res.json({ success: false, error: 'Item not eligible for return' });
+     }
+
+   
+     item.returnStatus = 'Pending',
+     item.returnReason = reason;
+     await order.save();
     res.json({success:true});
 
   }catch(error){
@@ -734,3 +748,4 @@ export const postReturnStatus = async(req,res)=>{
       res.status(500).render('error',{message:'Server is down please try after some times'});
   }
 }
+

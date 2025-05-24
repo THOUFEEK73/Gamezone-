@@ -1,3 +1,4 @@
+import { response } from 'express';
 import Order from '../models/orderModel.js'
 
 export const getOrdersPage = async(req,res)=>{
@@ -65,4 +66,39 @@ res.render('admin/userOrderDetail',{order:orders});
 
      }
     
+}
+
+
+export const updateReturnStatus = async(req,res)=>{
+      try{
+        console.log('triggered')
+        const {orderId,itemId} = req.params
+        const {returnStatus} = req.body;
+        console.log(itemId);
+        
+         
+        const order = await Order.findById(orderId);
+     if (!order) return res.status(404).json({ message: 'Order not found' });
+      console.log('function triggering 1');
+      
+     const item = order.items.id(itemId);
+     if (!item) return res.status(404).json({ message: 'Item not found' });
+       console.log('function triggering 2');
+
+        if (item.returnStatus !== 'Pending') {
+      return res.status(400).json({ message: 'No pending return request' });
+    }
+    console.log('function triggered here')
+    item.returnStatus = returnStatus;
+    if(returnStatus === 'Accepted'){
+        item.status ='Returned';
+    }
+    console.log('last trigger')
+
+    await order.save();
+     return  res.json({success:true});
+
+      }catch(error){
+         res.status(500).render('error',{ message:'server is down please try again later'});
+      }
 }

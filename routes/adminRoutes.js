@@ -26,7 +26,7 @@ import {
 } from '../controllers/gameCompany.js';
 
 import {
-  getOrdersPage,postOrderStatus,getOrderDetailPage
+  getOrdersPage,postOrderStatus,getOrderDetailPage,updateReturnStatus
 } from '../controllers/adminOrderManagement.js';
 
 import isAdminAuthenticated from "../middleware/adminAuth.js";
@@ -72,6 +72,9 @@ adminRoutes.post("/category/:Id", updateCategoryStatus);
 adminRoutes.get('/orders',getOrdersPage)
 adminRoutes.post('/orders/:orderId/item/:itemId/status',postOrderStatus)
 adminRoutes.get('/UserorderDetail/:id',getOrderDetailPage)
+
+adminRoutes.post('/orders/:orderId/item/:itemId/return',updateReturnStatus)
+
 
 
 adminRoutes.get('/editgame/:id',editGamePage);
