@@ -13,6 +13,74 @@
 
  <link rel="stylesheet" href="/css/profile.css">
 
+<style>
+.success-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  padding: 10px 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  max-width: 300px;
+  margin: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-20px);
+  opacity: 0;
+  transition: all 0.4s ease;
+}
+
+.success-slide.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.check-icon {
+  width: 20px;
+  height: 20px;
+  stroke: #22c55e;
+  animation: drawCheck 0.6s ease forwards;
+}
+
+@keyframes drawCheck {
+  0% {
+    stroke-dasharray: 22;
+    stroke-dashoffset: 22;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+#edit-success-msg {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  padding: 10px 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  max-width: 300px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(40px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+#edit-success-msg.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+</style>
+
 
 </head>
 
@@ -72,6 +140,7 @@
   </div>
 
  <!-- Edit Profile Modal -->
+<!-- Edit Profile Modal -->
 <div id="editProfileModal"
   class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden transition duration-300">
   <div
@@ -83,8 +152,9 @@
     <!-- Modal Header -->
     <h2 class="text-xl font-semibold mb-4 text-center">Edit Profile</h2>
 
+
     <!-- Form -->
-    <form action="/edit-profile" method="POST" class="space-y-5" id="edit-form">
+    <div class="space-y-5" id="edit-form">
       
       <!-- Avatar -->
       <div class="flex justify-center">
@@ -95,63 +165,114 @@
       <!-- Name Field -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-        <input type="text" name="name" value="<%= user.name %>"
+        <input type="text" name="name" id="edit-name" value="<%= user.name %>"
           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <span id="profile-error-name" class="flex items-center gap-1 text-red-600 text-sm font-medium mt-1 transition-all duration-300">
+  <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M12 9v2m0 4h.01m-6.938 4h13.856C18.07 19 19 18.07 19 16.938V7.062C19 5.93 18.07 5 16.938 5H7.062C5.93 5 5 5.93 5 7.062v9.876C5 18.07 5.93 19 7.062 19z">
+    </path>
+  </svg>
+  <span id="profile-error-name-text"></span>
+</span>
+
       </div>
 
       <!-- Email Field -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
         <input type="email" name="email" value="<%= user.email %>"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button type="button" id="edit-email-btn"
-          class="mt-2 text-blue-600 hover:underline text-sm">Verify Email</button>
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" readonly />
+<button
+  type="button"
+  id="edit-email-btn"
+  class="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white transition-colors duration-300 text-sm font-medium shadow-sm"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M16 12H8m0 0l4-4m-4 4l4 4" />
+  </svg>
+ Tap to Verify Email
+</button>
+
         <div id="emailError" class="text-red-600 text-xs mt-1"></div>
       </div>
 
       <!-- Phone Field -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-        <input type="text" name="phone" value="<%= user.phone %>"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+        <input type="text" name="phone" id="edit-phone" value="<%= user.phone %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+       <span id="profile-error-phone" class="profile-error text-red-600 text-sm font-medium flex items-center gap-1 mt-1 transition-all duration-300">
+  <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856C18.07 19 19 18.07 19 16.938V7.062C19 5.93 18.07 5 16.938 5H7.062C5.93 5 5 5.93 5 7.062v9.876C5 18.07 5.93 19 7.062 19z"></path>
+  </svg>
+  <span id="profile-error-phone-text"></span>
+</span>
+
       </div>
 
       <!-- Save Button -->
       <div class="text-right">
-        <button type="submit"
+        <button onclick="submitEditForm()"
           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">Save</button>
       </div>
-    </form>
+    </div>
   </div>
 </div>
+
 
 
 <!-- Email Verification Modal -->
 <div id="emailVerificationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
   <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg relative">
-    <button onclick="closeEmailModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black">&times;</button>
-    <h2 class="text-xl font-semibold mb-4">Verify Your Email</h2>
+    <button onclick="closeEmailModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black text-2xl">&times;</button>
+    <h2 class="text-xl font-semibold mb-4 text-center">Verify Your Email</h2>
 
     <form id="verificationForm" class="space-y-4">
+      <!-- Hidden Email -->
       <input type="hidden" name="email" id="hiddenNewEmail" />
 
-      <label class="block text-sm font-medium">Enter the 6-digit verification code</label>
-      <input
-        type="text"
-        name="verificationCode"
-        maxlength="6"
-        class="w-full px-3 py-2 border rounded-lg text-center tracking-widest font-mono text-lg"
-        
-        pattern="[0-9]{6}"
-        autocomplete="off"
-      />
+      <!-- Label -->
+      <label class="block text-sm font-medium text-gray-700 text-center">Enter the 6-digit verification code</label>
+<!-- OTP Input Grid -->
+<div id="otp-inputs" class="flex justify-between gap-2">
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+</div>
 
-      <!-- ✅ Feedback Area -->
-      <div id="verificationFeedback" class="text-center text-sm font-medium mb-2"></div>
+      <!-- Feedback Area -->
+      <div id="verificationFeedback" class="text-center text-sm font-medium text-red-600 mb-2"></div>
 
-      <button type="submit"class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg w-full"> Verify </button>
+      <!-- Verify Button -->
+      <button type="submit"
+        class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 rounded-lg w-full shadow-md transition-all">
+        Verify
+      </button>
     </form>
   </div>
+</div>
+
+
+<!-- Success Message -->
+<div id="edit-success-msg" class="success-slide hidden">
+  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+    <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+  <span id="edit-success-text" class="ml-2"></span>
 </div>
 
 <script>
@@ -165,6 +286,12 @@
   const hiddenNewEmail = document.getElementById("hiddenNewEmail");
   const errorText = document.getElementById("errorText");
   const verificationFeedback = document.getElementById("verificationFeedback");
+
+editEmailBtn.addEventListener("click", () => {
+  emailInput.removeAttribute("readonly");
+  emailInput.classList.add("border-blue-500", "bg-white");
+  emailInput.focus();
+});
 
   document.getElementById("edit-btn").addEventListener("click", () => {
     editProfileModal.classList.remove("hidden");
@@ -180,120 +307,147 @@
     verificationFeedback.className = "text-center text-sm font-medium mb-2";
   }
 
-  // Edit profile form submission
-  editForm.addEventListener("submit", async function (e) {
-    const newEmail = emailInput.value.trim();
-    document.getElementById("emailError").textContent = "";
+  
+ async function submitEditForm() {
+    // Clear previous errors
+    document.getElementById("profile-error-name").innerText = "";
+    document.getElementById("profile-error-phone").innerText = "";
+    document.getElementById("edit-success-msg").classList.add("hidden");
 
-    if (newEmail !== originalEmail) {
-      e.preventDefault();
-      if (!newEmail) {
-        document.getElementById("emailError").textContent = "Email is required.";
-        return;
-      }
-      // Check with server if email is valid and send OTP
-      try {
-        const res = await fetch("/send-verification-code", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: newEmail })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          document.getElementById("emailError").textContent = data.message || "Failed to send verification code.";
-          return;
-        }
-        hiddenNewEmail.value = newEmail;
-        closeModal();
-        emailVerificationModal.classList.remove("hidden");
-        verificationFeedback.textContent = "OTP sent successfully!";
+    // Get values
+    const name = document.getElementById("edit-name").value.trim();
+    const phone = document.getElementById("edit-phone").value.trim();
+    const email = emailInput.value.trim();
+
+    if(email !==originalEmail){
+      try{
+
+        const response = await fetch('/send-verification-code',{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json'
+          },
+          body: JSON.stringify({ email })
+        })
+        const result = await response.json();
+        if(result.success){
+          hiddenNewEmail.value = email;
+          closeModal();
+          emailVerificationModal.classList.remove("hidden");
+        verificationFeedback.textContent = "OTP sent to your new email!";
         verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
-      } catch (err) {
-        document.getElementById("emailError").textContent = "Something went wrong. Try again.";
+        }else{
+                  document.getElementById("emailError").innerText = result.message || "Failed to send OTP.";
+        }
+      }catch(error){
+document.getElementById("emailError").innerText = "Network error. Try again.";
       }
-    }
-  });
-
-  // Separate "Verify Email" button
-  editEmailBtn.addEventListener("click", async () => {
-    const newEmail = emailInput.value.trim();
-    document.getElementById("emailError").textContent = "";
-
-    if (!newEmail) {
-      document.getElementById("emailError").textContent = "Email is required.";
       return;
     }
-    if (newEmail === originalEmail) return;
-
-    // Check with server if email is valid and send OTP
-    try {
-      const res = await fetch("/send-verification-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: newEmail })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        document.getElementById("emailError").textContent = data.message || "Failed to send verification code.";
-        return;
-      }
-      hiddenNewEmail.value = newEmail;
-      closeModal();
-      emailVerificationModal.classList.remove("hidden");
-      verificationFeedback.textContent = "OTP sent successfully!";
-      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
-    } catch (err) {
-      document.getElementById("emailError").textContent = "Something went wrong. Try again.";
-    }
-  });
-
-  // OTP verification
-  verificationForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const email = hiddenNewEmail.value;
-    const verificationCode = this.querySelector('input[name="verificationCode"]').value.trim();
 
     try {
-      const res = await fetch("/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, verificationCode })
+      const res = await fetch('/edit-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, phone })
       });
 
-      const data = await res.json();
-      console.log("Verification Response:", data);
+      const result = await res.json();
 
-      if (res.ok && data.success) {
-        verificationFeedback.textContent = "Email verified successfully!";
-     
-        
-        verificationFeedback.classList.add("text-green-600");
+      if (result.errors) {
+        if (result.errors.name) {
+         document.getElementById("profile-error-name").innerText = result.errors.name;
 
-        
-
-        setTimeout(() => {
-          emailVerificationModal.classList.add("hidden");
-          editForm.submit(); // Resubmit profile form
-        }, 1000);
-      } else {
-        verificationFeedback.textContent = data.message || "Verification failed.";
-        verificationFeedback.classList.add("text-red-600");
-      }
-    } catch (err) {
-      console.error("Verification error:", err);
-      verificationFeedback.textContent = "An error occurred. Please try again.";
-      verificationFeedback.classList.add("text-red-600");
-    }
-  });
-
-  // Auto-hide flash messages
+        }
+        if (result.errors.phone) {
+          document.getElementById("profile-error-phone").innerText = result.errors.phone;
+        }
+      } 
+        if (result.message) {
+  showSuccessMessage(result.message);
   setTimeout(() => {
-    const flash = document.getElementById('flash-message');
-    if (flash) {
-      flash.classList.add('opacity-0');
-      setTimeout(() => flash.remove(), 500);
+    closeModal();
+    window.location.reload();
+  }, 1500); 
+}
+      
+
+    } catch (err) {
+      console.error("Failed to submit edit form:", err);
     }
+  }
+
+verificationForm.addEventListener("submit", async function (e) {
+  e.preventDefault();
+  verificationFeedback.textContent = "";
+  const email = hiddenNewEmail.value;
+  // const verificationCode = verificationForm.elements["verificationCode"].value.trim();
+
+  const otpInputs = verificationForm.querySelectorAll('.otp-digit');
+  let verificationCode = '';
+
+  otpInputs.forEach(input=>{
+    verificationCode +=input.value.trim();
+  })
+
+  if (verificationCode.length!==6) {
+    verificationFeedback.textContent = "Please enter the OTP code.";
+    verificationFeedback.className = "text-center text-sm font-medium mb-2 text-red-600";
+    return;
+  }
+
+  try {
+    const res = await fetch('/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, verificationCode })
+    });
+    const result = await res.json();
+    if (result.success) {
+      verificationFeedback.textContent = "Email verified and updated!";
+      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
+      setTimeout(() => {
+        closeEmailModal();
+        window.location.reload();
+      }, 1000);
+    } else {
+      verificationFeedback.textContent = result.message || "Invalid OTP.";
+      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-red-600";
+    }
+  } catch (err) {
+    verificationFeedback.textContent = "Network error. Try again.";
+    verificationFeedback.className = "text-center text-sm font-medium mb-2 text-red-600";
+  }
+});
+
+
+
+
+
+function showSuccessMessage(message) {
+  const msgBox = document.getElementById("edit-success-msg");
+  const msgText = document.getElementById("edit-success-text");
+
+  msgText.innerText = message;
+  msgBox.classList.add("show");
+  msgBox.classList.remove("hidden");
+
+  setTimeout(() => {
+    msgBox.classList.remove("show");
+    setTimeout(() => {
+      msgBox.classList.add("hidden");
+    }, 400); // Wait for transition to complete
   }, 3000);
+}
+
+
+
+
+
+
+
 </script>
 
 

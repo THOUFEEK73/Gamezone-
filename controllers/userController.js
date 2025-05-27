@@ -11,6 +11,7 @@ import Order from "../models/orderModel.js";
 import _ from "lodash";
 import { response } from "express";
 import { compareSync } from "bcryptjs";
+// import { getSystemErrorMessage } from "util";
 
 export const getHomePage = async (req, res) => {
   try {
@@ -109,18 +110,39 @@ export const getAddressPage = async (req, res) => {
 
 export const postEditProfile = async (req, res) => {
   try {
+
+    console.log("function triggered");
+    
     const userId = req.session.userId;
     const { name, phone } = req.body;
+    const errors = {};
 
-    await User.findByIdAndUpdate(userId, { name, phone }, { new: true });
-    req.flash("success", "Profile updated successfully");
 
-    console.log("function here ");
-    res.redirect("/profile");
+    if(!name || name.trim()===""){
+       errors.name = "Please enter the Name";
+    }
+
+      if (!phone || !/^\d{10}$/.test(phone)) {
+      errors.phone = "Phone must be 10 digits";
+    }
+
+   
+
+    if(Object.keys(errors).length>0){
+      return res.status(400).json({errors});
+    }
+
+       await User.findByIdAndUpdate(userId, { name, phone });
+       console.log('function triggered 2');
+       
+             res.status(200).json({ message: "Profile updated successfully" });
+    // await User.findByIdAndUpdate(userId, { name, phone }, { new: true });
+    // req.flash("success", "Profile updated successfully");
+    // res.redirect("/profile");
   } catch (error) {
     console.error("Error updating profile:", error);
     req.flash("error", "Failed to update profile");
-    res.redirect("/user/profile");
+    res.redirect("/profile");
   }
 };
 
@@ -163,7 +185,10 @@ export const postVerifyEmail = async (req, res) => {
 
 export const sendVerificationCode = async (req, res) => {
   try {
+    console.log("function triggered");
     const { email } = req.body;
+    console.log(email);
+    
     const userId = req.session.userId;
 
     if (!email) {

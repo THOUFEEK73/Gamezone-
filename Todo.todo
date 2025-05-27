@@ -54,13 +54,15 @@ Todays Bug fixes and new  Implementations
 
 Friday Task 
 ☐ wishlist
-☐ show the order details page
-☐ show the order products 
-☐ user can cancel the product
-☐ user can return the product // based on admin action
+✔ show the order details page @done (5/26/2025, 10:16:44 AM)
+✔ show the order products @done (5/26/2025, 10:16:46 AM)
+✔ user can cancel the product @done (5/26/2025, 10:16:48 AM)
+✔ user can return the product // based on admin action @done (5/26/2025, 10:16:50 AM)
 
-☐ user profile editing form validation
-☐ 
+✔ user profile editing form validation @done (5/26/2025, 8:47:44 PM)
+☐ fix the add to cart notification 
+☐ user can select address and edit the address from chckout page 
+☐ fix the redirecting issue on address 
 
 
 
