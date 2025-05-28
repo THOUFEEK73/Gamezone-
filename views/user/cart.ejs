@@ -99,10 +99,10 @@
                               <%= item.productId.company.name || 'Unknown' %>
                             </p>
                             <span
-                              class="inline-block mt-1 px-2 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full"
-                            >
-                              In Stock
-                            </span>
+                            class="inline-block mt-1 px-2 py-0.5 <%= item.productId.stockQuantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %> text-xs font-medium rounded-full"
+                          >
+                            <%= item.productId.stockQuantity > 0 ? 'In Stock' : 'Out of Stock' %>
+                          </span>
                           </div>
                         </a>
                       </div>
@@ -124,28 +124,33 @@
 </div>
 
   <% } else { %>
-    <div class="quantity-control">
+    <div class="inline-flex items-center bg-orange-50 rounded-full px-3 py-1 shadow-sm w-fit">
+      <!-- Decrease Button -->
       <button
-        class="quantity-btn"
         onclick="updateQuantity('<%= item._id %>', 'decrease')"
         <%= item.quantity <= 1 ? 'disabled' : '' %>
+        class="text-orange-600 hover:text-red-500 disabled:text-orange-300 transition text-lg p-1"
+        title="Decrease"
       >
-        <i class="fas fa-minus"></i>
+        <i class="fas fa-minus-circle"></i>
       </button>
-      <input
-        type="text"
-        value="<%= item.quantity %>"
-        class="quantity-input"
-        readonly
-      />
+    
+      <!-- Quantity Display -->
+      <span class="px-4 text-sm font-bold text-orange-800 select-none">
+        <%= item.quantity %>
+      </span>
+    
+      <!-- Increase Button -->
       <button
-        class="quantity-btn"
         onclick="updateQuantity('<%= item._id %>', 'increase')"
-        <%= (item.quantity >= item.productId.stockQuantity) ? 'disabled' : '' %>
+        <%= item.quantity >= item.productId.stockQuantity ? 'disabled' : '' %>
+        class="text-orange-600 hover:text-green-500 disabled:text-orange-300 transition text-lg p-1"
+        title="Increase"
       >
-        <i class="fas fa-plus"></i>
+        <i class="fas fa-plus-circle"></i>
       </button>
     </div>
+    
     <% if(item.quantity >= item.productId.stockQuantity){ %>
       <div class="text-yellow-600 text-xs mt-1 font-semibold">Max available stock reached</div>
     <% } %>

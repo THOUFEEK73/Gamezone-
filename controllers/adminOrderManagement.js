@@ -48,20 +48,23 @@ export const postOrderStatus = async(req,res)=>{
 }
 
 
-export const getOrderDetailPage = async(req,res)=>{
+export const getOrderDetail = async(req,res)=>{
      try{
     
          const orderId = req.params.id;
          console.log(orderId);
-         const orders = await Order.findById(orderId).populate('userId').populate({path:'items.productId'}).populate('shippingAddress')
+         const orders = await Order.findById(orderId).populate('userId').populate('items.productId').populate('shippingAddress')
       console.log(orders.items)
          if(!orders){
             return res.status(404).render('Order not found');
          }
 
 
+ console.log('helo');
+ 
+return res.render('admin/Userorderdetail',{order:orders});
 
-res.render('admin/userOrderDetail',{order:orders});
+
      }catch(error){
 
      }

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex">
+
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
+
+        <!-- Main Content Area -->
+        <div class="flex flex-col flex-1 ml-64 min-h-screen relative z-0">
+
+            <!-- Optional Navbar (if you have a top nav, add here with z-10) -->
+            <!--
+    <nav class="bg-white shadow px-4 py-3 sticky top-0 z-10">
+      <h1 class="text-xl font-bold">Admin Panel</h1>
+    </nav>
+    -->
+
+            <!-- Page Content -->
+            <main class="flex-1 bg-white shadow-sm rounded-lg p-4 md:p-8 overflow-y-auto">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2">
+                    <h2 class="text-xl md:text-2xl font-semibold text-gray-800">
+                        Order Details - <span class="text-gray-500">
+                            <%=order.orderId%>
+                        </span>
+                    </h2>
+                    <span class="bg-green-100 text-green-700 px-4 py-1 rounded text-sm w-max">Delivered</span>
+                </div>
+
+                <p class="text-sm text-gray-500 mb-6">Placed on <%= order.createdAt.toLocaleString('en-IN') %>
+                </p>
+
+                <!-- Info Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                        <p class="text-gray-700">
+                            <%=order.userId.name%>
+                        </p>
+                        <p class="text-gray-600">
+                            <%=order.userId.email%>
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Shipping Address</h4>
+                        <p class="text-gray-700">
+                            <%=order.shippingAddress?.state%>, <%=order.shippingAddress?.zipCode%>,
+                        </p>
+                        <p class="text-gray-700">
+                            <%=order.shippingAddress?.phone%>
+                        </p>
+                        <p class="text-gray-700">
+                            <%=order.shippingAddress?.city%>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full table-auto border-t border-b border-gray-200">
+                        <thead class="bg-gray-50 text-gray-700">
+                            <tr>
+                                <th class="text-left p-2">Product</th>
+                                <th class="text-left p-2">Quantity</th>
+                                <th class="text-left p-2">Price</th>
+                                <th class="text-left p-2">Return Status</th>
+                                <th class="text-left p-2">status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <%order.items.forEach(item=>{%>
+                                <tr class="border-t hover:bg-gray-50 transition">
+                                    <td class="p-2">
+                                        <div class="flex items-start space-x-3">
+                                            <img src="<%= item.productId.media.coverImage %>" alt="Product Image"
+                                                class="w-12 h-12 rounded object-cover" />
+                                            <div>
+                                                <p class="font-medium text-gray-800">
+                                                    <%= item.productId.title %>
+                                                </p>
+                                                <p class="text-sm text-gray-500">Company: <%= item.productId.company %>
+                                                </p>
+                                                <p class="text-sm text-gray-500">Category: <%=
+                                                        item.productId.category?.name %>
+                                                </p>
+
+                                                <!-- <p class="text-sm text-gray-500">Color: Pink</p> -->
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 text-gray-700">
+                                        <%=item.quantity%>
+                                    </td>
+                                    <td class="p-2 text-gray-700">₹<%=item.productId.price%>
+                                    </td>
+                                  <td class="p-2">
+  <% if (item.returnStatus === 'Pending') { %>
+    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 text-xs rounded">Return Requested</span>
+    <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+    <div class="mt-2 flex gap-2">
+      <button onclick="handleReturnAction('<%= order._id %>', '<%= item._id %>', 'Accepted')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Approve</button>
+      <button onclick="handleReturnAction('<%= order._id %>', '<%= item._id %>', 'Denied')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Reject</button>
+    </div>
+  <% } else if (item.returnStatus === 'Accepted') { %>
+    <span class="bg-green-100 text-green-700 px-2 py-1 text-xs rounded">Return Approved</span>
+    <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+  <% } else if (item.returnStatus === 'Denied') { %>
+    <span class="bg-red-100 text-red-700 px-2 py-1 text-xs rounded">Return Rejected</span>
+    <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+  <% } else { %>
+    <span class="bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded">No Return</span>
+  <% } %>
+</td>
+                                    <td class="p-2 text-gray-400">
+                                        <!-- Update Status -->
+                                        <!-- Update Status -->
+                                        <div class="text-sm w-32">
+                                            <!-- <label for="orderStatus" class="block font-medium text-gray-600 mb-1">Status</label> -->
+                                           
+
+                                           <!-- Replace the select element section -->
+<select data-current-status="<%= item.status %>"
+    onchange="updateItemStatus('<%= order._id %>', '<%= item._id %>', this.value, this)"
+    class="w-auto border-2 rounded px-2 py-1.5 text-sm transition duration-300
+    focus:outline-none focus:ring-0
+    <%= item.status === 'Delivered' ? 'border-green-500' : '' %>
+    <%= item.status === 'Out for Delivery' ? 'border-yellow-500' : '' %>
+    <%= item.status === 'Shipped' ? 'border-blue-500' : '' %>
+    <%= item.status === 'Cancelled' ? 'border-red-500' : '' %>
+    <%= item.status === 'Pending' ? 'border-gray-300' : '' %>">
+    
+    <% 
+    const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+    const currentStatusIndex = statusOrder.indexOf(item.status);
+    
+    statusOrder.forEach((status, index) => { %>
+        <option value="<%= status %>" 
+            <%= item.status === status ? 'selected' : '' %>
+            <%= index < currentStatusIndex || index > currentStatusIndex + 1 ? 'disabled' : '' %>>
+            <%= status %>
+        </option>
+    <% }); %>
+</select>
+
+
+                                        </div>
+                                    </td>
+                                </tr>
+                                <%})%>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Total -->
+                <div class="text-right text-lg font-semibold text-gray-800 mb-6">
+                    Total: ₹<%=order.totalAmount.toLocaleString('en-IN')%>
+                </div>
+
+
+
+            </main>
+
+        </div>
+
+        <script>
+
+ 
+
+
+  
+
+           // Replace the updateItemStatus function
+
+// Replace the updateItemStatus function
+
+async function updateItemStatus(orderId, itemId, status, selectElem) {
+    try {
+        const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+        const currentStatus = selectElem.getAttribute('data-current-status');
+        const currentIndex = statusOrder.indexOf(currentStatus);
+        const newIndex = statusOrder.indexOf(status);
+
+        // Prevent selecting previous status or skipping steps
+        if (newIndex < currentIndex || newIndex > currentIndex + 1) {
+           
+            selectElem.value = currentStatus;
+            return;
+        }
+
+        const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+
+        if (response.ok) {
+            selectElem.setAttribute('data-current-status', status);
+            
+            // Update border colors
+            selectElem.classList.remove(
+                'border-green-500',
+                'border-yellow-500',
+                'border-blue-500',
+                'border-red-500',
+                'border-gray-300'
+            );
+
+            // Add new border color based on status
+            switch (status) {
+                case 'Delivered':
+                    selectElem.classList.add('border-green-500');
+                    break;
+                case 'Out for Delivery':
+                    selectElem.classList.add('border-yellow-500');
+                    break;
+                case 'Shipped':
+                    selectElem.classList.add('border-blue-500');
+                    break;
+                default:
+                    selectElem.classList.add('border-gray-300');
+            }
+
+            location.reload();
+        } else {
+            alert('Failed to update status');
+            selectElem.value = currentStatus;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error updating status');
+        selectElem.value = currentStatus;
+    }
+}
+
+              async function handleReturnAction(orderId, itemId, action) {
+                console.log(action);
+                
+        try {
+            const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/return`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ returnStatus: action })
+            });
+            if (response.ok) {
+                console.log('final codee testing..........')
+                location.reload();
+            } else {
+                alert('Failed to update return status');
+            }
+        } catch (error) {
+            alert('Error updating return status');
+        }
+    }
+
+
+        </script>
+
+</body>
+
+</html>

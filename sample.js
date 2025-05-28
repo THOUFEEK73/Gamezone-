@@ -1,212 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
 
-   document.addEventListener('DOMContentLoaded', () => {
-      const loadingOverlay = document.getElementById('loadingOverlay');
-      const mainContent = document.getElementById('mainContent');
-      
-      // Simulate loading time (you can remove this setTimeout in production)
-      setTimeout(() => {
-        // Hide loading overlay
-        loadingOverlay.classList.add('hidden');
-        // Show main content
-        mainContent.classList.add('loaded');
-      }, 2000); // 2 seconds loading time
-    });
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-    // Track image loading
-    window.addEventListener('load', () => {
-      const images = document.querySelectorAll('img');
-      let loadedImages = 0;
-      const totalImages = images.length;
-      
-      function imageLoaded() {
-        loadedImages++;
-        if (loadedImages === totalImages) {
-          // All images are loaded
-          const loadingOverlay = document.getElementById('loadingOverlay');
-          const mainContent = document.getElementById('mainContent');
-          
-          loadingOverlay.classList.add('hidden');
-          mainContent.classList.add('loaded');
-        }
-      }
+<body class="bg-gray-100 min-h-screen flex">
 
-      // Check each image
-      images.forEach(img => {
-        if (img.complete) {
-          imageLoaded();
-        } else {
-          img.addEventListener('load', imageLoaded);
-          img.addEventListener('error', imageLoaded); 
-        }
-      });
-    });
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
 
-   
-    document.addEventListener('DOMContentLoaded', () => {
-  const priceRange = document.getElementById('price-range');
-  const priceLabel = document.getElementById('price-label');
-  const gamesContainer = document.querySelector('.grid');
+        <!-- Main Content Area -->
+        <div class="flex flex-col flex-1 ml-64 min-h-screen relative z-0">
 
-  const fetchFilteredGames = async () => {
-    const selectedGenres = Array.from(document.querySelectorAll('.genre-checkbox:checked')).map(cb => cb.value);
-    const selectedCompanies = Array.from(document.querySelectorAll('.company-checkbox:checked')).map(cb => cb.value);
-    const maxPrice = priceRange.value;
+            <!-- Optional Navbar (if you have a top nav, add here with z-10) -->
+            <!--
+    <nav class="bg-white shadow px-4 py-3 sticky top-0 z-10">
+      <h1 class="text-xl font-bold">Admin Panel</h1>
+    </nav>
+    -->
 
-    try {
-      const response = await fetch('/filter-games', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ genres: selectedGenres, companies: selectedCompanies, maxPrice })
-      });
-
-      const data = await response.json();
-      gamesContainer.innerHTML = '';
-
-      if (data.games.length > 0) {
-        data.games.forEach(game => {
-          const gameCard = `
-            <div class="text-center">
-              <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-                <div class="rounded-2xl overflow-hidden">
-                  <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
+            <!-- Page Content -->
+            <main class="flex-1 bg-white shadow-sm rounded-lg p-4 md:p-8 overflow-y-auto">
+                <!-- Header -->
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2">
+                    <h2 class="text-xl md:text-2xl font-semibold text-gray-800">
+                        Order Details - <span class="text-gray-500">
+                            <%=order.orderId%>
+                        </span>
+                    </h2>
+                    <span class="bg-green-100 text-green-700 px-4 py-1 rounded text-sm w-max">Delivered</span>
                 </div>
-              </a>
-              <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
-              ${game.type === 'trial'
-                ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
-                : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
-              }
-              <div class="mt-1">
-                ${
-                  game.discountPrice
-                    ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
-                       <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
-                    : game.price === 0
-                    ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
-                    : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
-                }
-              </div>
-            </div>
-          `;
-          gamesContainer.innerHTML += gameCard;
-        });
-      } else {
-        gamesContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center">No games found matching your filters.</p>';
-      }
-    } catch (error) {
-      console.error('Error fetching filtered games:', error);
-    }
-  };
 
-  // Price range change
-  priceRange.addEventListener('input', () => {
-    priceLabel.textContent = `Up to ₹${priceRange.value}`;
-    fetchFilteredGames();
-  });
+                <p class="text-sm text-gray-500 mb-6">Placed on <%= order.createdAt.toLocaleString('en-IN') %>
+                </p>
 
-  // Delegate genre/company checkbox change
-  document.querySelector('#sidebar').addEventListener('change', (e) => {
-    if (e.target.classList.contains('genre-checkbox') || e.target.classList.contains('company-checkbox')) {
-      fetchFilteredGames();
-    }
-  });
-});
-
-
-    
-    // Mobile Menu Functionality
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    let isMenuOpen = false;
-
-    mobileMenuBtn.addEventListener('click', () => {
-        isMenuOpen = !isMenuOpen;
-        mobileMenu.classList.toggle('hidden');
-        mobileMenuBtn.innerHTML = isMenuOpen ? 
-            '<i class="fas fa-times text-2xl"></i>' : 
-            '<i class="fas fa-bars text-2xl"></i>';
-    });
-
-    // Close mobile menu when clicking outside
-    document.addEventListener('click', (e) => {
-        if (isMenuOpen && !mobileMenu.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
-            mobileMenu.classList.add('hidden');
-            mobileMenuBtn.innerHTML = '<i class="fas fa-bars text-2xl"></i>';
-            isMenuOpen = false;
-        }
-    });
-
-    // Close mobile menu on window resize
-    window.addEventListener('resize', () => {
-        if (window.innerWidth >= 768 && isMenuOpen) {
-            mobileMenu.classList.add('hidden');
-            mobileMenuBtn.innerHTML = '<i class="fas fa-bars text-2xl"></i>';
-            isMenuOpen = false;
-        }
-    });
-
-
-    //search functionality
-
-     let debounceTimer;
-
-     async function searchGames(query){
-      try{        
-        console.log('searching games...')
-        const response = await fetch(`/allsearch?query=${query}`);
-        const data  = await response.json();
-        const resultsContainer = document.getElementById('result');
-        resultsContainer.innerHTML = '';
-        if(data.length >0){
-          data.forEach(game=>{
-
-            const gameCard = `
-                <div class="text-center">
-                  <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-                    <div class="rounded-2xl overflow-hidden">
-                      <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
+                <!-- Info Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                        <p class="text-gray-700">
+                            <%=order.userId.name%>
+                        </p>
+                        <p class="text-gray-600">
+                            <%=order.userId.email%>
+                        </p>
                     </div>
-                  </a>
-                  <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
-                  ${game.type === 'trial'
-                    ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
-                    : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
-                  }
-                  <div class="mt-1">
-                    ${
-                      game.discountPrice
-                        ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
-                           <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
-                        : game.price === 0
-                        ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
-                        : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
-                    }
-                  </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Shipping Address</h4>
+                        <p class="text-gray-700">
+                            <%=order.shippingAddress?.state%>, <%=order.shippingAddress?.zipCode%>,
+                        </p>
+                        <p class="text-gray-700">
+                            <%=order.shippingAddress?.phone%>
+                        </p>
+                        <p class="text-gray-700">
+                            <%=order.shippingAddress?.city%>
+                        </p>
+                    </div>
                 </div>
-              `;
 
-              resultsContainer.insertAdjacentHTML('beforeend', gameCard);
+                <!-- Table -->
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full table-auto border-t border-b border-gray-200">
+                        <thead class="bg-gray-50 text-gray-700">
+                            <tr>
+                                <th class="text-left p-2">Product</th>
+                                <th class="text-left p-2">Quantity</th>
+                                <th class="text-left p-2">Price</th>
+                                <th class="text-left p-2">Return Status</th>
+                                <th class="text-left p-2">status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <%order.items.forEach(item=>{%>
+                                <tr class="border-t hover:bg-gray-50 transition">
+                                    <td class="p-2">
+                                        <div class="flex items-start space-x-3">
+                                            <img src="<%= item.productId.media.coverImage %>" alt="Product Image"
+                                                class="w-12 h-12 rounded object-cover" />
+                                            <div>
+                                                <p class="font-medium text-gray-800">
+                                                    <%= item.productId.title %>
+                                                </p>
+                                                <p class="text-sm text-gray-500">Company: <%= item.productId.company %>
+                                                </p>
+                                                <p class="text-sm text-gray-500">Category: <%=
+                                                        item.productId.category?.name %>
+                                                </p>
+
+                                                <!-- <p class="text-sm text-gray-500">Color: Pink</p> -->
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 text-gray-700">
+                                        <%=item.quantity%>
+                                    </td>
+                                    <td class="p-2 text-gray-700">₹<%=item.productId.price%>
+                                    </td>
+                                  <td class="p-2">
+  <% if (item.returnStatus === 'Pending') { %>
+    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 text-xs rounded">Return Requested</span>
+    <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+    <div class="mt-2 flex gap-2">
+      <button onclick="handleReturnAction('<%= order._id %>', '<%= item._id %>', 'Accepted')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Approve</button>
+      <button onclick="handleReturnAction('<%= order._id %>', '<%= item._id %>', 'Denied')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Reject</button>
+    </div>
+  <% } else if (item.returnStatus === 'Accepted') { %>
+    <span class="bg-green-100 text-green-700 px-2 py-1 text-xs rounded">Return Approved</span>
+    <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+  <% } else if (item.returnStatus === 'Denied') { %>
+    <span class="bg-red-100 text-red-700 px-2 py-1 text-xs rounded">Return Rejected</span>
+    <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+  <% } else { %>
+    <span class="bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded">No Return</span>
+  <% } %>
+</td>
+                                    <td class="p-2 text-gray-400">
+                                        <!-- Update Status -->
+                                        <!-- Update Status -->
+                                        <div class="text-sm w-32">
+                                            <!-- <label for="orderStatus" class="block font-medium text-gray-600 mb-1">Status</label> -->
+                                            <select
+                                                onchange="updateItemStatus('<%= order._id %>', '<%= item._id %>', this.value, this)"
+                                                class="w-auto border-2 rounded px-2 py-1.5 text-sm transition duration-300
+    focus:outline-none focus:ring-0
+    <%= item.status === 'Delivered' ? 'border-green-500' : '' %>
+    <%= item.status === 'Out for Delivery' ? 'border-yellow-500' : '' %>
+    <%= item.status === 'Shipped' ? 'border-blue-500' : '' %>
+    <%= item.status === 'Cancelled' ? 'border-red-500' : '' %>
+    <%= item.status === 'Pending' ? 'border-gray-300' : '' %>">
+                                                <option value="Pending" <%=item.status==='Pending' ? 'selected' : '' %>
+                                                    >Pending</option>
+                                                <option value="Shipped" <%=item.status==='Shipped' ? 'selected' : '' %>
+                                                    >Shipped</option>
+                                                <option value="Out for Delivery" <%=item.status==='Out for Delivery'
+                                                    ? 'selected' : '' %>>Out for Delivery</option>
+                                                <option value="Delivered" <%=item.status==='Delivered' ? 'selected' : ''
+                                                    %>>Delivered</option>
+                                            </select>
 
 
-          })
-        }else{
-          resultsContainer.innerHTML = '<p class="text-gray-600 col-span-full text-center">Game Not Found .</p>';
+                                        </div>
+                                    </td>
+                                </tr>
+                                <%})%>
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Total -->
+                <div class="text-right text-lg font-semibold text-gray-800 mb-6">
+                    Total: ₹<%=order.totalAmount.toLocaleString('en-IN')%>
+                </div>
+
+
+
+            </main>
+
+        </div>
+
+        <script>
+
+ 
+
+
+  
+
+            async function updateItemStatus(orderId, itemId, status, selectElem) {
+                try {
+                    console.log(status)
+                    const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/status`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status })
+                    });
+                    if (response.ok) {
+
+
+                        selectElem.classList.remove(
+                            'border-green-500',
+                            'border-yellow-500',
+                            'border-blue-500',
+                            'border-red-500',
+                            'border-gray-300'
+                        );
+
+                        // Add new border color based on status
+                        switch (status) {
+                            case 'Delivered':
+                                selectElem.classList.add('border-green-500');
+                                break;
+                            case 'Out for Delivery':
+                                selectElem.classList.add('border-yellow-500');
+                                break;
+                            case 'Shipped':
+                                selectElem.classList.add('border-blue-500');
+                                break;
+                            case 'Cancelled':
+                                selectElem.classList.add('border-red-500');
+                                break;
+                            default:
+                                selectElem.classList.add('border-gray-300');
+                        }
+
+
+                    } else {
+                        alert('Failed to update status');
+                    }
+                } catch (error) {
+                    alert('Error updating status');
+                }
+            }
+
+              async function handleReturnAction(orderId, itemId, action) {
+                console.log(action);
+                
+        try {
+            const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/return`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ returnStatus: action })
+            });
+            if (response.ok) {
+                console.log('final codee testing..........')
+                location.reload();
+            } else {
+                alert('Failed to update return status');
+            }
+        } catch (error) {
+            alert('Error updating return status');
         }
-      }catch(error){
-        console.error('Error fetching search results:', error);
-        
-      }
-     }
+    }
 
-     // debounce funtionn
 
-     document.getElementById('searchInput').addEventListener('input', (e) => {
-    const query = e.target.value.trim();
+        </script>
 
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-        
-            searchGames(query);
-      
-    }, 300); // 300ms debounce delay
-});
+</body>
+
+</html>

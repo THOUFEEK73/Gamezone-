@@ -34,7 +34,8 @@ import { getHomePage,
     getViewOrderPage,
     postCancelStatus,
     postReturnStatus,
-    toggleWishlist
+    toggleWishlist,
+    removeWishlist
 
 
     
@@ -94,6 +95,7 @@ router.post('/editAddress/:id',postEditAddress)
 router.get('/wishlist',noCache,isAuthenticated,getWishListPage);
 // routes/user.js
 router.post('/wishlist/toggle', toggleWishlist);
+router.delete('/wishlist/remove/:id',removeWishlist)
 
 
 

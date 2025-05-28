@@ -401,12 +401,12 @@ export const postEditAddress = async (req, res) => {
 };
 
 export const postSetDefault = async (req, res) => {
-  console.log("function triggered");
+
   const addressId = req.params.id;
   const userId = req.session.user._id;
 
   try {
-    // throw new Error('...')
+    
 
     await Address.updateMany({ user: userId }, { $set: { isDefault: false } });
 
@@ -470,7 +470,10 @@ export const getWishListPage = async (req, res) => {
   populate: { path: 'category', model: 'Category' }
 });
 
-    console.log("function triggered");
+const cartItems = await Cart.findOne({ userId }).populate({
+  path: "products.productId",
+  populate: { path: "company", model: "GameCompany" },
+});
     const wishlistItems = (wishlist?.products || []).map(game => ({
       _id: game._id,
       image: game.media.coverImage,
@@ -478,11 +481,15 @@ export const getWishListPage = async (req, res) => {
        category: game.category ? game.category.categoryName : '',
       price: game.discountPrice || game.price
     }));
-    console.log(wishlist?.products.map(g => ({
-  title: g.title,
-  category: g.category
-})));
-    res.render("user/wishlist", { page: "wishlist",wishlistItems});
+    let cartCount = 0;
+
+    if (cartItems && cartItems.products.length > 0) {
+      cartCount = cartItems.products.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
+    }
+    res.render("user/wishlist", { page: "wishlist",wishlistItems,cartCount});
   } catch (error) {
     console.error("Error while rendering whishList", error);
     res
@@ -490,6 +497,23 @@ export const getWishListPage = async (req, res) => {
       .render("error", { message: "server Error please Try after Some time" });
   }
 };
+
+
+export const removeWishlist = async (req,res)=>{
+     try{
+      const productId = req.params.id;
+      const userId = req.session.userId;
+      console.log(userId);
+
+      await Wishlist.findOneAndUpdate({ userId },{$pull:{products:productId}},{new:true});
+
+      res.status(200).json({success:true,message:'Product removed from wishlist'});
+     }catch(error){
+      console.error("Error while removing wishlist item", error);
+      res.status(500).json({ success: false, message: "Server error" });  
+     }
+}
+
 
 export const getCartPage = async (req, res) => {
   try {
@@ -568,7 +592,7 @@ export const postAddCart = async (req, res) => {
       if (existingProduct) {
         existingProduct.quantity += 1;
 
-        console.log("productCount", existingProduct);
+        
       } else {
         cart.products.push({
           productId,
@@ -811,14 +835,29 @@ export const getOrderDetailPage = async(req,res)=>{
  
     const userId = req.session.userId;
     
-    const orders = await Order.find({userId}).sort({createdAt:-1});
+    const orders = await Order.find({ userId })
+            .populate('items.productId')
+            .sort({ createdAt: -1 });
 
-   
+            const cartItems = await Cart.findOne({ userId });
+            let cartCount = 0;
+            if (cartItems && cartItems.products.length > 0) {
+              cartCount = cartItems.products.reduce(
+                (total, item) => total + item.quantity,
+                0
+              );
+            }
+            const mappedOrders = orders.map(order => ({
+              ...order.toObject(),
+              status: order.status || 'Pending' // Provide default status if not present
+            }));
     const orderId = orders.orderId;
    
-    res.render('user/orderDetails',{page:'orderDetails',order:orders})
+    res.render('user/orderDetails',{page:'orderDetails',order:mappedOrders,cartCount})
    }catch(error){
-
+      console.error('Error fetching order details', error);
+      res.status(500).render('error',{message:'Server is down please try after some times'});
+      
    }
      
 }
@@ -835,7 +874,7 @@ export const getViewOrderPage = async(req,res)=>{
       .populate('items.productId')
       .lean();
 
-  console.log(order)
+
 
 console.log(order)
       if(!order){
