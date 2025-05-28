@@ -7,6 +7,9 @@ import { generateOTP } from "../utils/otp-functions.js";
 import Address from "../models/addressModel.js";
 import Cart from "../models/cartModel.js";
 import Order from "../models/orderModel.js";
+import Wishlist from '../models/WishlistModel.js';
+import mongoose from 'mongoose';
+
 
 import _ from "lodash";
 import { response } from "express";
@@ -416,14 +419,70 @@ export const postSetDefault = async (req, res) => {
   }
 };
 
+
+
+// controllers/userController.js
+export const toggleWishlist = async (req, res) => {
+try {
+    const userId = req.session.userId;
+    const { productId } = req.body;
+
+    let wishlist = await Wishlist.findOne({ userId });
+
+    if (!wishlist) {
+      wishlist = new Wishlist({ userId, products: [] });
+    }
+
+    if (!Array.isArray(wishlist.products)) {
+      wishlist.products = [];
+    }
+
+    const index = wishlist.products.findIndex(id => id.equals(productId));
+    let action;
+
+    if (index > -1) {
+      wishlist.products.splice(index, 1);
+      action = 'removed';
+    } else {
+      wishlist.products.push(productId);
+      action = 'added';
+    }
+
+    await wishlist.save();
+    res.json({ success: true, action });
+  } catch (error) {
+    console.error('Wishlist toggle error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+
+
+
 // wish list
 
 export const getWishListPage = async (req, res) => {
   try {
     const userId = req.session.userId;
-    console.log("function triggered");
+    
+    const wishlist = await Wishlist.findOne({ userId }).populate({
+  path: 'products',
+  populate: { path: 'category', model: 'Category' }
+});
 
-    res.render("user/wishlist", { page: "wishlist" });
+    console.log("function triggered");
+    const wishlistItems = (wishlist?.products || []).map(game => ({
+      _id: game._id,
+      image: game.media.coverImage,
+      name: game.title,
+       category: game.category ? game.category.categoryName : '',
+      price: game.discountPrice || game.price
+    }));
+    console.log(wishlist?.products.map(g => ({
+  title: g.title,
+  category: g.category
+})));
+    res.render("user/wishlist", { page: "wishlist",wishlistItems});
   } catch (error) {
     console.error("Error while rendering whishList", error);
     res

@@ -93,3 +93,52 @@ async function updateQuantity(itemId, action) {
 document.getElementById('placeOrderBtn').addEventListener('click',async()=>{
     console.log('function triggered')
 })
+
+
+
+
+async function toggleWishlist(gameId) {
+  try {
+    const btn = document.getElementById('wishlistBtn');
+    const icon = document.getElementById('wishlistIcon');
+    const isAdding = !btn.classList.contains('active');
+
+    const response = await fetch('/wishlist/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: gameId })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      if (isAdding) {
+        icon.classList.remove('far');
+        icon.classList.add('fas');
+        icon.style.color = 'red';
+        btn.classList.add('active');
+      } else {
+        icon.classList.remove('fas');
+        icon.classList.add('far');
+        icon.style.color = '#555';
+        btn.classList.remove('active');
+      }
+    } else {
+      alert(data.message || 'Error updating wishlist');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Something went wrong!');
+  }
+}
+
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 2000);
+}
+

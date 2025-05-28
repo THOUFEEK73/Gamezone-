@@ -7,15 +7,15 @@ const wishlistSchema = new mongoose.Schema({
         ref:'User',
         required:true
     },
-    productId:{
-        type:mongoose.Schema.Types.ObjectId,
+    products:{
+        type:[mongoose.Schema.Types.ObjectId],
         ref:'Game',
-        required:true
+        default:[],
     },
     createdAt:{
         type:Date,
         default:Date.now
     }
 })
-
-export default mongoose.model('Wishlist', wishlistSchema);
+const Wishlist = mongoose.model('Wishlist', wishlistSchema);
+export default Wishlist

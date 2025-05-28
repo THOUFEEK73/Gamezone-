@@ -34,6 +34,9 @@ import { getHomePage,
     getViewOrderPage,
     postCancelStatus,
     postReturnStatus,
+    toggleWishlist
+
+
     
 }
 from "../controllers/userController.js";
@@ -85,13 +88,25 @@ router.post('/editAddress/:id',postEditAddress)
 
 // router.get('/forgot-password',getforgorPassword)
 
+
+// wishList 
+
 router.get('/wishlist',noCache,isAuthenticated,getWishListPage);
+// routes/user.js
+router.post('/wishlist/toggle', toggleWishlist);
+
+
+
 router.get('/cart',noCache,isAuthenticated,getCartPage)
 router.get('/orderDetails',noCache,isAuthenticated,getOrderDetailPage)
 
 router.post('/cart/add',postAddCart)
 router.delete('/cart/remove/:id',removeCart)
 router.put('/cart/update-Quantity',updateQuantity)
+
+
+
+
 
 
 // router.get('/proceedTocheckout',isAuthenticated,proceedToCheckout )

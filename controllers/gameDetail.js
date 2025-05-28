@@ -2,6 +2,7 @@
 import Game from "../models/gameModel.js";
 import User from "../models/userModel.js";
 import Cart from '../models/cartModel.js'
+import Wishlist from '../models/WishlistModel.js';
 
 
 
@@ -18,7 +19,8 @@ export const getDetailPage = async(req ,res)=>{
 
        
         const game = await Game.findById(gameId).populate('category').populate('company');
-
+        const wishlist  = await Wishlist.findOne({userId:user});
+        const isWishlisted = wishlist ?.products.some(id=>id.equals(game._id));
         if(!game || game.status !=='active'){
             return res.status(404).render('user/gameUnavailable',{message:'This game is currently unavailable'});
         }
@@ -63,7 +65,7 @@ export const getDetailPage = async(req ,res)=>{
        
     
 
-         res.render('user/gamedetail',{game,relatedGames,relatedCompanies,user,page:'gameDetail',cartCount});
+         res.render('user/gamedetail',{game,relatedGames,isWishlisted,relatedCompanies,user,page:'gameDetail',cartCount});
 
     }catch(err){
         console.error('Error fetching game details:',err);
