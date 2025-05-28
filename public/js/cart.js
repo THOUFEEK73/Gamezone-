@@ -14,7 +14,8 @@ async function addToCart(productId) {
     await response.json();
 
     if (response.ok) {
-      showToast("✅ Added to cart!");
+      showCartFlash("Product added to cart!");
+      
     } else {
       showToast("  Failed to cart!");
     }

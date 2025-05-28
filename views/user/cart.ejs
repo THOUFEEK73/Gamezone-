@@ -109,32 +109,48 @@
                     </td>
 
                     <td data-label="Price">
+                      
                       <div class="text-gray-900 font-medium">
                         ₹<%= item.productId.price %>
                       </div>
                     </td>
-                    <td data-label="Quantity">
-                      <div class="quantity-control">
-                        <button
-                          class="quantity-btn"
-                          onclick="updateQuantity('<%= item._id %>', 'decrease')"
-                        >
-                          <i class="fas fa-minus"></i>
-                        </button>
-                        <input
-                          type="text"
-                          value="<%= item.quantity %>"
-                          class="quantity-input"
-                          readonly
-                        />
-                        <button
-                          class="quantity-btn"
-                          onclick="updateQuantity('<%= item._id %>', 'increase')"
-                        >
-                          <i class="fas fa-plus"></i>
-                        </button>
-                      </div>
-                    </td>
+                  <td data-label="Quantity">
+  <% if(item.productId.stockQuantity === 0){ %>
+   <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white text-sm font-bold shadow-lg ring-1 ring-white/20 backdrop-blur-sm animate-pulse">
+  <svg class="w-4 h-4 text-white animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+  </svg>
+  <span class="tracking-wide uppercase">Out of Stock</span>
+</div>
+
+  <% } else { %>
+    <div class="quantity-control">
+      <button
+        class="quantity-btn"
+        onclick="updateQuantity('<%= item._id %>', 'decrease')"
+        <%= item.quantity <= 1 ? 'disabled' : '' %>
+      >
+        <i class="fas fa-minus"></i>
+      </button>
+      <input
+        type="text"
+        value="<%= item.quantity %>"
+        class="quantity-input"
+        readonly
+      />
+      <button
+        class="quantity-btn"
+        onclick="updateQuantity('<%= item._id %>', 'increase')"
+        <%= (item.quantity >= item.productId.stockQuantity) ? 'disabled' : '' %>
+      >
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+    <% if(item.quantity >= item.productId.stockQuantity){ %>
+      <div class="text-yellow-600 text-xs mt-1 font-semibold">Max available stock reached</div>
+    <% } %>
+  <% } %>
+</td>
                     <td data-label="Total">
                       <div class="font-semibold text-indigo-600">
                         <span>₹<%=item.quantity * item.productId.price%></span>
@@ -202,14 +218,29 @@
       <span>Total</span>
       <span>₹ <%= subTotal %></span>
     </div>
+      
+    <% const hasOutOfStock = cart.products.some(item => item.productId.stockQuantity === 0); %>
 
     <div class="checkout-btn-wrapper mt-4">
       <a href="/checkout">
-        <button class="checkout-btn">
-          <i class="fas fa-lock mr-2"></i> Proceed to Checkout
-        </button>
+    <button 
+  class="checkout-btn <%= hasOutOfStock ? 'opacity-30 cursor-not-allowed' : '' %>" 
+  <%= hasOutOfStock ? 'disabled' : '' %>>
+  <i class="fas fa-lock mr-2"></i> Proceed to Checkout
+</button>
+
       </a>
     </div>
+
+  <% if (hasOutOfStock) { %>
+  <div class="flex items-center gap-2 px-3 py-1.5 mt-3 rounded-md bg-red-100 border border-red-300 text-red-700 text-xs font-semibold shadow-sm">
+    <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
+    <span>
+      Some items are out of stock. Please remove them to proceed.
+    </span>
+  </div>
+<% } %>
+
 
     <div class="text-center py-4">
       <p class="text-sm text-gray-500 mb-2">Secure Checkout</p>

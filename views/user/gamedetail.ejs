@@ -317,6 +317,19 @@
                 transform: translateY(0);
             }
         }
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out forwards;
+}
 
 
  /* Gaming Buy Box Styles - White Theme */
@@ -892,6 +905,21 @@
             </div>
         </div>
 
+<div id="cartFlash" class="fixed bottom-5 right-5 z-50 
+  hidden animate-fade-in-up bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 
+  text-white px-4 py-2.5 rounded-lg shadow-[0_5px_15px_rgba(0,0,0,0.1)] 
+  flex items-center gap-3 w-[260px] backdrop-blur-sm ring-1 ring-white/10 border border-white/20 text-sm">
+  
+  <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10">
+    <i class="fas fa-check text-white text-base"></i>
+  </div>
+
+  <div class="flex flex-col leading-tight">
+    <span class="font-semibold">Success</span>
+    <span id="cartFlashMessage" class="text-xs opacity-90">Added to cart</span>
+  </div>
+</div>
+
 
 
         <script>
@@ -1005,7 +1033,16 @@
 //         console.log('Removed from wishlist:', gameId);
 //     }
 // }
-
+function showCartFlash(message) {
+  const flash = document.getElementById('cartFlash');
+  flash.textContent = message;
+  flash.classList.remove('hidden');
+  flash.classList.add('opacity-100');
+  setTimeout(() => {
+    flash.classList.add('hidden');
+    flash.classList.remove('opacity-100');
+  }, 2000);
+}
 
         </script>
 

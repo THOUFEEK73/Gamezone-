@@ -231,6 +231,8 @@ export const postAddress = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
+   console.log('triggere');
+   
     const {
       type,
       name,
@@ -242,7 +244,39 @@ export const postAddress = async (req, res) => {
       country,
       isDefault,
     } = req.body;
-    console.log(name, phone);
+    
+    const errors ={};
+    if(!name || name.trim() === ""){
+       errors.name = 'Please enter the Name';
+    }
+
+    if(!phone || !/^\d{10}$/.test(phone)){
+      errors.phone = "phone must be 10 digits";
+    }
+
+    if(!street || street.trim() === ""){
+      errors.street = "Please enter the street";
+    }
+
+    if(!city || city.trim() === ""){
+      errors.city = "Please enter the city";
+    }
+
+    if(!state || state.trim() === ""){
+      errors.state = "Please enter the state";
+    }
+
+    if(!zipCode || !/^\d{6}$/.test(zipCode)){
+      errors.zipCode = "Zip code must be 6 digits";
+    }
+
+    if(!country || country.trim() === ""){
+      errors.country = "Please enter the country";
+    }
+
+    if(Object.keys(errors).length>0){
+      return res.status(400).json({errors});
+    }
 
     if (isDefault === "true" || isDefault === true) {
       await Address.updateMany(
@@ -277,13 +311,14 @@ export const deleteAddress = async (req, res) => {
     const addressId = req.params.id;
     if (!userId)
       return res.status(401).render("error", { message: "Unathorized" });
-    const result = await Address.deleteOne({ _id: addressId, userId });
-
-    if (result.deletedCount === 1) {
-      return res.status(200).json({ message: "Address deleted" });
-    } else {
-      return res.status(404).json({ error: "Address not found" });
-    }
+     await Address.deleteOne({ _id: addressId, userId });
+   
+     return res.redirect("/checkout")
+    // if (result.deletedCount === 1) {
+    //   return res.status(200).json({ message: "Address deleted" });
+    // } else {
+    //   return res.status(404).json({ error: "Address not found" });
+    // }
   } catch (error) {
     console.error("Error deleting address", error);
     res.status(500).json({ error: "Failed to delete address" });
@@ -308,9 +343,40 @@ export const postEditAddress = async (req, res) => {
   } = req.body;
 
   if (!userId) return res.status(401).render("error", { message });
+  const errors ={};
+    if(!name || name.trim() === ""){
+       errors.name = 'Please enter the Name';
+    }
 
+    if(!phone || !/^\d{10}$/.test(phone)){
+      errors.phone = "phone must be 10 digits";
+    }
+
+    if(!street || street.trim() === ""){
+      errors.street = "Please enter the street";
+    }
+
+    if(!city || city.trim() === ""){
+      errors.city = "Please enter the city";
+    }
+
+    if(!state || state.trim() === ""){
+      errors.state = "Please enter the state";
+    }
+
+    if(!zipCode || !/^\d{6}$/.test(zipCode)){
+      errors.zipCode = "Zip code must be 6 digits";
+    }
+
+    if(!country || country.trim() === ""){
+      errors.country = "Please enter the country";
+    }
+
+    if(Object.keys(errors).length>0){
+      return res.status(400).json({errors});
+    }
   if (isDefault) {
-    console.log("testingc");
+  
 
     await Address.updateMany({ user: userId }, { $set: { isDefault: false } });
   }
@@ -580,7 +646,7 @@ export const postPlaceCODOrder = async (req, res) => {
 
     const userId = req.session.userId;
     const {shippingAddress} = req.body;
-    console.log(shippingAddress)
+    console.log(shippingAddress.name)
     // const {couponCode} = req.body;
 
     const cartItems = await Cart.findOne({ userId }).populate(
@@ -628,7 +694,9 @@ for (const item of cartItems.products) {
   } else {
     productMap.set(id, {
       productId: item.productId._id,
-      quantity: item.quantity
+      quantity: item.quantity,
+      productTitle:item.productId.title,
+      
     });
   }
 }
@@ -642,7 +710,14 @@ const groupedItems = Array.from(productMap.values()).map(item=>({
       paymentMethod: "cod",
       totalAmount,
       orderId:orderId,
-      shippingAddress:shippingAddress
+      shippingAddress:{
+        name:shippingAddress.name,
+        phone:shippingAddress.phone,
+        city:shippingAddress.city,
+        state:shippingAddress.state,
+        zipCode:shippingAddress.zipCode,
+        country:shippingAddress.country,
+      }
     });
 
     await order.save();
@@ -698,7 +773,7 @@ export const getViewOrderPage = async(req,res)=>{
       console.log('triggered')
 
     const order = await Order.findOne({ _id: orderId, userId })
-      .populate('items.productId').populate('shippingAddress')
+      .populate('items.productId')
       .lean();
 
   console.log(order)

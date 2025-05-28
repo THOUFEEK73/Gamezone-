@@ -26,6 +26,7 @@
       border-radius: 10px;
     }
   </style>
+  
 </head>
 
 <body>
@@ -71,53 +72,356 @@
 
           <!-- Shipping Address -->
           
-         <div class="bg-white border border-gray-200 rounded-xl p-6 shadow space-y-4">
-  <h2 class="text-xl font-semibold mb-4">Shipping Address</h2>
+<div class="bg-white border border-gray-200 rounded-xl p-6 shadow space-y-4">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Shipping Address</h2>
+ <button type="button" id="addAddressBtn"
+  class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition-all duration-200">
+  <i class="fas fa-plus"></i>
+  Add New Address
+</button>
+  </div>
+
   <div class="flex gap-4 flex-wrap">
     <% address.forEach(address => { %>
-     <div class="bg-white border border-gray-200 rounded-xl shadow px-4 py-3 w-64">
+      <div class="bg-white border border-gray-200 rounded-xl shadow px-4 py-3 w-64 space-y-2"
+           data-address='<%- JSON.stringify(address) %>'
+           data-is-default="<%= address.isDefault %>">
 
-        <div class="flex justify-between items-start mb-2">
-    <div class="bg-white border border-gray-200 rounded-xl shadow px-4 py-3 w-64"
-     data-address='<%- JSON.stringify(address) %>'
-     data-is-default="<%= address.isDefault %>">
-
-            <i class="fas fa-home text-sm"></i>
-            <span>
-              <%= address.type.charAt(0).toUpperCase() + address.type.slice(1) %>
-            </span>
+        <!-- Header -->
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2 text-sm font-medium text-gray-800">
+            <i class="fas fa-home"></i>
+            <span><%= address.type.charAt(0).toUpperCase() + address.type.slice(1) %></span>
           </div>
-          <button class="openEditAddressModal text-gray-500 hover:text-blue-600" data-id="<%= address._id %>">
-            <i data-lucide="pen" class="w-4 h-4"></i>
-          </button>
+
+          
+          <div class="flex items-center gap-2">
+            <!-- Edit Button -->
+         <div class="flex items-center gap-2">
+  <!-- Edit Button -->
+  <button
+    class="openEditAddressModal text-gray-500 hover:text-blue-600 transition"
+    data-id="<%= address._id %>"
+    data-type="<%= address.type %>"
+    data-name="<%= address.name %>"
+    data-phone="<%= address.phone %>"
+    data-street="<%= address.street %>"
+    data-zip="<%= address.zipCode %>"
+    data-city="<%= address.city %>"
+    data-state="<%= address.state %>"
+    data-default="<%= address.isDefault %>"
+  >
+    <i class="fas fa-edit text-sm"></i>
+  </button>
+
+</div>
+            <!-- Delete Button -->
+            <form action="/deleteAddress/<%= address._id %>" method="POST">
+              <button type="submit" class="text-red-500 hover:text-red-700 transition">
+                <i class="fas fa-trash-alt text-sm"></i>
+              </button>
+            </form>
+          </div>
         </div>
-        <div class="text-gray-800 text-sm space-y-1 mb-2">
-          <p class="font-semibold">
-            <%= address.name %>
-          </p>
-          <p>
-            <%= address.street %>
-          </p>
-          <p>
-            <%= address.city %>, <%= address.state %> - <%= address.zipCode %>
-          </p>
+
+        <!-- Address Info -->
+        <div class="text-gray-800 text-sm space-y-1">
+          <p class="font-semibold"><%= address.name %></p>
+          <p><%= address.street %></p>
+          <p><%= address.city %>, <%= address.state %> - <%= address.zipCode %></p>
           <p class="text-gray-600">
-            <i class="fas fa-phone-alt text-blue-500 text-xs"></i>
+            <i class="fas fa-phone-alt text-blue-500 text-xs mr-1"></i>
             <%= address.phone %>
           </p>
         </div>
-        <form action="/setDefaultAddress/<%= address._id %>" method="POST" class="flex items-center gap-2">
-          <input type="checkbox" name="isDefault" class="accent-blue-600 h-4 w-4" onchange="this.form.submit()"
-            <%= address.isDefault ? 'checked disabled' : '' %> />
-          <label class="text-xs text-gray-600">
-            <%= address.isDefault ? 'Default Address' : 'Set as default address' %>
-          </label>
-        </form>
+
+        <!-- Set Default -->
+      <form class="set-default-address-form flex items-center gap-2 pt-1" data-id="<%= address._id %>">
+  <input type="checkbox" name="isDefault" class="accent-blue-600 h-4 w-4"
+    <%= address.isDefault ? 'checked disabled' : '' %> />
+  <label class="text-xs text-gray-600">
+    <%= address.isDefault ? 'Default Address' : 'Set as default address' %>
+  </label>
+</form>
       </div>
     <% }) %>
   </div>
 </div>
 
+  <div id="addressModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-3 hidden">
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-3 border-b">
+          <h3 class="text-base font-semibold text-gray-800">Add New Address</h3>
+          <button id="editcloseModal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body - Address Form -->
+        <form id="addressForm" class="p-3">
+          <div class="space-y-3">
+            <!-- Two Column Layout for Small Form Fields -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Address Type -->
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1">Address
+                  Type*</label>
+                <select name="type"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  required>
+                  <option value="home">Home</option>
+                  <option value="work">Work</option>
+                  <option value="billing">Billing</option>
+                  <option value="shipping">Shipping</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <!-- Full Name -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Full
+                  Name*</label>
+
+                <input type="text" name="name"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                  <span id="nameError" class="error-message text-red-500 text-sm"></span>
+                <div class="text-red-600 text-xs mt-1" id="nameError"></div>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Phone
+                Number*</label>
+              <input type="tel" name="phone"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                <span id="phoneError" class="error-message text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Street Address -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Street
+                Address*</label>
+              <input type="text" name="street"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                <span id="streetError" class="error-message text-red-500 text-sm"></span>
+            </div>
+
+            <!-- Two Column Layout for Zip/Country -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Zip Code -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Pin
+                  Code*</label>
+                <input type="text" name="zipCode" id="pincode"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                   <span id="zipCodeError" class="error-message text-red-500 text-sm"></span>
+                <small id="pincode-error" style="color: red;"></small>
+              </div>
+
+              <!-- Country -->
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1">Country</label>
+                <input type="text" name="country" value="INDIA"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-gray-100"
+                  readonly />
+              </div>
+            </div>
+
+            <!-- Two Column Layout for City/State -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- City -->
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1">City</label>
+                <input type="text" name="city" id="city" readonly
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                   <span id="cityError" class="error-message text-red-500 text-sm"></span>
+              </div>
+
+              <!-- State -->
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1">State*</label>
+                <input type="text" name="state" id="state" readonly
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                  <span id="stateError" class="error-message text-red-500 text-sm"></span>
+              </div>
+            </div>
+
+            <!-- Set as Default -->
+            <div class="flex items-center pt-1">
+              <input type="checkbox" name="isDefault" id="isDefault"
+                value="true"
+                class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-0" />
+              <label for="isDefault" class="text-xs text-gray-700">Set as
+                default address</label>
+            </div>
+          </div>
+
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" id="cancelBtn"
+              class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Cancel
+            </button>
+            <button type="submit"
+              class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow-sm text-xs font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+              Save Address
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+
+        <!-- editForm details -->
+
+    <div id="editAddressModal"
+      class="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-3 hidden">
+      <div
+        class="bg-white rounded-lg shadow-xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-3 border-b">
+          <h3 class="text-base font-semibold text-gray-800">Edit Address</h3>
+          <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Modal Body - Edit Address Form -->
+        <form id="editAddressForm" class="p-3">
+          <input type="hidden" name="_id" id="editAddressId">
+          <div class="space-y-3">
+
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Address Type -->
+              <div>
+                <label
+                  class="block text-xs font-medium text-gray-700 mb-1">Address
+                  Type*</label>
+                <select name="type" id="edit-type"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  required>
+                  <option value="home">Home</option>
+                  <option value="work">Work</option>
+                  <option value="billing">Billing</option>
+                  <option value="shipping">Shipping</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <!-- Full Name -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Full
+                  Name*</label>
+                <input type="text" name="name" id="edit-name"
+                  class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    <span id="error-name" class="text-sm text-red-500"></span>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Phone
+                Number*</label>
+              <input type="tel" name="phone" id="edit-phone"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                <span id="error-phone" class="text-sm text-red-500"></span>
+            </div>
+
+            <!-- Street Address -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Street
+                Address*</label>
+              <input type="text" name="street" id="edit-street"
+                class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                <span id="error-street" class="text-sm text-red-500"></span>
+            </div>
+
+            <!-- Pin Code & Country -->
+           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">Pin Code*</label>
+    <input type="text" name="zipCode" id="edit-pincode"
+      class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+      <span id="error-zipCode" class="text-sm text-red-500"></span>
+
+    <small id="edit-pincode-error" class="text-red-500 text-xs mt-1 block"></small>
+  </div>
+
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">Country</label>
+    <input type="text" name="country" value="INDIA" readonly
+      class="w-full px-2 py-1.5 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm" />
+  </div>
+</div>
+
+<!-- City & State -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">City</label>
+    <input type="text" name="city" id="edit-city" readonly
+      class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm" />
+      <span id="error-city" class="text-sm text-red-500"></span>
+  </div>
+
+  <div>
+    <label class="block text-xs font-medium text-gray-700 mb-1">State*</label>
+    <input type="text" name="state" id="edit-state" readonly
+      class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm" />
+      <span id="error-state" class="text-sm text-red-500"></span>
+  </div>
+</div>
+
+
+            <!-- Set as Default -->
+            <div class="flex items-center pt-1">
+              <input type="checkbox" name="isDefault" id="edit-isDefault"
+                value="true"
+                class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-0" />
+              <label for="edit-isDefault" class="text-xs text-gray-700">Set as
+                default address</label>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="mt-4 flex justify-end gap-2">
+            <button type="button" id="editCancelBtn"
+              class="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50">
+              Cancel
+            </button>
+            <button type="submit"
+              class="px-3 py-1.5 bg-blue-600 text-white rounded-md shadow-sm text-xs font-medium hover:bg-blue-700">
+              Update Address
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+       <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+      <div
+        class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs text-center">
+        <h3 class="text-lg font-semibold mb-4 text-gray-800">Delete Address</h3>
+        <p class="mb-6 text-gray-600">Are you sure you want to delete this
+          address?</p>
+        <div class="flex justify-center gap-4">
+          <button id="cancelDeleteBtn"
+            class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700">Cancel</button>
+          <button id="confirmDeleteBtn"
+            class="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white">Delete</button>
+        </div>
+      </div>
+    </div>
 
 <!-- Payment Methods -->
 <div class="space-y-3" id="payment-methods">
@@ -216,12 +520,382 @@
       </div>
     </div>
 
-  
+    
+
+  <div id="flashMessage"
+     class="hidden fixed bottom-8 right-8 bg-green-500 text-white px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300">
+</div>
+<div id="flashErrorBox" class="hidden mb-4 p-3 rounded text-white bg-red-500 shadow-md"></div>
     <script>
       document.getElementById('toggleCoupons').addEventListener('click', function () {
         const couponDiv = document.getElementById('availableCoupons');
         couponDiv.classList.toggle('hidden');
       });
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Modal logic
+  const modal = document.getElementById("addressModal");
+  const addBtn = document.getElementById("addAddressBtn");
+  const closeBtn = document.getElementById("closeModal");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const form = document.getElementById("addressForm");
+
+  const addressSuccess = localStorage.getItem('addressSuccess');
+  if (addressSuccess) {
+    showFlash(addressSuccess, 'success');
+    localStorage.removeItem('addressSuccess');
+  }
+
+  // Reset form on open
+  addBtn.addEventListener("click", () => {
+    form.reset();
+    modal.classList.remove("hidden");
+  });
+
+  // Close Modal with Reset
+  const closeModal = () => {
+    modal.classList.add("hidden");
+    form.reset();
+  };
+
+  closeBtn.addEventListener("click", closeModal);
+  cancelBtn.addEventListener("click", closeModal);
+
+  // Form Submit
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const addressData = {};
+    for (const [key, value] of formData.entries()) {
+      addressData[key] = value;
+    }
+    addressData.isDefault = formData.has("isDefault");
+
+    try {
+      const response = await fetch("/post-Address", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(addressData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Address saved successfully:", result);
+        localStorage.setItem('addressSuccess', result.message);
+location.reload();
+        
+      } else {
+        const errorData = await response.json();
+        if (errorData.errors) {
+          document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
+          for (const field in errorData.errors) {
+            const errorElement = document.querySelector(`#${field}Error`);
+            if (errorElement) {
+              errorElement.textContent = errorData.errors[field];
+            }
+          }
+        } else {
+          showFlash(errorData.error || "Failed to save address", "error");
+        }
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  });
+
+  // Pincode autofill for add address
+  const addPincodeInput = document.getElementById('pincode');
+  if (addPincodeInput) {
+    addPincodeInput.addEventListener('input', async function () {
+      const pin = this.value;
+      const errorElement = document.getElementById('pincode-error');
+      if (pin.length === 6) {
+        try {
+          const res = await fetch(`/location?pincode=${pin}`);
+          const data = await res.json();
+          if (data.city && data.state) {
+            document.getElementById('city').value = data.city;
+            document.getElementById('state').value = data.state;
+            errorElement.textContent = "";
+          } else {
+            errorElement.textContent = 'Invalid or unknown pincode';
+            document.getElementById('city').value = '';
+            document.getElementById('state').value = '';
+          }
+        } catch (error) {
+          console.error('Fetch error', error);
+          errorElement.textContent = 'Server error. Try again.';
+        }
+      } else {
+        errorElement.textContent = "";
+      }
+    });
+  }
+
+  // Pincode autofill for edit address (if present)
+  const editPincodeInput = document.getElementById('edit-pincode');
+  if (editPincodeInput) {
+    editPincodeInput.addEventListener('input', async function () {
+      const pin = this.value;
+      const errorElement = document.getElementById('edit-pincode-error');
+      if (pin.length === 6) {
+        try {
+          const res = await fetch(`/location?pincode=${pin}`);
+          const data = await res.json();
+          if (data.city && data.state) {
+            document.getElementById('edit-city').value = data.city;
+            document.getElementById('edit-state').value = data.state;
+            errorElement.textContent = "";
+          } else {
+            errorElement.textContent = 'Invalid or unknown pincode';
+            document.getElementById('edit-city').value = '';
+            document.getElementById('edit-state').value = '';
+          }
+        } catch (error) {
+          console.error('Fetch error', error);
+          errorElement.textContent = 'Server error. Try again.';
+        }
+      } else {
+        errorElement.textContent = "";
+      }
+    });
+  }
+});
+
+// Flash message function (keep outside DOMContentLoaded)
+function showFlash(message, type = "success") {
+  const flash = document.getElementById("flashMessage");
+  flash.textContent = message;
+  flash.className =
+    "fixed bottom-8 right-8 px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300 " +
+    (type === "error"
+      ? "bg-red-500 text-white"
+      : "bg-green-500 text-white");
+  flash.classList.remove("hidden");
+  setTimeout(() => {
+    flash.classList.add("hidden");
+  }, 3000);
+}
+
+
+
+  let addressToDelete = null;
+
+window.deleteAddress = function(addressId) {
+  addressToDelete = addressId;
+  document.getElementById('deleteConfirmModal').classList.remove('hidden');
+};
+
+document.getElementById('cancelDeleteBtn').onclick = function() {
+  addressToDelete = null;
+  document.getElementById('deleteConfirmModal').classList.add('hidden');
+};
+
+document.getElementById('confirmDeleteBtn').onclick = async function() {
+  if (!addressToDelete) return;
+  try {
+    const response = await fetch(`deleteAddress/${addressToDelete}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    addressToDelete = null;
+    if (response.ok) {
+      location.reload();
+    }
+    // Optionally handle errors here
+  } catch (error) {
+    console.error('Error deleting address', error);
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    addressToDelete = null;
+  }
+};
+
+
+
+document.querySelectorAll('.set-default-address-form').forEach(form => {
+  form.addEventListener('change', async function(e) {
+    e.preventDefault();
+    const addressId = this.dataset.id;
+    try {
+      const response = await fetch(`/setDefaultAddress/${addressId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        // Optionally show a message
+        localStorage.setItem('toastMessage', 'Default address updated');
+        localStorage.setItem('toastType', 'success');
+        location.reload();
+      } else {
+        showFlash('Failed to set default address', 'error');
+      }
+    } catch (err) {
+      showFlash('Network error', 'error');
+    }
+  });
+});
+
+
+const editModal = document.getElementById('editAddressModal');
+const cancelBtn = document.getElementById('editCancelBtn');
+const closeBtn = document.getElementById('closeModal');
+const openBtns = document.querySelectorAll('.openEditAddressModal');
+
+// Open modal for each edit button
+openBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.getElementById('editAddressId').value = btn.dataset.id;
+    document.getElementById('edit-type').value = btn.dataset.type;
+    document.getElementById('edit-name').value = btn.dataset.name;
+    document.getElementById('edit-phone').value = btn.dataset.phone;
+    document.getElementById('edit-street').value = btn.dataset.street;
+    document.getElementById('edit-pincode').value = btn.dataset.zip;
+    document.getElementById('edit-city').value = btn.dataset.city;
+    document.getElementById('edit-state').value = btn.dataset.state;
+    document.getElementById('edit-isDefault').checked = btn.dataset.default === "true";
+
+    editModal.classList.remove('hidden');
+  });
+});
+
+// Close modal on cancel button
+cancelBtn.addEventListener('click', () => {
+  editModal.classList.add('hidden');
+});
+
+// Close modal on close (X) button
+closeBtn.addEventListener('click', () => {
+  editModal.classList.add('hidden');
+});
+
+// Close modal if user clicks outside the modal
+window.addEventListener('click', (e) => {
+  if (e.target === editModal) {
+    editModal.classList.add('hidden');
+  }
+});
+
+
+// editing user address 
+
+document.getElementById('editAddressForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+  const addressId = formData.get('_id');
+
+  // Get checkbox value properly
+  const isDefaultCheckbox = form.querySelector('#edit-isDefault');
+  const isDefault = isDefaultCheckbox && isDefaultCheckbox.checked;
+
+  try {
+    const response = await fetch(`/editAddress/${addressId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: formData.get('type'),
+        name: formData.get('name'),
+        phone: formData.get('phone'),
+        street: formData.get('street'),
+        zipCode: formData.get('zipCode'),
+        city: formData.get('city'),
+        state: formData.get('state'),
+        country: formData.get('country'),
+        isDefault
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      localStorage.setItem("toastMessage", "Address updated successfully");
+      localStorage.setItem("toastType", "success");
+      location.reload();
+    } else if (result.errors) {
+      showFlashMessage(result.flash || "Something went wrong");
+      showFieldErrors(result.errors);
+    } else {
+      showFlashMessage("Something went wrong");
+    }
+
+  } catch (error) {
+    console.error(error);
+    showToast('An error occurred', 'error');
+  }
+});
+
+function showFlashMessage(message) {
+  const flashBox = document.getElementById("flashErrorBox");
+  flashBox.textContent = message;
+  flashBox.classList.remove("hidden");
+
+  setTimeout(() => {
+    flashBox.classList.add("hidden");
+  }, 4000);
+}
+
+function showFieldErrors(errors) {
+  document.querySelectorAll("[id^='error-']").forEach(el => el.textContent = "");
+  for (const field in errors) {
+    const errorEl = document.getElementById(`error-${field}`);
+    if (errorEl) {
+      errorEl.textContent = errors[field];
+    }
+  }
+}
+
+
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    const colorClasses = type === 'success'
+      ? 'bg-white border-l-4 border-green-500 text-green-700'
+      : 'bg-white border-l-4 border-red-500 text-red-700';
+
+    const icon = type === 'success'
+      ? '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>'
+      : '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+
+    toast.className = `
+      flex items-start gap-3 w-80 px-4 py-3 rounded-xl shadow-lg animate-slide-in relative ${colorClasses}
+    `;
+
+    toast.innerHTML = `
+      <div class="pt-1">${icon}</div>
+      <div class="flex-1 text-sm font-medium">${message}</div>
+      <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-400 hover:text-black">
+        &times;
+      </button>
+    `;
+
+    document.getElementById('toast-container').appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0');
+      setTimeout(() => toast.remove(), 400);
+    }, 4000);
+  }
+
+  // Display toast after reload
+  window.addEventListener('DOMContentLoaded', () => {
+    const message = localStorage.getItem('toastMessage');
+    const type = localStorage.getItem('toastType') || 'success';
+
+    if (message) {
+      showToast(message, type);
+      localStorage.removeItem('toastMessage');
+      localStorage.removeItem('toastType');
+    }
+  });
     </script>
   
   <script src="/js/checkOut.js"></script>

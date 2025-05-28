@@ -12,7 +12,9 @@ const orderSchema = new mongoose.Schema({
                required:true,
                
            },
+        productTitle:String,
         quantity:Number,
+       
         // total:Number,
          status: {
       type: String,
@@ -36,16 +38,16 @@ const orderSchema = new mongoose.Schema({
 
 
 shippingAddress:{
-    // name:String,
-    // phone:Number,
-    // city:String,
-    // state:String,
-    // zipCode:String,
-    // country:String,
-    // type:String
-      type: mongoose.Schema.Types.ObjectId,
-  ref: 'Address',
-  required: true
+     name: { type: String, required: true },
+  phone: { type: String, required: true },
+  street: { type: String },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+  zipCode: { type: String, required: true },
+  country: { type: String, required: true },
+  //     type: mongoose.Schema.Types.ObjectId,
+  // ref: 'Address',
+
 
 },
 
