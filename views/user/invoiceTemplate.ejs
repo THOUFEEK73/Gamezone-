@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GameZone Invoice</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 40px;
+      background-color: #f7f9fc;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 800px;
+      margin: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 20px;
+    }
+
+    .header h1 {
+      color: #3b82f6;
+      margin: 0;
+    }
+
+    .invoice-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .section-title {
+      margin-top: 30px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #111827;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 4px;
+    }
+
+    .address, .order-info {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table thead {
+      background-color: #f1f5f9;
+    }
+
+    table th, table td {
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      font-size: 14px;
+    }
+
+    .total {
+      text-align: right;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>GameZone</h1>
+      <p>Official Invoice</p>
+    </div>
+
+    <div class="invoice-meta">
+      <div class="order-info">
+        <p><strong>Invoice Date:</strong> <%= new Date().toLocaleDateString() %></p>
+        <p><strong>Order ID:</strong> <%= order.orderId %></p>
+        <p><strong>Order Date:</strong> <%= new Date(order.createdAt).toLocaleDateString() %></p>
+      </div>
+      <div class="address">
+        <p><strong>Shipping To:</strong></p>
+        <p><%= order.shippingAddress.name %></p>
+        <p><%= order.shippingAddress.street %></p>
+        <p><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %></p>
+        <p>Phone: <%= order.shippingAddress.phone %></p>
+      </div>
+    </div>
+
+    <div class="section-title">Order Summary</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Qty</th>
+          <th>Price</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% order.items.forEach(item => { %>
+        <tr>
+          <td><%= item.productId.title %></td>
+          <td><%= item.quantity %></td>
+          <td>₹<%= item.productId.price.toLocaleString('en-IN') %></td>
+          <td><%= item.status %></td>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <div class="total">
+      Total Amount: ₹<%= order.totalAmount.toLocaleString('en-IN') %>
+    </div>
+
+    <div class="footer">
+      <p>Thank you for shopping with GameZone!</p>
+    </div>
+  </div>
+</body>
+</html>

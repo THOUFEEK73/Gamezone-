@@ -133,14 +133,23 @@
         </div>
 
         <!-- Bottom Buttons -->
-        <div class="flex justify-end gap-2 pt-4">
-          <a href="/orderDetails">
-            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-xs">Go
-              Back</button>
-          </a>
+    <!-- Replace the Bottom Buttons section -->
+<!-- Replace the Bottom Buttons section -->
+<div class="flex justify-end gap-2 pt-4">
+  <a href="/orderDetails">
+    <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-xs">
+      Go Back
+    </button>
+  </a>
 
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs">Invoice</button>
-        </div>
+  <% if (order.items.some(item => item.status === 'Delivered')) { %>
+    <a href="/download-invoice/<%= order._id %>" target="_blank">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded text-xs flex items-center gap-1">
+        <i class="fas fa-download"></i> Invoice
+      </button>
+    </a>
+  <% } %>
+</div>
 
       </div>
     </main>

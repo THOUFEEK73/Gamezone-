@@ -642,7 +642,7 @@ export const updateQuantity = async (req, res) => {
 
     const game = product.productId;
 
-    const maxAllowed  = Math.floor(game.stockQuantity/2);
+    const maxAllowed  = game.stockQuantity;
 
 
     if (action === "increase") {
@@ -726,7 +726,8 @@ export const getCheckoutPage = async (req, res) => {
 
 export const postPlaceCODOrder = async (req, res) => {
   try {
-
+         console.log('helo world testing');
+         
     const userId = req.session.userId;
     const {shippingAddress} = req.body;
     console.log(shippingAddress.name)
@@ -745,6 +746,7 @@ export const postPlaceCODOrder = async (req, res) => {
     for (let item of cartItems.products) {
       totalAmount += item.productId.price * item.quantity;
     }
+console.log('triggering one');
 
     for(const item of cartItems.products){
       const game = await Game.findById(item.productId._id);
@@ -756,7 +758,7 @@ export const postPlaceCODOrder = async (req, res) => {
         await game.save()
       }
     }
-
+    console.log('triggering two');
     function generateOrderId(userId){
       const now = new Date();
       const year = now.getFullYear();
@@ -768,6 +770,7 @@ export const postPlaceCODOrder = async (req, res) => {
       return `ORD-${year}${month}${day}-${randomStr}-${shortUserId}`;
 
     }
+    console.log('triggering three');
     const orderId = generateOrderId(userId);
    const productMap = new Map();
 for (const item of cartItems.products) {
@@ -783,6 +786,8 @@ for (const item of cartItems.products) {
     });
   }
 }
+  console.log('fucntion triggering');
+  
 const groupedItems = Array.from(productMap.values()).map(item=>({
   ...item,
   status:'Pending',
@@ -802,7 +807,8 @@ const groupedItems = Array.from(productMap.values()).map(item=>({
         country:shippingAddress.country,
       }
     });
-
+  console.log('triggered');
+  
     await order.save();
 
     await Cart.findOneAndDelete({ userId: userId });
@@ -868,7 +874,7 @@ export const getViewOrderPage = async(req,res)=>{
          
       const orderId = req.params.id;
       const userId = req.session.userId;
-      console.log('triggered')
+     
 
     const order = await Order.findOne({ _id: orderId, userId })
       .populate('items.productId')
@@ -876,20 +882,17 @@ export const getViewOrderPage = async(req,res)=>{
 
 
 
-console.log(order)
       if(!order){
         return res.status(404).rendere('error',{message:'Order not found'});
       }
-
-
-   
 
 
 
       res.render('user/viewOrder',{page:'viewOrder',order});
 
      }catch(error){
-
+        console.error('Error fetching order details', error);
+        res.status(500).render('error',{message:'Server is down please try after some times'});
      }
 }
 

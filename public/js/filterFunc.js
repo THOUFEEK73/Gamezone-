@@ -186,4 +186,113 @@ window.addEventListener('load', () => {
       img.addEventListener('error', imageLoaded);
     }
   });
+
+
+  
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  const priceRange = document.getElementById('price-range');
+  const priceLabel = document.getElementById('price-label');
+  const genreCheckboxes = document.querySelectorAll('.genre-checkbox');
+  const companyCheckboxes = document.querySelectorAll('.company-checkbox');
+  const sortRadios = document.querySelectorAll('.sort-radio');
+  const resultDiv = document.getElementById('result');
+
+  // Update price label
+  priceRange.addEventListener('input', function() {
+    priceLabel.textContent = `Up to ₹${parseInt(this.value).toLocaleString('en-IN')}`;
+  });
+
+  async function fetchFilteredGames() {
+    try {
+      // Show loading state
+      resultDiv.classList.add('opacity-50');
+
+      // Get filter values
+      const filterData = {
+        maxPrice: parseInt(priceRange.value),
+        genres: Array.from(genreCheckboxes)
+          .filter(cb => cb.checked)
+          .map(cb => cb.value),
+        companies: Array.from(companyCheckboxes)
+          .filter(cb => cb.checked)
+          .map(cb => cb.value),
+        sort: document.querySelector('input[name="sort-order"]:checked')?.value || 'az'
+      };
+
+      // Fetch filtered results
+      const response = await fetch('/filter-games', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filterData)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message);
+
+      if (data.games.length === 0) {
+        resultDiv.innerHTML = `
+          <div class="col-span-full text-center py-8">
+            <p class="text-gray-500">No games found matching your criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Update UI with filtered results
+      resultDiv.innerHTML = data.games.map(game => `
+        <div class="text-center">
+          <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
+            <div class="rounded-2xl overflow-hidden">
+              <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
+            </div>
+          </a>
+          <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
+          ${game.type === 'trial' 
+            ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
+            : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
+          }
+          <div class="mt-1">
+            ${game.discountPrice 
+              ? `<span class="text-sm text-red-600 font-semibold">₹${game.discountPrice}</span>
+                 <span class="text-xs text-gray-400 line-through ml-1">₹${game.price}</span>`
+              : game.price === 0
+                ? '<span class="text-sm text-green-600 font-semibold">Free</span>'
+                : `<span class="text-sm text-gray-800 font-semibold">₹${game.price}</span>`
+            }
+          </div>
+        </div>
+      `).join('');
+
+    } catch (error) {
+      console.error('Error:', error);
+      resultDiv.innerHTML = `
+        <div class="col-span-full text-center py-8">
+          <p class="text-red-500">Failed to load games. Please try again.</p>
+        </div>
+      `;
+    } finally {
+      resultDiv.classList.remove('opacity-50');
+    }
+  }
+
+  // Add event listeners with debounce for price range
+  let priceTimeout;
+  priceRange.addEventListener('input', () => {
+    clearTimeout(priceTimeout);
+    priceTimeout = setTimeout(fetchFilteredGames, 300);
+  });
+
+  // Immediate filtering for checkboxes and radio buttons
+  genreCheckboxes.forEach(cb => cb.addEventListener('change', fetchFilteredGames));
+  companyCheckboxes.forEach(cb => cb.addEventListener('change', fetchFilteredGames));
+  sortRadios.forEach(radio => radio.addEventListener('change', fetchFilteredGames));
+
+  // Initial load
+  fetchFilteredGames();
 });

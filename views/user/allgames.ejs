@@ -183,6 +183,59 @@
             <% }) %>
           </div>
         </div>
+
+        <!-- After Company Dropdown section -->
+<div class="mb-4">
+  <button onclick="toggleDropdown('sortDropdown')" class="flex justify-between items-center w-full font-medium text-gray-700">
+    Sort By
+    <svg class="w-4 h-4 ml-2 transition-transform" id="arrowSort" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+    </svg>
+  </button>
+  <div id="sortDropdown" class="mt-3 pl-3 space-y-3 text-sm bg-white p-4 rounded-md shadow-sm hidden">
+    <div class="block">
+      <input
+        type="radio"
+        id="sort-az"
+        name="sort-order"
+        class="sort-radio form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+        value="az"
+      >
+      <label for="sort-az" class="ml-2 text-gray-700">A to Z</label>
+    </div>
+    <div class="block">
+      <input
+        type="radio"
+        id="sort-za"
+        name="sort-order"
+        class="sort-radio form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+        value="za"
+      >
+      <label for="sort-za" class="ml-2 text-gray-700">Z to A</label>
+    </div>
+    <div class="block">
+      <input
+        type="radio"
+        id="sort-price-low"
+        name="sort-order"
+        class="sort-radio form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+        value="price-low"
+      >
+      <label for="sort-price-low" class="ml-2 text-gray-700">Price: Low to High</label>
+    </div>
+    <div class="block">
+      <input
+        type="radio"
+        id="sort-price-high"
+        name="sort-order"
+        class="sort-radio form-radio h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
+        value="price-high"
+      >
+      <label for="sort-price-high" class="ml-2 text-gray-700">Price: High to Low</label>
+    </div>
+  </div>
+</div>
+        
       </aside>
       
       
@@ -281,6 +334,11 @@
     </footer>
   </div>
 
+  <script src="/js/filterFunc.js">
 
+document.addEventListener('DOMContentLoaded', function() {
+   
+});
+  </script>
 </body>
 </html>

@@ -41,7 +41,7 @@ import { getHomePage,
     
 }
 from "../controllers/userController.js";
-
+import generateInvoice from "../utils/generateInvoice.js";
 import getLocationByPinCode from '../controllers/locationController.js'
 import {getDetailPage} from '../controllers/gameDetail.js'
 import { showAllGames } from "../controllers/AllGamesController.js";
@@ -106,6 +106,8 @@ router.post('/cart/add',postAddCart)
 router.delete('/cart/remove/:id',removeCart)
 router.put('/cart/update-Quantity',updateQuantity)
 
+
+router.get('/download-invoice/:orderId',generateInvoice);
 
 
 
