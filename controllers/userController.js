@@ -8,6 +8,8 @@ import Address from "../models/addressModel.js";
 import Cart from "../models/cartModel.js";
 import Order from "../models/orderModel.js";
 import Wishlist from '../models/WishlistModel.js';
+import bcrypt from "bcryptjs";
+import {comparePassword,hashPassword} from "../utils/hash.js";
 import mongoose from 'mongoose';
 
 
@@ -420,6 +422,54 @@ export const postSetDefault = async (req, res) => {
 };
 
 
+export const getChangePasswordPage = (req,res)=>{
+    try{
+      res.render('user/password-change',{page:'passwordChange'});
+    }catch(error){
+      console.error('Error rendering change password page', error);
+      res.status(500).render('error',{message:'Server is down please try after some times'});
+    }
+}
+
+// controllers/userController.js
+export const postPasswordChange = async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const errors = {};
+
+    if (!currentPassword) errors.currentPassword = 'Current password is required.';
+    if (!newPassword) errors.newPassword = 'New password is required.';
+    if (!confirmPassword) errors.confirmPassword = 'Confirm password is required.';
+    if (newPassword && newPassword.length < 8) errors.newPassword = 'Password must be at least 8 characters.';
+    if (newPassword && confirmPassword && newPassword !== confirmPassword) errors.confirmPassword = 'Passwords do not match.';
+
+    if (Object.keys(errors).length > 0) {
+      return res.json({ success: false, errors, message: 'Please fix the errors below.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.json({ success: false, message: 'User not found.' });
+
+    const isMatch = await comparePassword(currentPassword, user.password);
+    
+    if (!isMatch) return res.json({ success: false, errors: { currentPassword: 'Current password is incorrect.' } });
+
+   user.password = await hashPassword(newPassword);
+    await user.save();
+
+    // res.json({ success: true, message: 'Password updated successfully!' });
+    req.session.destroy((err) => {
+  if (err) {
+    return res.json({ success: false, message: 'Password changed, but failed to log out. Please log out manually.' });
+  }
+  res.json({ success: true, message: 'Password updated successfully! Please log in again.', logout: true });
+});
+  } catch (error) {
+    res.json({ success: false, message: 'Something went wrong.' });
+  }
+};
+
 
 // controllers/userController.js
 export const toggleWishlist = async (req, res) => {
@@ -644,13 +694,13 @@ export const updateQuantity = async (req, res) => {
 
     const maxAllowed  = game.stockQuantity;
 
+    
+
 
     if (action === "increase") {
       if(product.quantity < maxAllowed){
         
           product.quantity += 1;
-      }else{
-     
       }
      
     } else if (action === "decrease" && product.quantity > 1) {

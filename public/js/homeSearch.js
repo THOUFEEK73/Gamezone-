@@ -10,12 +10,14 @@ const defaultGames = document.getElementById('defaultGames');
 // Function to handle search results
 async function searchGames(query) {
     try {
+        console.log('triggered search with query');
+        
         const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
         const data = await response.json();
 
         if (!resultsContainer) return;
 
-        resultsContainer.innerHTML = ''; // Clear previous results
+        resultsContainer.innerHTML = ''; // preveious search result will go
 
         if (data.games && data.games.length > 0) {
             // Hide default games and show results

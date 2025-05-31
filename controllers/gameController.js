@@ -32,8 +32,9 @@ export const addGame = async (req, res) => {
         const companies = await gamecompany.find({status:'active'})
        
         const category = await Category.find()
-        const data = await Game.find()
-        res.render('admin/addgame', { errors: {}, data, category,companies });
+        // const data = await Game.find()
+      
+        res.render('admin/addgame', { errors: {}, data:{}, category,companies });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: 'Failed to render add game page' });
@@ -79,21 +80,30 @@ export const postGameDetails = async (req, res) => {
            errors.category = 'game category is required';
         }
 
-        if(Object.keys(errors).length>0){
-            return res.render('admin/addgame',{errors,game,category:categories,data:req.session.formData || {}});
-        }
+        // if(Object.keys(errors).length>0){
+        //     return res.render('admin/addgame',{errors,game,category:categories,data:req.session.formData || {}});
+        // }
 
+        if (Object.keys(errors).length > 0) {
+    return res.render('admin/addgame', {
+        errors,
+        data: req.session.formData || {}, // <-- pass the submitted form data
+        category: categories,
+        companies: await gamecompany.find({status:'active'})
+    });
+}
+ 
         // Validate files
-        if (!req.files || !req.files.coverImage || !req.files.coverImage[0]) {
-            console.log('Error in cover image');
-            errors.coverImage = 'Cover image is required';
-            return res.render('admin/addgame', {
-                category: categories,
-                errors: 'Cover image is required',
-                data: req.session.formData || {},
-                game,
-            });
-        }
+  if (!req.files || !req.files.coverImage || !req.files.coverImage[0]) {
+    console.log('Error in cover image');
+    errors.coverImage = 'Cover image is required';
+    return res.render('admin/addgame', {
+        category: categories,
+        companies: await gamecompany.find({status:'active'}),
+        errors,
+        data: req.session.formData || {}, // <-- always pass data!
+    });
+}
 
         // Upload cover image
       
@@ -133,10 +143,12 @@ export const postGameDetails = async (req, res) => {
         res.redirect('/admin/games'); 
 
     } catch (error) {
-        console.error('Error adding game:', error);
-        res.render('admin/addgame', {
-            category: await Category.find(),
-            err: 'Failed to add game. Please try again.'
-        });
+       console.error('Error adding game:', error);
+    res.render('admin/addgame', {
+        category: await Category.find(),
+        companies: await gamecompany.find({status:'active'}),
+        errors: { general: 'Failed to add game. Please try again.' },
+        data: {} // <-- always pass data!
+    });
     }
 };

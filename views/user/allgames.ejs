@@ -240,48 +240,41 @@
       
       
 
-      <!-- Product Grid -->
-      <main class="flex-1 p-6">
-       
-        <section class="py-12">
-          <div class="container mx-auto px-6">
-            <div id="result" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              <% games.forEach(game => { %>
-                <div class="text-center">
-                  <!-- Game Card -->
-                  <a href="/gamedetail/<%= game._id %>" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-                    <div class="rounded-2xl overflow-hidden">
-                      <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" class="w-full h-auto object-contain">
-                    </div>
-                  </a>
-            
-                  <!-- Game Title -->
-                  <h3 class="mt-2 text-sm font-semibold text-gray-900"><%= game.title %></h3>
-            
-                  <!-- Game Type -->
-                  <% if (game.type === 'trial') { %>
-                    <p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>
-                  <% } else { %>
-                    <p class="text-xs text-gray-400 mt-1">Demo Tag</p>
-                  <% } %>
-            
-                  <!-- Pricing -->
-                  <div class="mt-1">
-                    <% if (game.discountPrice) { %>
-                      <span class="text-sm text-red-600 font-semibold">Rs <%= game.discountPrice %></span>
-                      <span class="text-xs text-gray-400 line-through ml-1">Rs <%= game.price %></span>
-                    <% } else if (game.price === 0) { %>
-                      <span class="text-sm text-green-600 font-semibold">Free</span>
-                    <% } else { %>
-                      <span class="text-sm text-gray-800 font-semibold">Rs <%= game.price %></span>
-                    <% } %>
-                  </div>
-                </div>
-              <% }); %>
+<main class="flex-1 p-4 sm:p-6 bg-gray-50 min-h-screen mt-5 mb-5">
+  <div id="result" id="defaultGames" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8">
+    <% games.forEach(game => { %>
+      <div class="text-center">
+        <a href="/gamedetail/<%= game._id %>" class="block hover:scale-[1.03] transition duration-300">
+          <div class="bg-white p-4 shadow-md h-[260px] flex flex-col justify-between">
+            <div class="rounded-md overflow-hidden bg-white h-36 flex items-center justify-center">
+              <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" 
+                   class="block self-center max-h-full max-w-full object-contain" />
             </div>
           </div>
-        </section>
-      </main>
+        </a>
+        <h3 class="mt-3 text-base sm:text-lg font-semibold text-gray-900 truncate"><%= game.title %></h3>
+        <% if (game.type === 'trial') { %>
+          <p class="text-sm text-red-500 font-medium mt-1">🛡️ Game Trial</p>
+        <% } else { %>
+          <p class="text-sm text-gray-400 mt-1">Demo Tag</p>
+        <% } %>
+        <div class="mt-1">
+          <% if (game.discountPrice) { %>
+            <span class="text-base text-red-600 font-semibold">₹<%= game.discountPrice %></span>
+            <span class="text-sm text-gray-400 line-through ml-1">₹<%= game.price %></span>
+          <% } else if (game.price === 0) { %>
+            <span class="text-base text-green-600 font-semibold">Free</span>
+          <% } else { %>
+            <span class="text-base text-gray-800 font-semibold">₹<%= game.price %></span>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</main>
+
+
+
       
     </div>
     <!-- Footer -->
@@ -334,11 +327,6 @@
     </footer>
   </div>
 
-  <script src="/js/filterFunc.js">
-
-document.addEventListener('DOMContentLoaded', function() {
-   
-});
-  </script>
+  <script src="/js/filterFunc.js"> </script>
 </body>
 </html>

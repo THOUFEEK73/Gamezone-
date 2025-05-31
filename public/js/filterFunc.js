@@ -1,14 +1,15 @@
 
 // Wait for DOM content
 document.addEventListener('DOMContentLoaded', () => {
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const mainContent = document.getElementById('mainContent');
+  console.log('DOM fully loaded and parsed');
+  // const loadingOverlay = document.getElementById('loadingOverlay');
+  // const mainContent = document.getElementById('mainContent');
 
   // Simulate loading time (you can remove this in production)
-  setTimeout(() => {
-    loadingOverlay.classList.add('hidden');
-    mainContent.classList.add('loaded');
-  }, 2000);
+  // setTimeout(() => {
+  //   loadingOverlay.classList.add('hidden');
+  //   mainContent.classList.add('loaded');
+  // }, 2000);
 
   // Filter Games
   const priceRange = document.getElementById('price-range');
@@ -163,33 +164,33 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Track image loading
-window.addEventListener('load', () => {
-  const images = document.querySelectorAll('img');
-  let loadedImages = 0;
-  const totalImages = images.length;
+// window.addEventListener('load', () => {
+//   const images = document.querySelectorAll('img');
+//   let loadedImages = 0;
+//   const totalImages = images.length;
 
-  function imageLoaded() {
-    loadedImages++;
-    if (loadedImages === totalImages) {
-      const loadingOverlay = document.getElementById('loadingOverlay');
-      const mainContent = document.getElementById('mainContent');
-      loadingOverlay.classList.add('hidden');
-      mainContent.classList.add('loaded');
-    }
-  }
+//   function imageLoaded() {
+//     loadedImages++;
+//     if (loadedImages === totalImages) {
+//       const loadingOverlay = document.getElementById('loadingOverlay');
+//       const mainContent = document.getElementById('mainContent');
+//       loadingOverlay.classList.add('hidden');
+//       mainContent.classList.add('loaded');
+//     }
+//   }
 
-  images.forEach(img => {
-    if (img.complete) {
-      imageLoaded();
-    } else {
-      img.addEventListener('load', imageLoaded);
-      img.addEventListener('error', imageLoaded);
-    }
-  });
+//   images.forEach(img => {
+//     if (img.complete) {
+//       imageLoaded();
+//     } else {
+//       img.addEventListener('load', imageLoaded);
+//       img.addEventListener('error', imageLoaded);
+//     }
+//   });
 
 
   
-});
+// });
 
 
 document.addEventListener('DOMContentLoaded', () => {

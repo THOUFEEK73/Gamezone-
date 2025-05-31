@@ -647,7 +647,7 @@
         let currentCropType = null;
         let currentFile = null;
 
-        function openCropModal(file, type) {
+          function openCropModal(file, type) {
             currentCropType = type;
             currentFile = file;
             const modal = document.getElementById('cropModal');
@@ -664,19 +664,19 @@
                         cropper.destroy();
                     }
                     
-                    cropper = new Cropper(cropImage, {
-                        aspectRatio: 16 / 9,
-                        viewMode: 2,
-                        dragMode: 'move',
-                        autoCropArea: 1,
-                        restore: false,
-                        guides: true,
-                        center: true,
-                        highlight: false,
-                        cropBoxMovable: true,
-                        cropBoxResizable: true,
-                        toggleDragModeOnDblclick: false,
-                    });
+                  cropper = new Cropper(cropImage, {
+    viewMode: 2,
+    dragMode: 'move',
+    autoCropArea: 1,
+    restore: false,
+    guides: true,
+    center: true,
+    highlight: false,
+    cropBoxMovable: true,
+    cropBoxResizable: true,
+    toggleDragModeOnDblclick: false,
+});
+
                 };
             };
             reader.readAsDataURL(file);

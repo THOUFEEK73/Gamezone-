@@ -35,7 +35,9 @@ import { getHomePage,
     postCancelStatus,
     postReturnStatus,
     toggleWishlist,
-    removeWishlist
+    removeWishlist,
+    getChangePasswordPage,
+    postPasswordChange
 
 
     
@@ -46,7 +48,9 @@ import getLocationByPinCode from '../controllers/locationController.js'
 import {getDetailPage} from '../controllers/gameDetail.js'
 import { showAllGames } from "../controllers/AllGamesController.js";
 import  filterGames  from "../controllers/filterGamesController.js";
+// import {get} from 'lodash';
 import  noCache  from '../middleware/Cache-Control.js'
+// import { get } from "lodash";
 const router = express.Router();
 
 
@@ -60,6 +64,7 @@ router.get('/forgot-password',noCache,forgotPasswordPage)
 router.post('/forgot-password',noCache,postForgotPassword)
 router.get('/reset-password/:token',noCache,getResetPassworPage)
 router.post('/reset-password',noCache,postResetPassword)
+
 
 router.get("/login",noCache, getLoginPage);
 router.post("/login",noCache, postLogin);
@@ -86,6 +91,8 @@ router.get('/location',getLocationByPinCode)
 router.post('/deleteAddress/:id',deleteAddress);
 router.post('/setDefaultAddress/:id',postSetDefault)
 router.post('/editAddress/:id',postEditAddress)
+router.get('/password-change',isAuthenticated,getChangePasswordPage)
+router.post('/password-change',isAuthenticated,postPasswordChange)
 
 // router.get('/forgot-password',getforgorPassword)
 

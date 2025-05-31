@@ -1,163 +1,43 @@
-// Edit profile form submission
-  editForm.addEventListener("submit", async function (e) {
-    const newEmail = emailInput.value.trim();
-    document.getElementById("emailError").textContent = "";
+  <section class="py-12">
+    <div class="container mx-auto px-6">
+      <div id="result" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
+        <% games.forEach(game => { %>
+          <div class="text-center">
+            <a href="/gamedetail/<%= game._id %>" class="block hover:scale-[1.03] transition duration-300">
+              <div class="bg-white p-4 shadow-md h-[320px] flex flex-col justify-between">
+                
+                <!-- Game Image Card (center aligned) -->
+                <div class="rounded-md overflow-hidden bg-white h-48 flex items-center justify-center">
+                  <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" 
+                       class="max-h-full max-w-full object-contain">
+                </div>
 
-    if (newEmail !== originalEmail) {
-      e.preventDefault();
-      if (!newEmail) {
-        document.getElementById("emailError").textContent = "Email is required.";
-        return;
-      }
-      // Check with server if email is valid and send OTP
-      try {
-        const res = await fetch("/send-verification-code", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: newEmail })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          document.getElementById("emailError").textContent = data.message || "Failed to send verification code.";
-          return;
-        }
-        hiddenNewEmail.value = newEmail;
-        closeModal();
-        emailVerificationModal.classList.remove("hidden");
-        verificationFeedback.textContent = "OTP sent successfully!";
-        verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
-      } catch (err) {
-        document.getElementById("emailError").textContent = "Something went wrong. Try again.";
-      }
-    }
-  });
+              </div>
+            </a>
 
-  // Separate "Verify Email" button
-  editEmailBtn.addEventListener("click", async () => {
-    const newEmail = emailInput.value.trim();
-    document.getElementById("emailError").textContent = "";
+            <!-- Game Title -->
+            <h3 class="mt-3 text-base font-semibold text-gray-900 sm:text-lg"><%= game.title %></h3>
 
-    if (!newEmail) {
-      document.getElementById("emailError").textContent = "Email is required.";
-      return;
-    }
-    if (newEmail === originalEmail) return;
+            <!-- Game Type -->
+            <% if (game.type === 'trial') { %>
+              <p class="text-sm text-red-500 font-medium mt-1">🛡️ Game Trial</p>
+            <% } else { %>
+              <p class="text-sm text-gray-400 mt-1">Demo Tag</p>
+            <% } %>
 
-    // Check with server if email is valid and send OTP
-    try {
-      const res = await fetch("/send-verification-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: newEmail })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        document.getElementById("emailError").textContent = data.message || "Failed to send verification code.";
-        return;
-      }
-      hiddenNewEmail.value = newEmail;
-      closeModal();
-      emailVerificationModal.classList.remove("hidden");
-      verificationFeedback.textContent = "OTP sent successfully!";
-      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
-    } catch (err) {
-      document.getElementById("emailError").textContent = "Something went wrong. Try again.";
-    }
-  });
-
-  // OTP verification
-  verificationForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const email = hiddenNewEmail.value;
-    const verificationCode = this.querySelector('input[name="verificationCode"]').value.trim();
-
-    try {
-      const res = await fetch("/verify-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, verificationCode })
-      });
-
-      const data = await res.json();
-      console.log("Verification Response:", data);
-
-      if (res.ok && data.success) {
-        verificationFeedback.textContent = "Email verified successfully!";
-     
-        
-        verificationFeedback.classList.add("text-green-600");
-
-        
-
-        setTimeout(() => {
-          emailVerificationModal.classList.add("hidden");
-          editForm.submit(); // Resubmit profile form
-        }, 1000);
-      } else {
-        verificationFeedback.textContent = data.message || "Verification failed.";
-        verificationFeedback.classList.add("text-red-600");
-      }
-    } catch (err) {
-      console.error("Verification error:", err);
-      verificationFeedback.textContent = "An error occurred. Please try again.";
-      verificationFeedback.classList.add("text-red-600");
-    }
-  });
-
-  // Auto-hide flash messages
-  setTimeout(() => {
-    const flash = document.getElementById('flash-message');
-    if (flash) {
-      flash.classList.add('opacity-0');
-      setTimeout(() => flash.remove(), 500);
-    }
-  }, 3000);
-
-
-document.getElementById('edit-form').addEventListener('submit',async function(e){
-  e.preventDefault();
-
-  // clear previous error messages
-
-  document.getElementById('profile-error-name').innerText = '';
-  document.getElementById('profile-error-phone').innerText = '';
-
-
-  const form = e.target;
-  const formData = new FormData(form);
-
-  try{
-    console.log('Submitting profile update...');
-    
-     const response = await fetch('/edit-profile',{
-      method:'POST',
-      body:formData
-     });
-
-     const result = await response.json();
-
-     if(response.ok){
-      Swal.fire({
-        icon: 'success',
-        title: 'Profile Updated',
-        text: result.message,
-        confirmButtonText: 'OK'
-      }).then(() => {
-        window.location.reload();
-      });
-    }else{
-      if(result.errors.name){
-         document.getElementById('profile-error-name').innerText = result.errors.name;
-      }
-    }
-  }catch(error){
-    console.error('Error updating profile:', error);
-    Swal.fire({
-      icon: 'error',
-      title: 'Update Failed',
-      text: 'An error occurred while updating your profile. Please try again later.',
-      confirmButtonText: 'OK'
-    });
-    
-  }
-})
+            <!-- Game Pricing -->
+            <div class="mt-1">
+              <% if (game.discountPrice) { %>
+                <span class="text-base text-red-600 font-semibold">₹<%= game.discountPrice %></span>
+                <span class="text-sm text-gray-400 line-through ml-1">₹<%= game.price %></span>
+              <% } else if (game.price === 0) { %>
+                <span class="text-base text-green-600 font-semibold">Free</span>
+              <% } else { %>
+                <span class="text-base text-gray-800 font-semibold">₹<%= game.price %></span>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+  </section>

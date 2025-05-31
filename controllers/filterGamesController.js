@@ -20,7 +20,7 @@ const filterGames = async(req, res) => {
             query.company = {$in: companies};
         }
 
-        // Define sort options
+        
         let sortOption = {};
         switch(sort) {
             case 'az':

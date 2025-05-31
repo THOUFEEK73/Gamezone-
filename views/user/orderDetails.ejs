@@ -46,49 +46,45 @@
                 <td class="px-6 py-4 text-green-600">&#8377; <%=order.totalAmount%>
                 </td>
                 <td class="px-6 py-4 text-green-600">
-                  <% order.items.forEach(item=> { %>
-                    <div>
-                      <%= item.quantity %>
-                    </div>
-                    <% }) %>
+                  <div class="flex flex-col gap-1">
+                    <% let totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0) %>
+                    <%= totalQuantity %> items
+                  </div>
                 </td>
 
 
     
-<td class="px-6 py-4">
-  <% order.items.forEach(item => { %>
-    <% 
-      let statusColor = 'bg-gray-100 text-gray-600'; // Default color
-      if (item && item.status) {
-        switch(item.status.toLowerCase()) {
-          case 'pending':
-            statusColor = 'bg-yellow-100 text-yellow-600';
-            break;
-          case 'processing':
-            statusColor = 'bg-blue-100 text-blue-600';
-            break;
-          case 'shipped':
-            statusColor = 'bg-purple-100 text-purple-600';
-            break;
-          case 'delivered':
-            statusColor = 'bg-green-100 text-green-600';
-            break;
-          case 'cancelled':
-            statusColor = 'bg-red-100 text-red-600';
-            break;
-          case 'returned':
-            statusColor = 'bg-red-100 text-red-600';
-            break;
-        }
-    %>
-      <div class="mb-1">
-        <span class="<%= statusColor %> text-xs px-3 py-1 rounded-full">
-          <%= item.status %>
-        </span>
-      </div>
-    <% } %>
-  <% }); %>
-</td>
+                <td class="px-6 py-4">
+                  <% 
+                    let statusColor;
+                    const currentStatus = order.status ? order.status.toLowerCase() : '';
+                    switch(currentStatus) {
+                      case 'pending':
+                        statusColor = 'bg-yellow-100 text-yellow-600';
+                        break;
+                      case 'processing':
+                        statusColor = 'bg-blue-100 text-blue-600';
+                        break;
+                      case 'shipped':
+                        statusColor = 'bg-purple-100 text-purple-600';
+                        break;
+                      case 'delivered':
+                        statusColor = 'bg-green-100 text-green-600';
+                        break;
+                      case 'cancelled':
+                        statusColor = 'bg-red-100 text-red-600';
+                        break;
+                      case 'returned':
+                        statusColor = 'bg-red-100 text-red-600';
+                        break;
+                      default:
+                        statusColor = 'bg-gray-100 text-gray-600';
+                    }
+                  %>
+                  <span class="<%= statusColor %> text-xs px-3 py-1 rounded-full inline-block">
+                    <%= order.status %>
+                  </span>
+                </td>
                 <td class="px-6 py-4">
                   <a href="/viewOrder/<%=order._id%>">
                     <button
