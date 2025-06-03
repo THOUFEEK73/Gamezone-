@@ -623,6 +623,10 @@ export const postAddCart = async (req, res) => {
 
     const game = await Game.findById(productId);
 
+    // if(!game.stockQuantity <=0){
+    //   return res.status(400).json({success:false,message:'Product is out of stock'})
+    // }
+
     if (!cart) {
       cart = new Cart({
         userId,
@@ -640,8 +644,20 @@ export const postAddCart = async (req, res) => {
         (prd) => prd.productId.toString() === productId.toString()
       );
       if (existingProduct) {
+         console.log('triggering');
+         
+        if(existingProduct.quantity >=game.stockQuantity){
+          return res.status(400).json({
+            success: false,
+            message: `Cannot add more items. Maximum stock limit (${game.stockQuantity}) reached`
+          });
+        }
+        console.log('triggering check 2');
+        
         existingProduct.quantity += 1;
-
+         
+        console.log('triggering check 3');
+        
         
       } else {
         cart.products.push({
@@ -878,7 +894,15 @@ const groupedItems = Array.from(productMap.values()).map(item=>({
 
 export const getOrderSuccessPage = async (req, res) => {
   try {
-    res.render("user/orderSuccess", { page: "orderSuccess" });
+    const userId = req.session.userId;
+
+    const cart = await Cart.findOne({userId})
+    let cartCount = 0;
+
+    if(cart && cart.products){
+      cartCount = cart.products.reduce((total,item)=> total + item.quantity,0)
+    }
+    res.render("user/orderSuccess", { page: "orderSuccess",cartCount });
   } catch (error) {
     console.error(error);
   }
@@ -924,6 +948,13 @@ export const getViewOrderPage = async(req,res)=>{
          
       const orderId = req.params.id;
       const userId = req.session.userId;
+      const cart  = await Cart.findOne({userId});
+
+      let cartCount = 0;
+
+      if(cart && cart.products){
+        cartCount = cart.products.reduce((total,item)=>total + item.quantity,0);
+      }
      
 
     const order = await Order.findOne({ _id: orderId, userId })
@@ -938,7 +969,7 @@ export const getViewOrderPage = async(req,res)=>{
 
 
 
-      res.render('user/viewOrder',{page:'viewOrder',order});
+      res.render('user/viewOrder',{page:'viewOrder',order,cartCount});
 
      }catch(error){
         console.error('Error fetching order details', error);

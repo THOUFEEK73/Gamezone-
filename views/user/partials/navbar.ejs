@@ -31,7 +31,7 @@
             class="inline-flex items-center justify-center w-9 h-9 bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 rounded-full transition duration-200 shadow">
             <i class="fas fa-heart text-sm"></i>
           </a>
-          <a href="/cart" class="relative group">
+          <!-- <a href="/cart" class="relative group">
             <i class="fas fa-shopping-cart text-gray-600 hover:text-indigo-600 text-xl"></i>
             <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
             <span
@@ -39,7 +39,15 @@
               <%= cartCount %>
             </span>
             <% } %>
-          </a>
+          </a> -->
+          <!-- Replace the existing cart icon section -->
+<a href="/cart" class="relative group">
+  <i class="fas fa-shopping-cart text-gray-600 hover:text-indigo-600 text-xl"></i>
+  <span id="cartCounter"
+    class="cart-count absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md transition-all duration-300">
+    <%= cartCount %>
+  </span>
+</a>
 
           <!-- Profile Dropdown -->
           <div class="relative">
@@ -135,6 +143,27 @@
         profileMenu.classList.remove('visible');
       }
     });
+
+
+    function updateCartCount(increment = 1) {
+  const cartCounter = document.getElementById('cartCounter');
+  if (cartCounter) {
+    let currentCount = parseInt(cartCounter.textContent || '0');
+    currentCount += increment;
+    
+    // Update the count
+    cartCounter.textContent = currentCount;
+    
+    // Add animation
+    cartCounter.classList.add('scale-125', 'bg-green-500');
+    
+    // Remove animation after transition
+    setTimeout(() => {
+      cartCounter.classList.remove('scale-125', 'bg-green-500');
+    }, 200);
+  }
+}
+
   </script>
 
   <script src="/js/filterFunc.js" defer></script>

@@ -1,38 +1,69 @@
 
 
 async function addToCart(productId) {
-  console.log('helooo')
+ 
   try {
     const response = await fetch("/cart/add", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ productId }),
     });
-    setTimeout(() => {
-      window.location.reload();
-    }, 900);
+    // setTimeout(() => {
+    //   window.location.reload();
+    // }, 900);
     await response.json();
 
     if (response.ok) {
-      console.log('products added to cart successfully');
-      showToast("Product added to cart!");
+      
+      showCartFlash("success", "Product added to cart!");
+
       
     } else {
-      showToast("  Failed to cart!");
+      showCartFlash('error', data.message || 'Failed to add to cart');
     }
   } catch (error) {
     console.error("Error adding product to cart", error);
+    showCartFlash('error', 'You Exceeded The Stock Limit !');
   }
 }
 
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.className = "toast show";
+// function showToast(message) {
+//   const toast = document.getElementById("toast");
+//   toast.textContent = message;
+//   toast.className = "toast show";
+//   setTimeout(() => {
+//     toast.className = "toast";
+//   }, 3000); // Hide after 3 seconds
+// }
+
+function showCartFlash(type, message) {
+  const flash = document.getElementById('cartFlash');
+  const flashMessage = document.getElementById('cartFlashMessage');
+  const icon = flash.querySelector('i');
+
+  // Reset styles
+  flash.classList.remove('border-l-green-500', 'border-l-red-500', 'from-white', 'from-red-50', 'from-green-50');
+  icon.classList.remove('fa-check-circle', 'fa-times-circle', 'text-green-500', 'text-red-500');
+
+  if (type === 'success') {
+    flash.classList.add('border-l-green-500', 'from-green-50');
+    icon.classList.add('fa-check-circle', 'text-green-500');
+  } else {
+    flash.classList.add('border-l-red-500', 'from-red-50');
+    icon.classList.add('fa-times-circle', 'text-red-500');
+  }
+
+  flashMessage.textContent = message;
+  flash.classList.remove('hidden', 'opacity-0');
+  flash.classList.add('opacity-100');
+
   setTimeout(() => {
-    toast.className = "toast";
-  }, 3000); // Hide after 3 seconds
+    flash.classList.add('opacity-0');
+    setTimeout(() => flash.classList.add('hidden'), 300);
+  }, 3000);
 }
+
+
 
 // remove cart
 
@@ -143,3 +174,66 @@ function showToast(message) {
     }, 2000);
 }
 
+
+function updateCartCount(increment = 1) {
+  const cartCounter = document.getElementById('cartCounter');
+  if (cartCounter) {
+    let currentCount = parseInt(cartCounter.textContent || '0');
+    currentCount += increment;
+    
+    // Update the count
+    cartCounter.textContent = currentCount;
+    
+    // Add animation
+    cartCounter.classList.add('scale-125', 'bg-green-500');
+    
+    // Remove animation after transition
+    setTimeout(() => {
+      cartCounter.classList.remove('scale-125', 'bg-green-500');
+    }, 200);
+  }
+}
+
+async function addToCart(productId) {
+  try {
+    const response = await fetch("/cart/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      updateCartCount(); // Increment cart count
+      showCartFlash("success", "Product added to cart!");
+    } else {
+      showCartFlash('error', data.message || 'Failed to add to cart');
+    }
+  } catch (error) {
+    console.error("Error adding product to cart", error);
+    showCartFlash('error', 'You Exceeded The Stock Limit!');
+  }
+}
+
+async function addToCart(productId) {
+  try {
+    const response = await fetch("/cart/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ productId }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      updateCartCount(); // Increment cart count
+      showCartFlash("success", "Product added to cart!");
+    } else {
+      showCartFlash('error', data.message || 'Failed to add to cart');
+    }
+  } catch (error) {
+    console.error("Error adding product to cart", error);
+    showCartFlash('error', 'You Exceeded The Stock Limit!');
+  }
+}

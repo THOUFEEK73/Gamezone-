@@ -39,13 +39,16 @@ export const getDetailPage = async(req ,res)=>{
            
         }).limit(5);
 
- 
+     
+        const availableStock = game.stockQuantity;
 
         // cart count 
 
         const cartItems= await Cart.findOne({userId:user})
             // Cart count logic
             console.log(cartItems);
+            console.log('cartItems triggering');
+            
             
     
      let cartCount = 0;
@@ -65,7 +68,7 @@ export const getDetailPage = async(req ,res)=>{
        
     
 
-         res.render('user/gamedetail',{game,relatedGames,isWishlisted,relatedCompanies,user,page:'gameDetail',cartCount});
+         res.render('user/gamedetail',{game,relatedGames,availableStock,isWishlisted,relatedCompanies,user,page:'gameDetail',cartCount});
 
     }catch(err){
         console.error('Error fetching game details:',err);

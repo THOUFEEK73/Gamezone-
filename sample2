@@ -1,43 +1,9 @@
-  <section class="py-12">
-    <div class="container mx-auto px-6">
-      <div id="result" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-        <% games.forEach(game => { %>
-          <div class="text-center">
-            <a href="/gamedetail/<%= game._id %>" class="block hover:scale-[1.03] transition duration-300">
-              <div class="bg-white p-4 shadow-md h-[320px] flex flex-col justify-between">
-                
-                <!-- Game Image Card (center aligned) -->
-                <div class="rounded-md overflow-hidden bg-white h-48 flex items-center justify-center">
-                  <img src="<%= game.media.coverImage %>" alt="<%= game.title %>" 
-                       class="max-h-full max-w-full object-contain">
-                </div>
-
-              </div>
-            </a>
-
-            <!-- Game Title -->
-            <h3 class="mt-3 text-base font-semibold text-gray-900 sm:text-lg"><%= game.title %></h3>
-
-            <!-- Game Type -->
-            <% if (game.type === 'trial') { %>
-              <p class="text-sm text-red-500 font-medium mt-1">🛡️ Game Trial</p>
-            <% } else { %>
-              <p class="text-sm text-gray-400 mt-1">Demo Tag</p>
-            <% } %>
-
-            <!-- Game Pricing -->
-            <div class="mt-1">
-              <% if (game.discountPrice) { %>
-                <span class="text-base text-red-600 font-semibold">₹<%= game.discountPrice %></span>
-                <span class="text-sm text-gray-400 line-through ml-1">₹<%= game.price %></span>
-              <% } else if (game.price === 0) { %>
-                <span class="text-base text-green-600 font-semibold">Free</span>
-              <% } else { %>
-                <span class="text-base text-gray-800 font-semibold">₹<%= game.price %></span>
-              <% } %>
-            </div>
+   <!-- Platform Selection -->
+                        <!-- <div>
+          <label class="text-sm font-medium text-gray-600">Choose Platform</label>
+          <div class="grid grid-cols-3 gap-3 mt-2">
+            <button class="flex justify-center items-center gap-2 border rounded-lg px-3 py-2 hover:bg-gray-100"><i class="fab fa-steam text-blue-600"></i>Steam</button>
+            <button class="flex justify-center items-center gap-2 rounded-lg px-3 py-2 text-white" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);"><i class="fab fa-playstation"></i>PS5</button>
+            <button class="flex justify-center items-center gap-2 rounded-lg px-3 py-2 text-white" style="background: linear-gradient(135deg, #16a34a, #15803d);"><i class="fab fa-xbox"></i>Xbox</button>
           </div>
-        <% }); %>
-      </div>
-    </div>
-  </section>
+        </div> -->
