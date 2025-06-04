@@ -16,7 +16,9 @@ import mongoose from 'mongoose';
 import _ from "lodash";
 import { response } from "express";
 import { compareSync } from "bcryptjs";
+
 // import { getSystemErrorMessage } from "util";
+import { calculateDiscountedPrice,getActiveOffers } from "../utils/offerUtils.js";
 
 export const getHomePage = async (req, res) => {
   try {
@@ -36,6 +38,46 @@ export const getHomePage = async (req, res) => {
       .populate({ path: "category", match: { status: "active" } })
       .limit(10)
       .then((games) => games.filter((game) => game.category));
+
+
+
+      const activeOffers = await getActiveOffers();
+
+      const gamesWithOffers = games.map((game)=>{
+        const gameObj = game.toObject();
+
+        const productOffer = activeOffers.find(offer=>
+          offer.offerType ==='product' && 
+          offer.items.includes(game._id.toString()) && 
+          offer.isActive
+        )
+
+        const categoryOffer = activeOffers.find(offer => 
+          offer.offerType === 'category' && 
+          offer.items.includes(game.category._id.toString()) &&
+          offer.isActive
+        );
+
+       
+
+        const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+     
+      if(bestOffer){
+        gameObj.originalPrice = gameObj.price;
+        gameObj.discountPercentage = bestOffer.discountPercentage;
+        gameObj.price = calculateDiscountedPrice(game.price,bestOffer.discountPercentage);
+        gameObj.offerName = bestOffer.offerName;
+      }
+      console.log('this is the game object',gameObj)
+      return gameObj;
+      
+      })
+   
+    
+
     const cart = await Cart.findOne({ userId });
 
     let cartCount = 0;
@@ -47,7 +89,7 @@ export const getHomePage = async (req, res) => {
     }
 
     // Render the home page
-    res.render("user/home", { games: games, page: "home", cartCount });
+    res.render("user/home", { games: gamesWithOffers, page: "home", cartCount });
   } catch (error) {
     console.error("Error fetching games:", error);
     res.status(500).send("Internal Server Error");

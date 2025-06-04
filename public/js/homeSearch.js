@@ -29,42 +29,46 @@ async function searchGames(query) {
             // Create and append game cards
             data.games.forEach(game => {
                 const gameCard = `
-                    <div class="group">
-                        <a href="/gamedetail/${game._id}" class="block bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
-                            <div class="relative aspect-[4/3] overflow-hidden bg-gray-50">
-                                <img 
-                                    src="${game.media.coverImage}" 
-                                    alt="${game.title}" 
-                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                >
-                                ${game.type === 'trial' ? `
-                                    <span class="absolute top-2 right-2 bg-red-500 text-white text-xs font-medium px-2 py-1 rounded-full">
-                                        Trial
-                                    </span>
-                                ` : ''}
-                            </div>
-                            <div class="p-4">
-                                <h3 class="text-base font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
-                                    ${game.title}
-                                </h3>
-                                <div class="mt-2 flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        ${game.discountPrice ? `
-                                            <span class="text-base font-bold text-red-600">₹${game.discountPrice}</span>
-                                            <span class="text-sm text-gray-400 line-through">₹${game.price}</span>
-                                        ` : game.price === 0 ? `
-                                            <span class="text-base font-bold text-green-600">Free</span>
-                                        ` : `
-                                            <span class="text-base font-bold text-gray-900">₹${game.price}</span>
-                                        `}
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
+                  <div class="text-center">
+                    <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300">
+                      <div class="bg-white p-4 shadow-md h-[320px] flex flex-col justify-between">
+                        <div class="rounded-md overflow-hidden bg-white h-48 flex items-center justify-center">
+                          <img 
+                            src="${game.media.coverImage}" 
+                            alt="${game.title}" 
+                            class="max-h-full max-w-full object-contain"
+                          >
+                        </div>
+                      </div>
+                    </a>
+              
+                    <h3 class="mt-3 text-base font-semibold text-gray-900 sm:text-lg">${game.title}</h3>
+              
+                    <div class="mt-2 space-y-1">
+                      ${game.originalPrice && game.discountPercentage ? `
+                        <div class="flex items-center justify-center gap-2">
+                          <span class="text-base text-green-600 font-semibold">₹${game.price}</span>
+                          <span class="text-sm text-gray-400 line-through">₹${game.originalPrice}</span>
+                          <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
+                            ${game.discountPercentage}% OFF
+                          </span>
+                        </div>
+                        ${game.offerName ? `
+                          <div class="text-xs text-green-600 font-medium">
+                            ${game.offerName}
+                          </div>
+                        ` : ''}
+                      ` : game.price === 0 ? `
+                        <span class="text-base text-green-600 font-semibold">Free</span>
+                      ` : `
+                        <span class="text-base text-gray-800 font-semibold">₹${game.price}</span>
+                      `}
                     </div>
+                  </div>
                 `;
                 resultsContainer.insertAdjacentHTML('beforeend', gameCard);
-            });
+              });
+              
         } else {
             // Show no results message
             if (defaultGames) {

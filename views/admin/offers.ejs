@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offer Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Add Cropper.js CSS and JS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <%- include('partials/sidebar') %>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Offer Management</h1>
+      <button id="openModalBtn"
+      class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
+      + Add New Offer
+    </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+      <div class="flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="Search offers..."
+          class="px-3 py-2 border rounded-lg w-full md:w-72 focus:outline-none focus:ring focus:border-blue-400"
+        />
+        <button class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition">
+          Search
+        </button>
+      </div>
+
+      <select class="border rounded-lg px-3 py-2 w-full md:w-40">
+        <option>All Status</option>
+        <option>Active</option>
+        <option>Inactive</option>
+      </select>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto bg-white rounded-xl shadow">
+      <table class="min-w-full text-sm text-left">
+        <thead class="bg-gray-100 text-gray-700 uppercase text-xs">
+          <tr>
+            <th class="px-6 py-3">Type</th>
+            <th class="px-6 py-3">Name</th>
+            <th class="px-6 py-3">Discount</th>
+            <th class="px-6 py-3">Start Date</th>
+            <th class="px-6 py-3">End Date</th>
+            <th class="px-6 py-3">Status</th>
+            <th class="px-6 py-3">Actions</th>
+          </tr>
+        </thead>
+        <!-- Replace the sample rows with this dynamic content -->
+<tbody class="divide-y">
+    <% if (offers && offers.length > 0) { %>
+        <% offers.forEach(offer => { %>
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4"><%= offer.offerType.charAt(0).toUpperCase() + offer.offerType.slice(1) %></td>
+                <td class="px-6 py-4 font-medium"><%= offer.offerName %></td>
+                <td class="px-6 py-4"><%= offer.discountPercentage %>%</td>
+                <td class="px-6 py-4"><%= new Date(offer.startDate).toLocaleDateString() %></td>
+                <td class="px-6 py-4"><%= new Date(offer.endDate).toLocaleDateString() %></td>
+               <!-- Inside the table row -->
+               <td class="px-6 py-4">
+                <% 
+                const now = new Date();
+                const startDate = new Date(offer.startDate);
+                const endDate = new Date(offer.endDate);
+                
+                let status;
+                let statusClass;
+                
+                if (!offer.isActive) {
+                    status = 'Inactive';
+                    statusClass = 'bg-red-100 text-red-600';
+                } else {
+                    if (now < startDate) {
+                        status = 'Scheduled';
+                        statusClass = 'bg-yellow-100 text-yellow-600';
+                    } else if (now > endDate) {
+                        status = 'Expired';
+                        statusClass = 'bg-gray-100 text-gray-600';
+                    } else {
+                        status = 'Active';
+                        statusClass = 'bg-green-100 text-green-600';
+                    }
+                }
+                %>
+                <span class="status-badge <%= statusClass %> text-xs font-semibold px-3 py-1 rounded-full">
+                    <%= status %>
+                </span>
+            </td>
+                <td class="px-6 py-4 flex items-center gap-4">
+                    <!-- Edit Button -->
+                    <button title="Edit" 
+                            data-offer-id="<%= offer._id %>"
+                            class="edit-offer-btn text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                        <i class="fas fa-pen"></i>
+                    </button>
+                    
+                    <!-- Status Toggle -->
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" 
+                               class="sr-only peer offer-status-toggle"
+                               data-offer-id="<%= offer._id %>"
+                               <%= offer.isActive ? 'checked' : '' %>>
+                        <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:bg-green-500 transition-all duration-300">
+                        </div>
+                        <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform peer-checked:translate-x-5">
+                        </div>
+                    </label>
+                </td>
+            </tr>
+        <% }); %>
+    <% } else { %>
+        <tr>
+            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                No offers found
+            </td>
+        </tr>
+    <% } %>
+</tbody>
+      </table>
+    </div>
+  </div>
+
+
+  <div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <!-- Modal Content -->
+    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md space-y-4 relative">
+      <!-- Close Button -->
+      <button id="closeModalBtn" class="absolute top-3 right-4 text-gray-500 hover:text-black text-xl">&times;</button>
+  
+      <h2 class="text-xl font-semibold text-gray-800">Add New Offer</h2>
+  
+      <!-- Form -->
+      <form id="offerForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Offer Name</label>
+          <input type="text" id="offerName" name="offerName" 
+            placeholder="Enter offer name"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <span id="offerNameError" class="text-sm text-red-500"></span>
+        </div>
+      
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Offer Type</label>
+          <select id="offerType" name="offerType" 
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select type</option>
+              <option value="product">Product</option>
+              <option value="category">Category</option>
+          </select>
+          <span id="offerTypeError" class="text-sm text-red-500"></span>
+      </div>
+      
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Discount Percentage</label>
+          <input type="number" id="discountPercentage" name="discountPercentage" 
+            min="1" max="99" placeholder="e.g. 10"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <span id="discountPercentageError" class="text-sm text-red-500"></span>
+        </div>
+      
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input type="date" id="startDate" name="startDate" 
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <span id="startDateError" class="text-sm text-red-500"></span>
+        </div>
+      
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <input type="date" id="endDate" name="endDate" 
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <span id="endDateError" class="text-sm text-red-500"></span>
+        </div>
+      
+      
+      
+        <div id="productSelectDiv" class="form-group" style="display: none;">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+          <select id="productSelect" name="productSelect"
+              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select a product</option>
+              <% if (typeof games !== 'undefined' && games.length > 0) { %>
+                  <% games.forEach(game => { %>
+                      <option value="<%= game._id %>"><%= game.title %></option>
+                  <% }); %>
+              <% } %>
+          </select>
+          <span id="itemsError" class="text-sm text-red-500"></span>
+      </div>
+      
+      <div id="categorySelectDiv" class="form-group" style="display: none;">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Select Category</label>
+        <select id="categorySelect" name="categorySelect"
+            class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="">Select a category</option>
+            <% if (typeof category !== 'undefined' && category.length > 0) { %>
+                <% category.forEach(cat => { %>
+                    <option value="<%= cat._id %>"><%= cat.categoryName %></option> <!-- Changed from cat.name to cat.categoryName -->
+                <% }); %>
+            <% } %>
+        </select>
+        <span id="itemsError" class="text-sm text-red-500"></span>
+    </div>
+      
+        <div class="flex justify-end gap-2 pt-4">
+          <button type="button" id="cancelBtn"
+            class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+            Cancel
+          </button>
+          <button type="submit" id="submitBtn"
+            class="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900">
+            Create Offer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script >
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const modal = document.getElementById('modalOverlay');
+  
+    openBtn.onclick = () => modal.classList.remove('hidden');
+    closeBtn.onclick = () => modal.classList.add('hidden');
+    cancelBtn.onclick = () => modal.classList.add('hidden');
+  </script>
+
+
+<script src="/js/adminOfferManageMent.js"></script>
+</body>
+</html>

@@ -34,29 +34,32 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.games.length > 0) {
         data.games.forEach(game => {
           const gameCard = `
-            <div class="text-center">
-              <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-                <div class="rounded-2xl overflow-hidden">
-                  <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
+          <div class="text-center">
+            <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300">
+              <div class="bg-white p-4 shadow-md h-[260px] flex flex-col justify-between">
+                <div class="rounded-md overflow-hidden bg-white h-36 flex items-center justify-center">
+                  <img src="${game.media.coverImage}" alt="${game.title}"
+                       class="block self-center max-h-full max-w-full object-contain" />
                 </div>
-              </a>
-              <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
-              ${game.type === 'trial'
-                ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
-                : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
-              }
-              <div class="mt-1">
-                ${
-                  game.discountPrice
-                    ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
-                       <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
-                    : game.price === 0
-                    ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
-                    : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
-                }
               </div>
+            </a>
+            <h3 class="mt-3 text-base sm:text-lg font-semibold text-gray-900 truncate">${game.title}</h3>
+            ${game.type === 'trial'
+              ? `<p class="text-sm text-red-500 font-medium mt-1">🛡️ Game Trial</p>`
+              : `<p class="text-sm text-gray-400 mt-1">Demo Tag</p>`}
+            <div class="mt-1">
+              ${
+                game.discountPrice
+                  ? `<span class="text-base text-red-600 font-semibold">₹${game.discountPrice}</span>
+                     <span class="text-sm text-gray-400 line-through ml-1">₹${game.price}</span>`
+                  : game.price === 0
+                  ? `<span class="text-base text-green-600 font-semibold">Free</span>`
+                  : `<span class="text-base text-gray-800 font-semibold">₹${game.price}</span>`
+              }
             </div>
-          `;
+          </div>
+        `;
+        
           gamesContainer.innerHTML += gameCard;
         });
       } else {
@@ -129,29 +132,41 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.length > 0) {
         data.forEach(game => {
           const gameCard = `
-            <div class="text-center">
-              <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-                <div class="rounded-2xl overflow-hidden">
-                  <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
-                </div>
-              </a>
-              <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
-              ${game.type === 'trial'
-                ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
-                : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
-              }
-              <div class="mt-1">
-                ${
-                  game.discountPrice
-                    ? `<span class="text-sm text-red-600 font-semibold">Rs ${game.discountPrice}</span>
-                       <span class="text-xs text-gray-400 line-through ml-1">Rs ${game.price}</span>`
-                    : game.price === 0
-                    ? `<span class="text-sm text-green-600 font-semibold">Free</span>`
-                    : `<span class="text-sm text-gray-800 font-semibold">Rs ${game.price}</span>`
-                }
-              </div>
-            </div>
-          `;
+  <div class="text-center">
+    <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300">
+      <div class="bg-white p-4 shadow-md h-[260px] flex flex-col justify-between">
+        <div class="rounded-md overflow-hidden bg-white h-36 flex items-center justify-center">
+          <img src="${game.media.coverImage}" alt="${game.title}"
+               class="block self-center max-h-full max-w-full object-contain" />
+        </div>
+      </div>
+    </a>
+    <h3 class="mt-3 text-base sm:text-lg font-semibold text-gray-900 truncate">${game.title}</h3>
+    ${game.type === 'trial'
+      ? `<p class="text-sm text-red-500 font-medium mt-1">🛡️ Game Trial</p>`
+      : `<p class="text-sm text-gray-400 mt-1">Demo Tag</p>`}
+    <div class="mt-2 space-y-1">
+      ${game.originalPrice && game.discountPercentage 
+        ? `
+          <div class="flex items-center justify-center gap-2">
+            <span class="text-base text-red-600 font-semibold">₹${game.price}</span>
+            <span class="text-sm text-gray-400 line-through">₹${game.originalPrice}</span>
+            <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
+              ${game.discountPercentage}% OFF
+            </span>
+          </div>
+          ${game.offerName 
+            ? `<div class="text-xs text-green-600 font-medium">${game.offerName}</div>`
+            : ''
+          }`
+        : game.price === 0
+          ? `<span class="text-base text-green-600 font-semibold">Free</span>`
+          : `<span class="text-base text-gray-800 font-semibold">₹${game.price}</span>`
+      }
+    </div>
+  </div>
+`;
+
           resultsContainer.insertAdjacentHTML('beforeend', gameCard);
         });
       } else {
@@ -248,27 +263,40 @@ document.addEventListener('DOMContentLoaded', () => {
       // Update UI with filtered results
       resultDiv.innerHTML = data.games.map(game => `
         <div class="text-center">
-          <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300 overflow-hidden">
-            <div class="rounded-2xl overflow-hidden">
-              <img src="${game.media.coverImage}" alt="${game.title}" class="w-full h-auto object-contain">
+          <a href="/gamedetail/${game._id}" class="block hover:scale-[1.03] transition duration-300">
+            <div class="bg-white p-4 shadow-md h-[260px] flex flex-col justify-between">
+              <div class="rounded-md overflow-hidden bg-white h-36 flex items-center justify-center">
+                <img src="${game.media.coverImage}" alt="${game.title}"
+                     class="block self-center max-h-full max-w-full object-contain" />
+              </div>
             </div>
           </a>
-          <h3 class="mt-2 text-sm font-semibold text-gray-900">${game.title}</h3>
-          ${game.type === 'trial' 
-            ? '<p class="text-xs text-red-500 font-medium mt-1">🛡️ Game Trial</p>'
-            : '<p class="text-xs text-gray-400 mt-1">Demo Tag</p>'
-          }
-          <div class="mt-1">
-            ${game.discountPrice 
-              ? `<span class="text-sm text-red-600 font-semibold">₹${game.discountPrice}</span>
-                 <span class="text-xs text-gray-400 line-through ml-1">₹${game.price}</span>`
+          <h3 class="mt-3 text-base sm:text-lg font-semibold text-gray-900 truncate">${game.title}</h3>
+          ${game.type === 'trial'
+            ? `<p class="text-sm text-red-500 font-medium mt-1">🛡️ Game Trial</p>`
+            : `<p class="text-sm text-gray-400 mt-1">Demo Tag</p>`}
+          <div class="mt-2 space-y-1">
+            ${game.originalPrice && game.discountPercentage 
+              ? `
+                <div class="flex items-center justify-center gap-2">
+                  <span class="text-base text-red-600 font-semibold">₹${game.price}</span>
+                  <span class="text-sm text-gray-400 line-through">₹${game.originalPrice}</span>
+                  <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
+                    ${game.discountPercentage}% OFF
+                  </span>
+                </div>
+                ${game.offerName 
+                  ? `<div class="text-xs text-green-600 font-medium">${game.offerName}</div>`
+                  : ''
+                }`
               : game.price === 0
-                ? '<span class="text-sm text-green-600 font-semibold">Free</span>'
-                : `<span class="text-sm text-gray-800 font-semibold">₹${game.price}</span>`
+                ? `<span class="text-base text-green-600 font-semibold">Free</span>`
+                : `<span class="text-base text-gray-800 font-semibold">₹${game.price}</span>`
             }
           </div>
         </div>
       `).join('');
+      
 
     } catch (error) {
       console.error('Error:', error);

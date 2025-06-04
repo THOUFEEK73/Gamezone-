@@ -1,126 +1,111 @@
 import express from "express";
 import path from "path";
 import multer from "multer";
+import noCache from "../middleware/Cache-Control.js";
+import flash from 'connect-flash';
+import isAdminAuthenticated from "../middleware/adminAuth.js";
+import upload from '../middleware/multerMiddleWare.js';
+import Category from "../models/CategoryModel.js";
+import Game from "../models/gameModel.js";
 
+// Import controllers
 import { 
-  getAdminLoginPage, postAdminLogin, adminLogout 
+  getAdminLoginPage, 
+  postAdminLogin, 
+  adminLogout 
 } from "../controllers/adminController.js";
 
 import { 
-  getAllCategories, postAllCategories, updateCategoryStatus, updateCategory 
+  getAllCategories, 
+  postAllCategories, 
+  updateCategoryStatus, 
+  updateCategory 
 } from "../controllers/adminCategory.js";
 
 import { 
-  addGame, postGameDetails, getAllGames 
+  addGame, 
+  postGameDetails, 
+  getAllGames 
 } from "../controllers/gameController.js";
+
+import { 
+  editGamePage, 
+  postEditGame 
+} from "../controllers/editGameController.js";
 
 import { getPlatFormPage } from "../controllers/platformController.js";
 
 import { 
-  getAllUsersPage, blockUser, searchUsers 
+  getAllUsersPage, 
+  blockUser, 
+  searchUsers 
 } from '../controllers/adminUserController.js';
 
 import {
-  getCompanyPage,addGameCompany,toggleCompanyStatus,editCompany
-
+  getCompanyPage,
+  addGameCompany,
+  toggleCompanyStatus,
+  editCompany
 } from '../controllers/gameCompany.js';
 
 import {
-  getOrdersPage,postOrderStatus,getOrderDetail,updateReturnStatus
+  getOrdersPage,
+  postOrderStatus,
+  getOrderDetail,
+  updateReturnStatus
 } from '../controllers/adminOrderManagement.js';
 
-import isAdminAuthenticated from "../middleware/adminAuth.js";
-import upload from '../middleware/multerMiddleWare.js';
-import Category from "../models/CategoryModel.js";
-import {editGamePage,postEditGame} from "../controllers/editGameController.js"
-import Game from "../models/gameModel.js";
-import noCache from "../middleware/Cache-Control.js";
-import flash from 'connect-flash';
-
-
-
-
+import {
+  getOfferPage,createOffer,
+  toggleOfferStatus
+} from '../controllers/admiinOfferManagement.js';
 
 const adminRoutes = express.Router();
+
+// Middleware
 adminRoutes.use(noCache);
-// Public routes
-adminRoutes.get("/login",noCache, getAdminLoginPage);
-adminRoutes.post("/login",noCache, postAdminLogin);
-
-
-adminRoutes.use(isAdminAuthenticated);
 adminRoutes.use(flash());
-// Logout route
-adminRoutes.get("/logout", adminLogout);
+
+// Auth Routes (Public)
+adminRoutes.get("/login", noCache, getAdminLoginPage);
+adminRoutes.post("/login", noCache, postAdminLogin);
+
+// Protected Routes
+adminRoutes.use(isAdminAuthenticated);
 
 // Dashboard
 adminRoutes.get("/dashboard", (req, res) => {
   res.render("admin/dashboard", { name: req.session.admin.name });
 });
 
-// User management
+// User Management
 adminRoutes.get('/users', getAllUsersPage);
 adminRoutes.post('/users/toggle-status', blockUser);
 adminRoutes.get('/users/search', searchUsers);
 
-// Category management
+// Category Management
 adminRoutes.get("/category", getAllCategories);
 adminRoutes.post("/category/aa", postAllCategories);
 adminRoutes.post('/category/update/:id', updateCategory);
 adminRoutes.post("/category/:Id", updateCategoryStatus);
 
-adminRoutes.get('/orders',getOrdersPage)
-adminRoutes.post('/orders/:orderId/item/:itemId/status',postOrderStatus)
-adminRoutes.get('/Userorderdetail/:id',getOrderDetail)
+// Order Management
+adminRoutes.get('/orders', getOrdersPage);
+adminRoutes.get('/Userorderdetail/:id', getOrderDetail);
+adminRoutes.post('/orders/:orderId/item/:itemId/status', postOrderStatus);
+adminRoutes.post('/orders/:orderId/item/:itemId/return', updateReturnStatus);
 
-adminRoutes.post('/orders/:orderId/item/:itemId/return',updateReturnStatus)
-
-
-
-adminRoutes.get('/editgame/:id',editGamePage);
-// adminRoutes.post('/editgame/:id',postEditGame);
-adminRoutes.post("/editgame/:id",
-  async (req, res, next) => {
-    upload(req, res, async function(err) {
-      if (err instanceof multer.MulterError) {
-        // A Multer error occurred when uploading
-        console.error('Multer error:', err);
-        const categories = await Category.find(); // Fetch categories again
-        return res.render('admin/addgame', {
-          category: categories,
-          err: 'Error uploading files: ' + err.message
-        });
-      } else if (err) {
-        // An unknown error occurred
-        console.error('Unknown error during file upload:', err);
-        const categories = await Category.find(); // Fetch categories again
-        return res.render('admin/addgame', {
-          category: categories,
-          err: 'An error occurred while uploading files'
-        });
-      }
-     
-      next();
-    });
-  },
-  postEditGame
-);
-// Platform management
-adminRoutes.get("/platform", getPlatFormPage);
-
-// adminRotues.get('/allgames',isAthenticated,showAllGames)
-// adminRoutes.get('/gamedetail/:id',isAthenticated,getDetailPage);
-
-
-// Game management
+// Game Management
 adminRoutes.get("/games", getAllGames);
+adminRoutes.get("/addgame", addGame);
+adminRoutes.get('/editgame/:id', editGamePage);
+
+// Game Status Update
 adminRoutes.post("/games/:id/toggle-status", async (req, res) => {
   try {
-    console.log('toggle triggered')
     const gameId = req.params.id;
     const { status } = req.body;
     
-    // Validate status
     if (!['active', 'inactive'].includes(status)) {
       return res.status(400).json({ 
         success: false, 
@@ -128,7 +113,6 @@ adminRoutes.post("/games/:id/toggle-status", async (req, res) => {
       });
     }
 
-    // Update the game status in the database
     const updatedGame = await Game.findByIdAndUpdate(
       gameId, 
       { status }, 
@@ -155,43 +139,28 @@ adminRoutes.post("/games/:id/toggle-status", async (req, res) => {
     });
   }
 });
-adminRoutes.get("/addgame", addGame);
-adminRoutes.post("/addgame",
-  async (req, res, next) => {
-    upload(req, res, async function(err) {
-      if (err instanceof multer.MulterError) {
-        // A Multer error occurred when uploading
-        console.error('Multer error:', err);
-        const categories = await Category.find(); // Fetch categories again
-        return res.render('admin/addgame', {
-          category: categories,
-          err: 'Error uploading files: ' + err.message
-        });
-      } else if (err) {
-        // An unknown error occurred
-        console.error('Unknown error during file upload:', err);
-        const categories = await Category.find(); // Fetch categories again
-        return res.render('admin/addgame', {
-          category: categories,
-          err: 'An error occurred while uploading files'
-        });
-      }
-      // Everything went fine
-      next();
-    });
-  },
-  postGameDetails
-);
+
+// Game Upload Routes with Multer
+adminRoutes.post("/addgame", upload, postGameDetails);
+adminRoutes.post("/editgame/:id", upload, postEditGame);
+
+// Platform Management
+adminRoutes.get("/platform", getPlatFormPage);
+
+// Company Management
+adminRoutes.get('/company', getCompanyPage);
+adminRoutes.post('/companies', addGameCompany);
+adminRoutes.post('/company/edit/:id', editCompany);
+adminRoutes.post('/company/toggle/:id', toggleCompanyStatus);
 
 
+// Offer Management
+adminRoutes.get('/offers',getOfferPage);
+adminRoutes.post('/offers/add',createOffer)
+adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)
 
 
-adminRoutes.get('/company',getCompanyPage);
-adminRoutes.post('/companies',addGameCompany)
-adminRoutes.post('/company/edit/:id',editCompany)
-adminRoutes.post('/company/toggle/:id',toggleCompanyStatus);
-// adminRoutes.post('/company/edit/:id',editCompany);
-// router.post('/company/toggle/:id',toggleCom)
-
+// Logout
+adminRoutes.get("/logout", adminLogout);
 
 export default adminRoutes;
