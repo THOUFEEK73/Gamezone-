@@ -5,12 +5,12 @@ import { calculateDiscountedPrice, getActiveOffers } from "../utils/offerUtils.j
 
 const filterGames = async(req, res) => {
     try {
-       console.log('simply filtering games')
+      
         const {genres, maxPrice, companies, sort} = req.body;
-         console.log('sorting here ',sort)
+        
         const category = await Category.find();
         const query = {
-            price: {$lte: maxPrice},
+            // price: {$lte: maxPrice},
             status: 'active'
         };
 
@@ -21,69 +21,70 @@ const filterGames = async(req, res) => {
             query.company = {$in: companies};
         }
 
-        
-        let sortOption = {};
-        switch(sort) {
-            case 'az':
-                sortOption = { title: 1 };
-                break;
-            case 'za':
-                sortOption = { title: -1 };
-                break;
-            case 'price-low':
-                sortOption = { price: 1 };
-                break;
-            case 'price-high':
-                sortOption = { price: -1 };
-                break;
-            default:
-                sortOption = { title: 1 };
-        }
-
         // Apply query with sort
         const games = await Game.find(query)
             .populate('category')
             .populate('company')
-            .sort(sortOption);
+           
  
-          
-            const activeOffers = await getActiveOffers();
 
-            const gamesWithOffers = games.map(game =>{
-                const gameObj = game.toObject();
+        const activeOffers = await getActiveOffers();
 
-                const producOffer = activeOffers.find(offer=>
-                     offer.offerType ==='product'
-                     && offer.items.includes(game._id.toString()) &&
-                     offer.isActive
-                )
+        const gamesWithOffers = games.map(game =>{
+            const gameObj = game.toObject();
 
-                const categoryOffer = activeOffers.find(offer =>
-                    offer.offerType === 'category' && 
-                    offer.items.includes(game.category._id.toString()) &&
-                    offer.isActive
-                );
+            const producOffer = activeOffers.find(offer=>
+                 offer.offerType ==='product'
+                 && offer.items.includes(game._id.toString()) &&
+                 offer.isActive
+            )
 
-                const bestOffer = [producOffer, categoryOffer].filter(Boolean).sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+            const categoryOffer = activeOffers.find(offer =>
+                offer.offerType === 'category' && 
+                offer.items.includes(game.category._id.toString()) &&
+                offer.isActive
+            );
 
-                if(bestOffer){
-                    gameObj.originalPrice = gameObj.price;
-                    gameObj.discountPercentage = bestOffer.discountPercentage;
-                    gameObj.price = calculateDiscountedPrice(game.price, bestOffer.discountPercentage);
-                    gameObj.offerName = bestOffer.offerName;
-                }
+            const bestOffer = [producOffer, categoryOffer].filter(Boolean).sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
 
-                return gameObj;
+            if(bestOffer){
+                gameObj.originalPrice = gameObj.price;
+                gameObj.discountPercentage = bestOffer.discountPercentage;
+                gameObj.price = calculateDiscountedPrice(game.price, bestOffer.discountPercentage);
+                gameObj.offerName = bestOffer.offerName;
+            }
 
-
-            })
+            return gameObj;
 
 
-        res.json({
-            success: true,
-            count: games.length,
-            games:gamesWithOffers
-        });
+        }).filter(game=>game.price <=maxPrice);
+
+       
+        
+          // Sort after applying offers
+          let sortedGames = [...gamesWithOffers];
+          switch(sort) {
+              case 'az':
+                  sortedGames.sort((a, b) => a.title.localeCompare(b.title));
+                  break;
+              case 'za':
+                  sortedGames.sort((a, b) => b.title.localeCompare(a.title));
+                  break;
+              case 'price-low':
+                  sortedGames.sort((a, b) => a.price - b.price);
+                  break;
+              case 'price-high':
+                  sortedGames.sort((a, b) => b.price - a.price);
+                  break;
+              default:
+                  sortedGames.sort((a, b) => a.title.localeCompare(b.title));
+          }
+  
+          res.json({
+              success: true,
+              count: sortedGames.length,
+              games: sortedGames
+          });
 
     } catch(error) {
         console.error('Error filtering games:', error);

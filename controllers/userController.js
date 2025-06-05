@@ -71,7 +71,7 @@ export const getHomePage = async (req, res) => {
         gameObj.price = calculateDiscountedPrice(game.price,bestOffer.discountPercentage);
         gameObj.offerName = bestOffer.offerName;
       }
-      console.log('this is the game object',gameObj)
+    
       return gameObj;
       
       })
@@ -624,29 +624,73 @@ export const getCartPage = async (req, res) => {
       });
     }
 
+    const activeOffers = await getActiveOffers();
+
+
     let cartCount = 0;
-
-    if (cartItems && cartItems.products.length > 0) {
-      cartCount = cartItems.products.reduce(
-        (total, item) => total + item.quantity,
-        0
-      );
-    }
-
     let subTotal = 0;
+    let totalSavings = 0;
 
-    cartItems.products.forEach((prd) => {
-      const price = Number(prd.price);
-      const quantity = Number(prd.quantity);
+    const productsWithOffers = cartItems.products.map(item => {
+      const gameObj = item.productId.toObject();
+      const itemObj = item.toObject();
 
-      subTotal += price * quantity;
+      // Find applicable offers
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' && 
+        offer.items.includes(gameObj._id.toString())
+      );
+
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' && 
+        offer.items.includes(gameObj.category.toString())
+      );
+
+      // Get best offer
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+      if (bestOffer) {
+        itemObj.originalPrice = gameObj.price;
+        itemObj.discountPercentage = bestOffer.discountPercentage;
+        itemObj.price = Math.round(gameObj.price * (1 - bestOffer.discountPercentage / 100));
+        itemObj.offerName = bestOffer.offerName;
+        
+        totalSavings += (gameObj.price - itemObj.price) * item.quantity;
+      } else {
+        itemObj.price = gameObj.price;
+      }
+
+      subTotal += itemObj.price * item.quantity;
+      cartCount += item.quantity;
+
+      return itemObj;
     });
+    // if (cartItems && cartItems.products.length > 0) {
+    //   cartCount = cartItems.products.reduce(
+    //     (total, item) => total + item.quantity,
+    //     0
+    //   );
+    // }
+
+
+
+    // cartItems.products.forEach((prd) => {
+    //   const price = Number(prd.price);
+    //   const quantity = Number(prd.quantity);
+
+    //   subTotal += price * quantity;
+    // });
+
+    cartItems.products = productsWithOffers;
 
     res.render("user/cart", {
       page: "cart",
       cart: cartItems,
       cartCount,
       subTotal,
+      totalSavings,
     });
   } catch (error) {
     console.error("Error while rendering cart", error);
@@ -800,7 +844,53 @@ export const getCheckoutPage = async (req, res) => {
     if (!cartItems || cartItems.products.length === 0) {
       return res.redirect("/cart");
     }
+
+    const activeOffers = await getActiveOffers();
+
+  
     let cartCount = 0;
+    let subTotal = 0;
+    let totalSavings = 0;
+
+    const productsWithOffers = cartItems.products.map((item)=>{
+          const gameObj =item.productId.toObject();
+          const itemObj = item.toObject();
+
+
+          const productOffer = activeOffers.find(offer =>
+            offer.offerType === 'product' && 
+            offer.items.includes(gameObj._id.toString())
+          );
+    
+          const categoryOffer = activeOffers.find(offer =>
+            offer.offerType === 'category' && 
+            offer.items.includes(gameObj.category._id.toString())
+          );
+
+          const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+        if (bestOffer) {
+          itemObj.originalPrice = gameObj.price;
+          itemObj.discountPercentage = bestOffer.discountPercentage;
+          itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+          itemObj.offerName = bestOffer.offerName;
+          
+          const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+          totalSavings += itemSavings;
+        }
+
+        subTotal = itemObj.price * item.quantity;
+        cartCount +=item.quantity;
+
+
+        return itemObj;
+    
+    })
+
+    cartItems.products = productsWithOffers;
+    
 
     if (cartItems && cartItems.products.length > 0) {
       cartCount = cartItems.products.reduce(
@@ -809,11 +899,12 @@ export const getCheckoutPage = async (req, res) => {
       );
     }
 
-    let subTotal = 0;
+    
+    
 
-    cartItems.products.forEach((prd) => {
-      subTotal = prd.price * prd.quantity;
-    });
+    // cartItems.products.forEach((prd) => {
+    //   subTotal = prd.price * prd.quantity;
+    // });
 
     res.render("user/checkout", {
       page: "checkout",
@@ -821,6 +912,7 @@ export const getCheckoutPage = async (req, res) => {
       cart: cartItems,
       subTotal,
       address,
+      totalSavings
     });
   } catch (error) {
     console.error("Error while fetching checkout Page", error);
@@ -969,11 +1061,45 @@ export const getOrderDetailPage = async(req,res)=>{
                 0
               );
             }
-            const mappedOrders = orders.map(order => ({
-              ...order.toObject(),
-              status: order.status || 'Pending' // Provide default status if not present
-            }));
-    const orderId = orders.orderId;
+
+             const activeOffers = await getActiveOffers();
+            const mappedOrders = orders.map(order => {
+              // ...order.toObject(),
+              const orderObj = order.toObject();
+               orderObj.items = orderObj.items.map(item => {
+                const product = item.productId;
+                if (!product) return item;
+        
+                // Find applicable offers
+                const productOffer = activeOffers.find(offer =>
+                  offer.offerType === 'product' &&
+                  offer.items.includes(product._id.toString())
+                );
+                const categoryOffer = activeOffers.find(offer =>
+                  offer.offerType === 'category' &&
+                  offer.items.includes(product.category?.toString())
+                );
+        
+                // Get best offer
+                const bestOffer = [productOffer, categoryOffer]
+                  .filter(Boolean)
+                  .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+        
+                if (bestOffer) {
+                  item.originalPrice = product.price;
+                  item.discountPercentage = bestOffer.discountPercentage;
+                  item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+                  item.offerName = bestOffer.offerName;
+                } else {
+                  item.discountedPrice = product.price;
+                }
+                return item;
+              });
+              orderObj.status = order.status || 'Pending';
+              return orderObj;
+            });
+
+    // const orderId = orders.orderId;
    
     res.render('user/orderDetails',{page:'orderDetails',order:mappedOrders,cartCount})
    }catch(error){
@@ -1008,6 +1134,37 @@ export const getViewOrderPage = async(req,res)=>{
       if(!order){
         return res.status(404).rendere('error',{message:'Order not found'});
       }
+
+      const activeOffers = await getActiveOffers();
+      order.items = order.items.map(item => {
+        const product = item.productId;
+        if (!product) return item;
+  
+        // Find applicable offers
+        const productOffer = activeOffers.find(offer =>
+          offer.offerType === 'product' &&
+          offer.items.includes(product._id.toString())
+        );
+        const categoryOffer = activeOffers.find(offer =>
+          offer.offerType === 'category' &&
+          offer.items.includes(product.category?.toString())
+        );
+  
+        // Get best offer
+        const bestOffer = [productOffer, categoryOffer]
+          .filter(Boolean)
+          .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+  
+        if (bestOffer) {
+          item.originalPrice = product.price;
+          item.discountPercentage = bestOffer.discountPercentage;
+          item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+          item.offerName = bestOffer.offerName;
+        } else {
+          item.discountedPrice = product.price;
+        }
+        return item;
+      });
 
 
 

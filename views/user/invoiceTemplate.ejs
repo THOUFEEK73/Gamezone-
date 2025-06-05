@@ -112,23 +112,41 @@
           <th>Product</th>
           <th>Qty</th>
           <th>Price</th>
+          <th>Discounted Price</th>
+          <th>Offer</th>
           <th>Status</th>
         </tr>
       </thead>
       <tbody>
         <% order.items.forEach(item => { %>
-        <tr>
-          <td><%= item.productId.title %></td>
-          <td><%= item.quantity %></td>
-          <td>₹<%= item.productId.price.toLocaleString('en-IN') %></td>
-          <td><%= item.status %></td>
-        </tr>
+          <tr>
+            <td><%= item.productId.title %></td>
+            <td><%= item.quantity %></td>
+            <td>
+              <% if (item.discountPercentage) { %>
+                <span style="text-decoration: line-through;">₹<%= item.originalPrice.toLocaleString('en-IN') %></span>
+              <% } else { %>
+                ₹<%= item.productId.price.toLocaleString('en-IN') %>
+              <% } %>
+            </td>
+            <td>
+              ₹<%= item.discountedPrice ? item.discountedPrice.toLocaleString('en-IN') : item.productId.price.toLocaleString('en-IN') %>
+            </td>
+            <td>
+              <% if (item.discountPercentage) { %>
+                <span style="color: red;"><%= item.discountPercentage %>% OFF (<%= item.offerName %>)</span>
+              <% } else { %>
+                -
+              <% } %>
+            </td>
+            <td><%= item.status %></td>
+          </tr>
         <% }); %>
       </tbody>
     </table>
 
     <div class="total">
-      Total Amount: ₹<%= order.totalAmount.toLocaleString('en-IN') %>
+      Total Amount: ₹<%= discountedTotal.toLocaleString('en-IN') %>
     </div>
 
     <div class="footer">

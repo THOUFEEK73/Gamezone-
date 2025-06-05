@@ -44,9 +44,9 @@
 <a href="/cart" class="relative group">
   <i class="fas fa-shopping-cart text-gray-600 hover:text-indigo-600 text-xl"></i>
   <span id="cartCounter"
-    class="cart-count absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md transition-all duration-300">
-    <%= cartCount %>
-  </span>
+  class="cart-count absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full px-1.5 py-0.5 shadow-md transition-all duration-300">
+  <%= typeof cartCount !== 'undefined' ? cartCount : 0 %>
+</span>
 </a>
 
           <!-- Profile Dropdown -->

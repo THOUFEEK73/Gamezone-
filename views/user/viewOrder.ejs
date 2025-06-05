@@ -126,11 +126,19 @@
 
 
         <!-- Total -->
-        <div class="flex justify-between items-center border-t pt-3">
-          <span class="text-base font-semibold text-gray-800">Total</span>
-          <span class="text-base font-bold text-green-600">₹ <%= order.totalAmount.toLocaleString('en-IN') %>
-          </span>
-        </div>
+        <% order.items.forEach(item => { %>
+          <div>
+            <span class="font-semibold"><%= item.productId.title %></span>
+            <span class="ml-2 text-gray-500">x<%= item.quantity %></span>
+            <% if (item.discountPercentage) { %>
+              <span class="ml-2 line-through text-gray-400">₹<%= item.originalPrice %></span>
+              <span class="ml-1 text-green-700 font-bold">₹<%= item.discountedPrice %></span>
+              <span class="ml-1 text-xs text-red-500">-<%= item.discountPercentage %>% (<%= item.offerName %>)</span>
+            <% } else { %>
+              <span class="ml-2">₹<%= item.discountedPrice %></span>
+            <% } %>
+          </div>
+        <% }) %>
 
         <!-- Bottom Buttons -->
     <!-- Replace the Bottom Buttons section -->

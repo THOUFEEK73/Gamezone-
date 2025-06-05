@@ -47,8 +47,19 @@
                 </td>
                 <td class="px-6 py-4 text-green-600">
                   <div class="flex flex-col gap-1">
-                    <% let totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0) %>
-                    <%= totalQuantity %> items
+                    <% order.items.forEach(item => { %>
+                      <div>
+                        <span class="font-semibold"><%= item.productId.title %></span>
+                        <span class="ml-2 text-gray-500">x<%= item.quantity %></span>
+                        <% if (item.discountPercentage) { %>
+                          <span class="ml-2 line-through text-gray-400">₹<%= item.originalPrice %></span>
+                          <span class="ml-1 text-green-700 font-bold">₹<%= item.discountedPrice %></span>
+                          <span class="ml-1 text-xs text-red-500">-<%= item.discountPercentage %>% (<%= item.offerName %>)</span>
+                        <% } else { %>
+                          <span class="ml-2">₹<%= item.discountedPrice %></span>
+                        <% } %>
+                      </div>
+                    <% }) %>
                   </div>
                 </td>
 

@@ -68,7 +68,7 @@ export const showAllGames = async (req, res) => {
       res.render('user/allgames', { games:gamesWithOffers, category,cartCount,company:companies,page:'store'});
     } catch (error) {
       console.error('Error fetching allGames', error);
-      console.log('functioning');
+ 
       
       return res.status(500).render('error', { message: 'Internal Server Error' });
     }
