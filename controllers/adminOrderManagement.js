@@ -1,15 +1,51 @@
 import { response } from 'express';
 import Order from '../models/orderModel.js'
+import { getActiveOffers } from '../utils/offerUtils.js';
 
 export const getOrdersPage = async(req,res)=>{
     try{
 
-        const orders = await Order.find().populate('userId','name email').sort({createdAt:-1}).lean()
+        const orders = await Order.find().populate('userId','name email').populate('items.productId').sort({createdAt:-1}).lean()
+        const activeOffers = await getActiveOffers();
 
+
+        orders.forEach(order=>{
+          order.items = order.items.map(item =>{
+           
+             const product = item.productId;
+             if (!product) return item;
+
+             // Find applicable offers
+             const productOffer = activeOffers.find(offer =>
+                 offer.offerType === 'product' &&
+                 offer.items.includes(product._id.toString())
+             );
+             const categoryOffer = activeOffers.find(offer =>
+                 offer.offerType === 'category' &&
+                 offer.items.includes(product.category?.toString())
+             );
+
+           
+             const bestOffer = [productOffer, categoryOffer]
+                 .filter(Boolean)
+                 .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+             if (bestOffer) {
+                 item.originalPrice = product.price;
+                 item.discountPercentage = bestOffer.discountPercentage;
+                 item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+                 item.offerName = bestOffer.offerName;
+             } else {
+                 item.discountedPrice = product.price;
+             }
+             return item;
+          })
+        })
         res.render('admin/orders',{order:orders});
 
     }catch(error){
-
+       console.error(error);
+        res.status(500).render('error',{message:'server is down please try again later'});
     }
 }
 
@@ -53,16 +89,56 @@ export const getOrderDetail = async(req,res)=>{
     
          const orderId = req.params.id;
          console.log(orderId);
-         const orders = await Order.findById(orderId).populate('userId').populate('items.productId').populate('shippingAddress')
-      console.log(orders.items)
+         const orders = await Order.findById(orderId)
+         .populate('userId')
+         .populate('items.productId')
+         .populate('shippingAddress')
+         .lean();
+      
          if(!orders){
             return res.status(404).render('Order not found');
          }
 
+         const activeOffers = await getActiveOffers();
+         orders.items = orders.items.map(item=>{
+             const product = item.productId;
+             if(!product) return item;
 
- console.log('helo');
+             const productOffer = activeOffers.find(offer =>
+              offer.offerType === 'product' &&
+              offer.items.includes(product._id.toString())
+            );
+            const categoryOffer = activeOffers.find(offer =>
+              offer.offerType === 'category' &&
+              offer.items.includes(product.category?.toString())
+            );
+
+            const bestOffer = [productOffer, categoryOffer]
+            .filter(Boolean)
+            .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+             
+            if (bestOffer) {
+              item.originalPrice = product.price;
+              item.discountPercentage = bestOffer.discountPercentage;
+              item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+              item.offerName = bestOffer.offerName;
+            } else {
+              item.discountedPrice = product.price;
+            }
+            return item;
+
+             
+         })
+
+         let summaryStatus = 'Mixed';
+         if (orders.items && orders.items.length > 0) {
+           const statuses = orders.items.map(i => i.status);
+           const uniqueStatuses = [...new Set(statuses)];
+           summaryStatus = uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'Mixed';
+         }
+
  
-return res.render('admin/Userorderdetail',{order:orders});
+return res.render('admin/Userorderdetail',{order:orders,summaryStatus});
 
 
      }catch(error){

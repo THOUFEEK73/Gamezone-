@@ -40,7 +40,7 @@ export const createOffer = async(req, res) => {
       
         if(!offerName || offerName.trim().length < 3 === ''){
             errors.offerName = 'Offer name must be at least 3 characters long';
-        }else if(offerName.trim().length > 10){
+        }else if(offerName.trim().length > 15){
             errors.offerName = 'Offer name must be less than 10 characters long';
         }
 
