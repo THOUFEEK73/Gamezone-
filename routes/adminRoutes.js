@@ -60,6 +60,12 @@ import {
   toggleOfferStatus
 } from '../controllers/admiinOfferManagement.js';
 
+import {
+  getCouponPage,postCoupon,
+  CouponStatus
+} from '../controllers/adminCouponManagement.js';
+import Coupon from "../models/couponModel.js";
+
 const adminRoutes = express.Router();
 
 // Middleware
@@ -158,6 +164,13 @@ adminRoutes.post('/company/toggle/:id', toggleCompanyStatus);
 adminRoutes.get('/offers',getOfferPage);
 adminRoutes.post('/offers/add',createOffer)
 adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)
+
+
+// coupon Management
+
+adminRoutes.get('/coupons',getCouponPage);
+adminRoutes.post('/coupons/add',postCoupon);
+adminRoutes.patch('/coupons/toggleStatus/:id',CouponStatus)
 
 
 // Logout

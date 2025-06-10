@@ -10,6 +10,7 @@ import Order from "../models/orderModel.js";
 import Wishlist from '../models/WishlistModel.js';
 import bcrypt from "bcryptjs";
 import {comparePassword,hashPassword} from "../utils/hash.js";
+import Coupon from '../models/couponModel.js'
 import mongoose from 'mongoose';
 
 
@@ -840,6 +841,7 @@ export const getCheckoutPage = async (req, res) => {
       populate: { path: "company", model: "GameCompany" },
     });
     const address = await Address.find({ userId });
+    const coupons = await Coupon.find({ isActive: true }).sort({ createdAt: -1 });
 
     if (!cartItems || cartItems.products.length === 0) {
       return res.redirect("/cart");
@@ -912,7 +914,8 @@ export const getCheckoutPage = async (req, res) => {
       cart: cartItems,
       subTotal,
       address,
-      totalSavings
+      totalSavings,
+      coupons
     });
   } catch (error) {
     console.error("Error while fetching checkout Page", error);
@@ -926,10 +929,11 @@ export const getCheckoutPage = async (req, res) => {
 
 export const postPlaceCODOrder = async (req, res) => {
   try {
-         console.log('helo world testing');
+        
          
     const userId = req.session.userId;
-    const {shippingAddress} = req.body;
+    const {shippingAddress,coupon} = req.body;
+    console.log('this is coupon code ',coupon)
     console.log(shippingAddress.name)
     // const {couponCode} = req.body;
 
@@ -941,12 +945,21 @@ export const postPlaceCODOrder = async (req, res) => {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    let totalAmount = 0;
+    // let totalAmount = 0;
 
-    for (let item of cartItems.products) {
-      totalAmount += item.productId.price * item.quantity;
+    // for (let item of cartItems.products) {
+    //   totalAmount += item.productId.price * item.quantity;
+    // }
+
+    let subTotal = 0;
+
+    for(let item of cartItems.products){
+      const price = item.discountedPrice ? item.discountedPrice : item.productId.price;
+      subTotal += price * item.quantity;
     }
-console.log('triggering one');
+
+    
+
 
     for(const item of cartItems.products){
       const game = await Game.findById(item.productId._id);
@@ -958,7 +971,26 @@ console.log('triggering one');
         await game.save()
       }
     }
-    console.log('triggering two');
+ 
+    let discount = 0;
+    let appliedCoupon = null;
+    let couponDescription = '';
+    if (coupon) {
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true });
+      if (couponDoc && subTotal >= couponDoc.minOrderAmount) {
+        if (couponDoc.discountType === 'percentage') {
+          discount = Math.floor(subTotal * (couponDoc.discountValue / 100));
+        } else {
+          discount = couponDoc.discountValue;
+        }
+        appliedCoupon = couponDoc.code;
+        couponDescription = couponDoc.description || '';
+      }
+    }
+
+    const totalAmount = Math.max(subTotal - discount,0);
+
+
     function generateOrderId(userId){
       const now = new Date();
       const year = now.getFullYear();
@@ -970,7 +1002,7 @@ console.log('triggering one');
       return `ORD-${year}${month}${day}-${randomStr}-${shortUserId}`;
 
     }
-    console.log('triggering three');
+    
     const orderId = generateOrderId(userId);
    const productMap = new Map();
 for (const item of cartItems.products) {
@@ -986,7 +1018,7 @@ for (const item of cartItems.products) {
     });
   }
 }
-  console.log('fucntion triggering');
+ 
   
 const groupedItems = Array.from(productMap.values()).map(item=>({
   ...item,
@@ -997,6 +1029,7 @@ const groupedItems = Array.from(productMap.values()).map(item=>({
       items: groupedItems,
       paymentMethod: "cod",
       totalAmount,
+      coupon:appliedCoupon,
       orderId:orderId,
       shippingAddress:{
         name:shippingAddress.name,
@@ -1249,3 +1282,47 @@ export const postReturnStatus = async(req,res)=>{
   }
 }
 
+export const postApplyCoupon = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const cartTotal = Number(req.body.cartTotal);
+
+    if (isNaN(cartTotal)) {
+      return res.status(400).json({ success: false, message: 'Invalid cart total.' });
+    }
+
+    console.log('total amount is :', code, cartTotal);
+
+    const coupon = await Coupon.findOne({ code, isActive: true });
+    if (!coupon) {
+      return res.status(404).json({ success: false, message: 'Coupon not found' });
+    }
+
+    const now = new Date();
+    if (now < coupon.startDate || now > coupon.endDate) {
+      return res.status(400).json({ success: false, message: 'Coupon is not valid at this time.' });
+    }
+
+    if (cartTotal < coupon.minOrderAmount) {
+      return res.status(400).json({ success: false, message: `Minimum order amount for this coupon is ${coupon.minOrderAmount}` });
+    }
+
+    let discount = 0;
+    if (coupon.discountType === 'percentage') {
+      discount = (cartTotal * coupon.discountValue) / 100;
+    } else {
+      discount = coupon.discountValue;
+    }
+
+    console.log(discount);
+
+    const newTotal = Math.max(cartTotal - discount, 0);
+    console.log('total amount new', newTotal);
+
+    return res.json({ success: true, discount, newTotal, message: 'Coupon applied successfully.' });
+
+  } catch (error) {
+    console.log('Error applying coupon', error);
+    res.json({ success: false, message: "Server error." });
+  }
+};

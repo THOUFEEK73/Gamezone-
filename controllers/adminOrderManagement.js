@@ -85,66 +85,75 @@ export const postOrderStatus = async(req,res)=>{
 
 
 export const getOrderDetail = async(req,res)=>{
-     try{
-    
-         const orderId = req.params.id;
-         console.log(orderId);
-         const orders = await Order.findById(orderId)
-         .populate('userId')
-         .populate('items.productId')
-         .populate('shippingAddress')
-         .lean();
-      
-         if(!orders){
-            return res.status(404).render('Order not found');
-         }
+  try{
+    const orderId = req.params.id;
+    const orders = await Order.findById(orderId)
+      .populate('userId')
+      .populate('items.productId')
+      .lean();
 
-         const activeOffers = await getActiveOffers();
-         orders.items = orders.items.map(item=>{
-             const product = item.productId;
-             if(!product) return item;
+    if(!orders){
+      return res.status(404).render('Order not found');
+    }
 
-             const productOffer = activeOffers.find(offer =>
-              offer.offerType === 'product' &&
-              offer.items.includes(product._id.toString())
-            );
-            const categoryOffer = activeOffers.find(offer =>
-              offer.offerType === 'category' &&
-              offer.items.includes(product.category?.toString())
-            );
+    const activeOffers = await getActiveOffers();
+    orders.items = orders.items.map(item=>{
+      const product = item.productId;
+      if(!product) return item;
 
-            const bestOffer = [productOffer, categoryOffer]
-            .filter(Boolean)
-            .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
-             
-            if (bestOffer) {
-              item.originalPrice = product.price;
-              item.discountPercentage = bestOffer.discountPercentage;
-              item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
-              item.offerName = bestOffer.offerName;
-            } else {
-              item.discountedPrice = product.price;
-            }
-            return item;
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' &&
+        offer.items.includes(product._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' &&
+        offer.items.includes(product.category?.toString())
+      );
 
-             
-         })
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
 
-         let summaryStatus = 'Mixed';
-         if (orders.items && orders.items.length > 0) {
-           const statuses = orders.items.map(i => i.status);
-           const uniqueStatuses = [...new Set(statuses)];
-           summaryStatus = uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'Mixed';
-         }
+      if (bestOffer) {
+        item.originalPrice = product.price;
+        item.discountPercentage = bestOffer.discountPercentage;
+        item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+        item.offerName = bestOffer.offerName;
+      } else {
+        item.discountedPrice = product.price;
+      }
+      return item;
+    });
 
- 
-return res.render('admin/Userorderdetail',{order:orders,summaryStatus});
+    // Calculate subtotal (sum of discounted prices)
+    let subtotal = 0;
+    orders.items.forEach(item => {
+      subtotal += (item.discountedPrice ? item.discountedPrice : item.productId.price) * item.quantity;
+    });
 
+    // Use order.discount and order.totalAmount if present, else fallback
+    const couponDiscount = orders.discount || 0;
+    const finalTotal = Math.max(subtotal - couponDiscount, 0);
 
-     }catch(error){
+    let summaryStatus = 'Mixed';
+    if (orders.items && orders.items.length > 0) {
+      const statuses = orders.items.map(i => i.status);
+      const uniqueStatuses = [...new Set(statuses)];
+      summaryStatus = uniqueStatuses.length === 1 ? uniqueStatuses[0] : 'Mixed';
+    }
 
-     }
-    
+    return res.render('admin/Userorderdetail', {
+      order: orders,
+      summaryStatus,
+      total: subtotal,
+      finalTotal,
+      couponDiscount
+    });
+
+  }catch(error){
+    console.error(error);
+    res.status(500).render('error',{ message:'server is down please try again later'});
+  }
 }
 
 

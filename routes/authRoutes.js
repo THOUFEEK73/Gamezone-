@@ -45,8 +45,12 @@ import {
     toggleWishlist,
     removeWishlist,
     getChangePasswordPage,
-    postPasswordChange
+    postPasswordChange,
+    postApplyCoupon
+    
 } from "../controllers/userController.js";
+
+import {getWalletPage} from "../controllers/userWalletController.js";
 
 import isAuthenticated from "../middleware/auth.js";
 import noCache from '../middleware/Cache-Control.js';
@@ -126,5 +130,15 @@ router.get('/allsearch', allGameSearch);
 router.get('/allgames', noCache, isAuthenticated, showAllGames);
 router.get('/gamedetail/:id', noCache, isAuthenticated, getDetailPage);
 router.post('/filter-games', filterGames);
+
+// Coupons
+
+router.post('/apply-coupon',postApplyCoupon);
+
+
+
+// User Wallet
+
+router.get('/wallet', noCache, isAuthenticated,getWalletPage);
 
 export default router;

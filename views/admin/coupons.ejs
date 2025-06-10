@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coupon Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .form-error {
+      min-height: 1.25rem; /* Reserve space for one line of error text */
+      font-size: 0.75rem;   /* Tailwind's text-xs */
+      color: #dc2626;       /* Tailwind's text-red-600 */
+      visibility: hidden;
+    }
+  
+    .form-error.visible {
+      visibility: visible;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen p-6">
+  <%- include('partials/sidebar') %>
+  <div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Coupon Management</h1>
+      <button onclick="document.getElementById('couponModal').classList.remove('hidden')" class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900">
+        + Add New Coupon
+      </button>
+    </div>
+
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
+      <input type="text" placeholder="Search coupons..." class="w-full sm:w-1/2 px-4 py-2 border rounded shadow-sm"/>
+      <div class="flex items-center gap-2">
+        <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-900">Search</button>
+        <select class="border px-3 py-2 rounded">
+          <option>All Status</option>
+          <option>Active</option>
+          <option>Expired</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto bg-white rounded shadow">
+      <table class="min-w-full text-sm text-left">
+        <thead class="bg-gray-50 border-b">
+          <tr>
+            <th class="px-4 py-3">CODE</th>
+            <th class="px-4 py-3">TYPE</th>
+            <th class="px-4 py-3">VALUE</th>
+            <th class="px-4 py-3">MIN AMOUNT</th>
+            <th class="px-4 py-3">VALID PERIOD</th>
+            <th class="px-4 py-3">STATUS</th>
+            <th class="px-4 py-3">ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (coupons && coupons.length > 0) { %>
+            <% coupons.forEach(function(coupon) { %>
+              <tr class="hover:bg-gray-50" data-coupon-id="<%= coupon._id %>">
+                <td class="px-4 py-3"><%= coupon.code %></td>
+                <td class="px-4 py-3"><%= coupon.discountType === 'percentage' ? 'Percentage' : 'Fixed' %></td>
+                <td class="px-4 py-3"><%= coupon.discountValue %></td>
+                <td class="px-4 py-3">₹<%= coupon.minOrderAmount %></td>
+                <td class="px-4 py-3">
+                  <%= coupon.startDate.toLocaleDateString() %> - <%= coupon.endDate.toLocaleDateString() %>
+                </td>
+                <td class="px-4 py-3 coupon-status">
+                  <% if (coupon.isActive) { %>
+                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Active</span>
+                  <% } else { %>
+                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Inactive</span>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 flex items-center gap-3">
+                  <!-- Edit Icon Button -->
+                  <button title="Edit" class="text-blue-600 hover:text-blue-800 focus:outline-none">
+                    <!-- SVG icon here -->
+                  </button>
+                  <!-- Toggle Switch -->
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only peer"
+                      <%= coupon.isActive ? 'checked' : '' %>
+                      onchange="toggleCouponStatus('<%= coupon._id %>', this.checked)">
+                    <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all duration-200"></div>
+                    <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+                  </label>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="7" class="text-center py-8 text-gray-500">No coupons are available</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="text-sm text-gray-600 mt-4 text-right">Showing page 1 of 1</div>
+  </div>
+
+
+  <div id="couponModal" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center hidden z-50">
+    <div class="bg-white p-6 rounded-md w-full max-w-md relative">
+      <h2 class="text-xl font-semibold mb-4">Add New Coupon</h2>
+  
+      <!-- Close Button -->
+      <button onclick="document.getElementById('couponModal').classList.add('hidden')"
+        class="absolute top-2 right-2 text-gray-600 hover:text-black text-xl">&times;</button>
+  
+      <!-- Form -->
+      <form id="addCouponForm" autocomplete="off">
+        <div class="mb-4 flex gap-2">
+          <input type="text" id="couponCode" name="code" placeholder="Coupon Code" class="w-full px-4 py-2 border rounded-md"  />
+          <button type="button" onclick="generateCouponCode()" class="px-4 py-2 bg-gray-200 rounded-md">Generate</button>
+          
+        </div>
+        <div id="error-code" class="text-red-600 text-xs mb-2"></div>
+        <div class="mb-4">
+          <select id="discountType" name="discountType" class="w-full px-4 py-2 border rounded-md" >
+            <option value="">Select Type</option>
+            <option value="percentage">Percentage</option>
+            <option value="fixed">Fixed Amount</option>
+          </select>
+          
+          <div id="error-discountType" class="text-red-600 text-xs mb-2"></div>
+        </div>
+        <input type="number" id="discountValue" name="discountValue" placeholder="Discount Value" min="1" class="w-full mb-4 px-4 py-2 border rounded-md"  />
+        <div id="error-discountValue" class="text-red-600 text-xs mb-2"></div>
+        <input type="number" id="minOrderAmount" name="minOrderAmount" placeholder="Minimum Order Amount" min="0" class="w-full mb-4 px-4 py-2 border rounded-md"  />
+        <div id="error-minOrderAmount" class="text-red-600 text-xs mb-2"></div>
+        <input type="number" id="maxOrderAmount" name="maxOrderAmount" placeholder="Maximum Order Amount" min="0" class="w-full mb-4 px-4 py-2 border rounded-md"  />
+        <div id="error-maxOrderAmount" class="text-red-600 text-xs mb-2"></div>
+        <textarea id="description" name="description" placeholder="Coupon Description" class="w-full mb-4 px-4 py-2 border rounded-md" ></textarea>
+        <div id="error-description" class="text-red-600 text-xs mb-2"></div>
+        <div class="mb-4 flex gap-2">
+          <input type="date" id="startDate" name="startDate" class="w-full px-4 py-2 border rounded-md"  />
+          <input type="date" id="endDate" name="endDate" class="w-full px-4 py-2 border rounded-md"  />
+          <!-- <div id="error-endDate" class="text-red-600 text-xs mb-2"></div> -->
+        </div>
+        <div id="error-startDate" class="text-red-600 text-xs mb-2"></div>
+      
+        <div id="couponError" class="text-red-600 text-sm mb-2 hidden"></div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="document.getElementById('couponModal').classList.add('hidden')"
+            class="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-black text-white rounded-md">Create Coupon</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="toast" class="fixed top-6 right-6 bg-green-600 text-white px-6 py-3 rounded shadow-lg z-50 hidden"></div>
+  <script src="/js/Coupon.js"></script>
+</body>
+</html>
