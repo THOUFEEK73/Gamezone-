@@ -53,7 +53,7 @@ const orderSchema = new mongoose.Schema({
   coupon: {
     type: String,
   },
-  dicount: {
+  discount: {
     type: Number, default: 0
   },
   paymentMethod: { type: String, enum: ['cod', 'online', 'wallet'], default: 'cod' },

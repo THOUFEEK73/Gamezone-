@@ -134,6 +134,7 @@ export const getOrderDetail = async(req,res)=>{
     // Use order.discount and order.totalAmount if present, else fallback
     const couponDiscount = orders.discount || 0;
     const finalTotal = Math.max(subtotal - couponDiscount, 0);
+    console.log('couponDiscount',couponDiscount)
 
     let summaryStatus = 'Mixed';
     if (orders.items && orders.items.length > 0) {

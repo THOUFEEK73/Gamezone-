@@ -82,9 +82,15 @@ Todays Task to complete
 
 
 Pending Task 
-☐ show the applied coupon amount after purchase
-☐ debug and fix the coupon applied after the price is in still current price
-☐ fix the same issue in invoice
+✔ show the applied coupon amount after purchase @done (11/06/2025, 01:48:04)
+✔ debug and fix the coupon applied after the price is in still current price @done (11/06/2025, 01:48:08)
+✘ fix the same issue in invoice @cancelled (11/06/2025, 01:48:13)
+
+
+pending Task
+☐ implement edit offers
+☐ implement edit coupon
+☐ implement sales report
 
 
 

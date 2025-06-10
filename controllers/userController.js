@@ -665,6 +665,7 @@ export const getCartPage = async (req, res) => {
       }
 
       subTotal += itemObj.price * item.quantity;
+      console.log('checking the actual price ',subTotal)
       cartCount += item.quantity;
 
       return itemObj;
@@ -1017,33 +1018,27 @@ export const postPlaceCODOrder = async (req, res) => {
     }
     const orderId = generateOrderId(userId);
 
-    // Group products
-    const productMap = new Map();
-    for (const item of productsWithOffers) {
-      const id = item.productId.toString();
-      if (productMap.has(id)) {
-        productMap.get(id).quantity += item.quantity;
-      } else {
-        productMap.set(id, {
-          productId: item.productId,
-          quantity: item.quantity,
-          productTitle: item.productTitle || item.name || '',
-        });
-      }
-    }
-    const groupedItems = Array.from(productMap.values()).map(item => ({
-      ...item,
+    // --- FIX: Do NOT group, just map all items ---
+    const orderItems = productsWithOffers.map(item => ({
+      productId: item.productId,
+      quantity: item.quantity,
+      productTitle: item.productTitle || item.name || '',
+      discountedPrice: item.price,
+      originalPrice: item.originalPrice,
+      discountPercentage: item.discountPercentage,
+      offerName: item.offerName,
       status: 'Pending',
     }));
 
     // Create order
     const order = new Order({
       userId: userId,
-      items: groupedItems,
+      items: orderItems,
       paymentMethod: "cod",
       totalAmount,
       coupon: appliedCoupon,
       orderId: orderId,
+      discount,
       shippingAddress: {
         name: shippingAddress.name,
         phone: shippingAddress.phone,
@@ -1068,7 +1063,6 @@ export const postPlaceCODOrder = async (req, res) => {
       });
   }
 };
-
 
 export const postPlaceWalletOrder = async (req, res) => {
   try {
@@ -1179,31 +1173,25 @@ export const postPlaceWalletOrder = async (req, res) => {
     }
     const orderId = generateOrderId(userId);
 
-    // Group products
-    const productMap = new Map();
-    for (const item of productsWithOffers) {
-      const id = item.productId.toString();
-      if (productMap.has(id)) {
-        productMap.get(id).quantity += item.quantity;
-      } else {
-        productMap.set(id, {
-          productId: item.productId,
-          quantity: item.quantity,
-          productTitle: item.productTitle || item.name || '',
-        });
-      }
-    }
-    const groupedItems = Array.from(productMap.values()).map(item => ({
-      ...item,
+    // --- NO GROUPING: just map all items ---
+    const orderItems = productsWithOffers.map(item => ({
+      productId: item.productId,
+      quantity: item.quantity,
+      productTitle: item.productTitle || item.name || '',
+      discountedPrice: item.price,
+      originalPrice: item.originalPrice,
+      discountPercentage: item.discountPercentage,
+      offerName: item.offerName,
       status: 'Pending',
     }));
 
     // Create order
     const order = new Order({
       userId: userId,
-      items: groupedItems,
+      items: orderItems,
       paymentMethod: "wallet",
       totalAmount,
+      discount,
       coupon: appliedCoupon,
       orderId: orderId,
       shippingAddress: {
@@ -1227,7 +1215,6 @@ export const postPlaceWalletOrder = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error, please try again." });
   }
 };
-
 
 
 export const getOrderSuccessPage = async (req, res) => {
@@ -1446,7 +1433,35 @@ export const postReturnStatus = async(req,res)=>{
    
      item.returnStatus = 'Pending',
      item.returnReason = reason;
+     item.status = 'Returned'
      await order.save();
+
+     const userId = order.userId;
+     const wallet = await Wallet.findOne({ userId });
+     if(wallet){
+       let refundAmount = 0;
+       if(item.discountedPrice){
+         refundAmount = item.discountedPrice * item.quantity;
+       }else if(item.price){
+        refundAmount = item.price * item.quantity;
+       }else{
+        const product = await Game.findById(item.productId);
+        refundAmount = product ? product.price * item.quantity : 0;
+       }
+
+       wallet.balance +=refundAmount;
+       wallet.transactions.push({
+        id: Date.now().toString(),
+        type: 'credit',
+        amount: refundAmount,
+        description: `Refund for returned order item (${order.orderId})`,
+        date: new Date(),
+        status: 'completed'
+       })
+        await wallet.save();
+     }
+
+
     res.json({success:true});
 
   }catch(error){
