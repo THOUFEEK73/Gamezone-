@@ -26,7 +26,9 @@
           <div class="relative bg-gradient-to-tr from-indigo-600 to-purple-700 text-white rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col sm:flex-row items-center justify-between mb-10 shadow-lg overflow-hidden">
             <div class="mb-4 sm:mb-0">
               <p class="text-base sm:text-lg opacity-80">Current Balance</p>
-              <p class="text-3xl sm:text-5xl font-extrabold mt-2 tracking-wide">₹25,719.80</p>
+              <p class="text-3xl sm:text-5xl font-extrabold mt-2 tracking-wide">
+                ₹<%= wallet?.balance?.toLocaleString('en-IN') || 0 %>
+              </p>
             </div>
             <div class="flex items-center gap-2">
               <i class="fa-solid fa-wallet text-4xl sm:text-6xl opacity-80"></i>
@@ -39,45 +41,29 @@
           <!-- Recent Transactions -->
           <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-6 sm:mb-7">Recent Transactions</h3>
           <div class="space-y-4 sm:space-y-6">
-            <!-- Transaction Item -->
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm hover:shadow-md transition">
-              <div class="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-0">
-                <div class="bg-green-100 rounded-full p-2 sm:p-3">
-                  <i class="fa-solid fa-gift text-green-600 text-lg sm:text-xl"></i>
+            <% if (wallet && wallet.transactions && wallet.transactions.length > 0) { %>
+              <% wallet.transactions.slice(-10).reverse().forEach(function(txn) { %>
+                <div class="<%= txn.type === 'credit' ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500' %> border-l-4 p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm hover:shadow-md transition">
+                  <div class="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-0">
+                    <div class="<%= txn.type === 'credit' ? 'bg-green-100' : 'bg-red-100' %> rounded-full p-2 sm:p-3">
+                      <i class="fa-solid <%= txn.type === 'credit' ? 'fa-arrow-down' : 'fa-arrow-up' %> <%= txn.type === 'credit' ? 'text-green-600' : 'text-red-600' %> text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                      <p class="font-medium <%= txn.type === 'credit' ? 'text-green-800' : 'text-red-800' %> text-base sm:text-lg"><%= txn.description %></p>
+                      <p class="text-xs sm:text-sm text-gray-500">
+                        <%= new Date(txn.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) %>
+                        <% if (txn.id) { %> • <span class="font-mono"><%= txn.id %></span><% } %>
+                      </p>
+                    </div>
+                  </div>
+                  <span class="<%= txn.type === 'credit' ? 'text-green-700' : 'text-red-700' %> font-bold text-lg sm:text-2xl">
+                    <%= txn.type === 'credit' ? '+' : '-' %> ₹<%= txn.amount.toLocaleString('en-IN') %>
+                  </span>
                 </div>
-                <div>
-                  <p class="font-medium text-green-800 text-base sm:text-lg">Referral bonus for referring a friend</p>
-                  <p class="text-xs sm:text-sm text-gray-500">May 24, 2025 • <span class="font-mono">REF-1748607023646-68032469215c09c19845f0c</span></p>
-                </div>
-              </div>
-              <span class="text-green-700 font-bold text-lg sm:text-2xl">+ ₹200.00</span>
-            </div>
-            <!-- Transaction Item -->
-            <div class="bg-green-50 border-l-4 border-green-500 p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm hover:shadow-md transition">
-              <div class="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-0">
-                <div class="bg-green-100 rounded-full p-2 sm:p-3">
-                  <i class="fa-solid fa-gift text-green-600 text-lg sm:text-xl"></i>
-                </div>
-                <div>
-                  <p class="font-medium text-green-800 text-base sm:text-lg">Referral bonus for referring a friend</p>
-                  <p class="text-xs sm:text-sm text-gray-500">May 23, 2025 • <span class="font-mono">REF-1747974527522-68032469215c09c19845f0c</span></p>
-                </div>
-              </div>
-              <span class="text-green-700 font-bold text-lg sm:text-2xl">+ ₹200.00</span>
-            </div>
-            <!-- Refund Item -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm hover:shadow-md transition">
-              <div class="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-0">
-                <div class="bg-blue-100 rounded-full p-2 sm:p-3">
-                  <i class="fa-solid fa-rotate-left text-blue-600 text-lg sm:text-xl"></i>
-                </div>
-                <div>
-                  <p class="font-medium text-blue-800 text-base sm:text-lg">Refund for cancelled order</p>
-                  <p class="text-xs sm:text-sm text-gray-500">May 17, 2025 • <span class="font-mono">REF-1747466498639-682838e489c87f835071a2c</span></p>
-                </div>
-              </div>
-              <span class="text-blue-700 font-bold text-lg sm:text-2xl">+ ₹1,792.80</span>
-            </div>
+              <% }) %>
+            <% } else { %>
+              <div class="text-center text-gray-400 py-8">No transactions yet.</div>
+            <% } %>
           </div>
         </div>
       </div>

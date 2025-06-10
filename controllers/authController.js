@@ -7,6 +7,7 @@ import { generateOTP } from "../utils/otp-functions.js";
 import crypto from 'crypto';
 import sendEmail from "../utils/mailer.js"; 
 import flash from 'connect-flash';
+import Wallet from "../models/walletModel.js";
 
 
 dotenv.config();
@@ -162,6 +163,18 @@ export const verifyOTP = async (req, res) => {
       password: tempUser.password,
       isVerified: true
     });
+
+    console.log('success');
+    
+
+    await Wallet.create({
+      userId:newUser._id,
+      balance:0,
+      currency:'INR',
+      transactions:[],
+    })
+
+    console.log('final triggering')
 
     delete req.session.tempUser;
     await OTP.deleteOne({ email });

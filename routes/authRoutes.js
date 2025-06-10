@@ -46,7 +46,8 @@ import {
     removeWishlist,
     getChangePasswordPage,
     postPasswordChange,
-    postApplyCoupon
+    postApplyCoupon,
+    postPlaceWalletOrder
     
 } from "../controllers/userController.js";
 
@@ -116,6 +117,7 @@ router.put('/cart/update-Quantity', updateQuantity);
 router.get('/orderDetails', noCache, isAuthenticated, getOrderDetailPage);
 router.get('/checkout', noCache, isAuthenticated, getCheckoutPage);
 router.post('/placeOrder', postPlaceCODOrder);
+router.post('/placeOrder/wallet',postPlaceWalletOrder)
 router.get('/orderSuccess', getOrderSuccessPage);
 router.get('/viewOrder/:id', getViewOrderPage);
 router.post('/return-item', postReturnStatus);

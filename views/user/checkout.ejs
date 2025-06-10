@@ -475,7 +475,7 @@
     <input type="radio" name="paymentMethod" value="wallet" class="mt-1 accent-indigo-600">
     <div>
       <h3 class="font-semibold text-gray-800">Wallet Balance</h3>
-      <p class="text-sm text-gray-500">Available balance: ₹799</p>
+      <p class="text-sm text-gray-500">Available balance: ₹ <%= wallet.balance %></p>
     </div>
   </label>
 </div>
@@ -578,6 +578,7 @@
   <div id="flashMessage"
      class="hidden fixed bottom-8 right-8 bg-green-500 text-white px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300">
 </div>
+
 <div id="flashErrorBox" class="hidden mb-4 p-3 rounded text-white bg-red-500 shadow-md"></div>
     <script>
       

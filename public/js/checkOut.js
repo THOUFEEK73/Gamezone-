@@ -46,6 +46,36 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
       console.error('COD Order failed:', error);
     }
   }
+
+   if(selectPayment === 'wallet'){
+    try{
+      const response = await fetch('/placeOrder/wallet',{
+        method:'POST',
+        headers:{
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(
+          {paymentMethod:selectPayment,
+            shippingAddress,
+            coupon:appliedCoupon
+          })
+      })
+      const data = await response.json();
+
+      if(response.ok){
+        if(data.success){
+          window.location.href = data.redirectUrl || '/orders';
+        }else{
+          showFlash(data.message || 'Insufficient wallet balance', 'error');
+        }
+      }else{
+        showFlash(data.message || 'Wallet payment failed', 'error');
+      }
+    }catch(error){
+      console.error('Wallet Order failed:', error);
+      showFlash('Wallet payment failed. Please try again.', 'error');
+    }
+  }
 });
 
 

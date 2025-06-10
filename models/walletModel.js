@@ -50,7 +50,7 @@ const walletSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'USD',
+    default: 'INR',
     required: true,
   },
   transactions: [transactionSchema],

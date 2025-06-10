@@ -1,10 +1,18 @@
-import { transposeIterableHandle } from "puppeteer"
+import Wallet from '../models/walletModel.js';
 
 export const getWalletPage = async(req, res) => {
     try{
-        
-        res.render('user/wallet',{page:'wallet'})
-    }catch(error){
 
+        const user = req.session.userId;
+        console.log(user)
+
+        const wallet = await Wallet.findOne({ userId:user }).lean();
+
+        
+        
+        res.render('user/wallet',{page:'wallet',wallet})
+    }catch(error){
+        console.error(error);
+        res.status(500).render('error', { message: 'Server error loading wallet' });
     }
 }

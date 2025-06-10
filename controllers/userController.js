@@ -11,6 +11,7 @@ import Wishlist from '../models/WishlistModel.js';
 import bcrypt from "bcryptjs";
 import {comparePassword,hashPassword} from "../utils/hash.js";
 import Coupon from '../models/couponModel.js'
+import Wallet from '../models/walletModel.js';
 import mongoose from 'mongoose';
 
 
@@ -840,6 +841,7 @@ export const getCheckoutPage = async (req, res) => {
       path: "products.productId",
       populate: { path: "company", model: "GameCompany" },
     });
+    const wallet = await Wallet.findOne({ userId }).lean();
     const address = await Address.find({ userId });
     const coupons = await Coupon.find({ isActive: true }).sort({ createdAt: -1 });
 
@@ -878,15 +880,13 @@ export const getCheckoutPage = async (req, res) => {
           itemObj.discountPercentage = bestOffer.discountPercentage;
           itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
           itemObj.offerName = bestOffer.offerName;
-          
           const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
           totalSavings += itemSavings;
         }
-
-        subTotal = itemObj.price * item.quantity;
+        subTotal += itemObj.price * item.quantity;
         cartCount +=item.quantity;
 
-
+        console.log('triggering check 4',subTotal);
         return itemObj;
     
     })
@@ -915,7 +915,8 @@ export const getCheckoutPage = async (req, res) => {
       subTotal,
       address,
       totalSavings,
-      coupons
+      coupons,
+      wallet,
     });
   } catch (error) {
     console.error("Error while fetching checkout Page", error);
@@ -929,49 +930,53 @@ export const getCheckoutPage = async (req, res) => {
 
 export const postPlaceCODOrder = async (req, res) => {
   try {
-        
-         
     const userId = req.session.userId;
-    const {shippingAddress,coupon} = req.body;
-    console.log('this is coupon code ',coupon)
-    console.log(shippingAddress.name)
-    // const {couponCode} = req.body;
+    const { shippingAddress, coupon } = req.body;
 
-    const cartItems = await Cart.findOne({ userId }).populate(
-      "products.productId"
-    );
-
+    const cartItems = await Cart.findOne({ userId }).populate("products.productId");
     if (!cartItems || cartItems.products.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    // let totalAmount = 0;
-
-    // for (let item of cartItems.products) {
-    //   totalAmount += item.productId.price * item.quantity;
-    // }
-
+    // --- Recalculate offers/discounts for each product ---
+    const activeOffers = await getActiveOffers();
     let subTotal = 0;
+    let totalSavings = 0;
 
-    for(let item of cartItems.products){
-      const price = item.discountedPrice ? item.discountedPrice : item.productId.price;
-      subTotal += price * item.quantity;
-    }
+    const productsWithOffers = cartItems.products.map(item => {
+      const gameObj = item.productId.toObject();
+      const itemObj = item.toObject();
 
-    
+      // Find applicable offers
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' &&
+        offer.items.includes(gameObj._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' &&
+        offer.items.includes(gameObj.category._id.toString())
+      );
 
+      // Get best offer
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
 
-    for(const item of cartItems.products){
-      const game = await Game.findById(item.productId._id);
-  if (!game || game.stockQuantity < item.quantity) {
-    return res.status(400).render('error', { message: `Not enough stock for ${game ? game.title : 'a product'}` });
-  }
-      if(game){
-        game.stockQuantity -= item.quantity;
-        await game.save()
+      if (bestOffer) {
+        itemObj.originalPrice = gameObj.price;
+        itemObj.discountPercentage = bestOffer.discountPercentage;
+        itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+        itemObj.offerName = bestOffer.offerName;
+        const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+        totalSavings += itemSavings;
+      } else {
+        itemObj.price = gameObj.price;
       }
-    }
- 
+      subTotal += itemObj.price * item.quantity;
+      return itemObj;
+    });
+
+    // Coupon logic
     let discount = 0;
     let appliedCoupon = null;
     let couponDescription = '';
@@ -988,65 +993,70 @@ export const postPlaceCODOrder = async (req, res) => {
       }
     }
 
-    const totalAmount = Math.max(subTotal - discount,0);
+    const totalAmount = Math.max(subTotal - discount, 0);
 
+    // Reduce stock
+    for (const item of productsWithOffers) {
+      const game = await Game.findById(item.productId);
+      if (!game || game.stockQuantity < item.quantity) {
+        return res.status(400).render('error', { message: `Not enough stock for ${game ? game.title : 'a product'}` });
+      }
+      game.stockQuantity -= item.quantity;
+      await game.save();
+    }
 
-    function generateOrderId(userId){
+    // Generate orderId
+    function generateOrderId(userId) {
       const now = new Date();
       const year = now.getFullYear();
-       const month = now.toLocaleString('default', { month: 'short' }).toUpperCase();
-      const day = String(now.getDate()).padStart(2,'0');
-
+      const month = now.toLocaleString('default', { month: 'short' }).toUpperCase();
+      const day = String(now.getDate()).padStart(2, '0');
       const shortUserId = userId.toString().slice(-4).toUpperCase();
       const randomStr = Math.random().toString(36).substr(2, 4).toUpperCase();
       return `ORD-${year}${month}${day}-${randomStr}-${shortUserId}`;
-
     }
-    
     const orderId = generateOrderId(userId);
-   const productMap = new Map();
-for (const item of cartItems.products) {
-  const id = item.productId._id.toString();
-  if (productMap.has(id)) {
-    productMap.get(id).quantity += item.quantity;
-  } else {
-    productMap.set(id, {
-      productId: item.productId._id,
-      quantity: item.quantity,
-      productTitle:item.productId.title,
-      
-    });
-  }
-}
- 
-  
-const groupedItems = Array.from(productMap.values()).map(item=>({
-  ...item,
-  status:'Pending',
-}))
+
+    // Group products
+    const productMap = new Map();
+    for (const item of productsWithOffers) {
+      const id = item.productId.toString();
+      if (productMap.has(id)) {
+        productMap.get(id).quantity += item.quantity;
+      } else {
+        productMap.set(id, {
+          productId: item.productId,
+          quantity: item.quantity,
+          productTitle: item.productTitle || item.name || '',
+        });
+      }
+    }
+    const groupedItems = Array.from(productMap.values()).map(item => ({
+      ...item,
+      status: 'Pending',
+    }));
+
+    // Create order
     const order = new Order({
       userId: userId,
       items: groupedItems,
       paymentMethod: "cod",
       totalAmount,
-      coupon:appliedCoupon,
-      orderId:orderId,
-      shippingAddress:{
-        name:shippingAddress.name,
-        phone:shippingAddress.phone,
-        city:shippingAddress.city,
-        state:shippingAddress.state,
-        zipCode:shippingAddress.zipCode,
-        country:shippingAddress.country,
+      coupon: appliedCoupon,
+      orderId: orderId,
+      shippingAddress: {
+        name: shippingAddress.name,
+        phone: shippingAddress.phone,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        zipCode: shippingAddress.zipCode,
+        country: shippingAddress.country,
       }
     });
-  console.log('triggered');
-  
     await order.save();
 
+    // Clear cart
     await Cart.findOneAndDelete({ userId: userId });
-
-
 
     res.redirect("/orderSuccess");
   } catch (error) {
@@ -1059,8 +1069,171 @@ const groupedItems = Array.from(productMap.values()).map(item=>({
   }
 };
 
+
+export const postPlaceWalletOrder = async (req, res) => {
+  try {
+    console.log('trigger testing....')
+    const userId = req.session.userId;
+    const { shippingAddress, coupon } = req.body;
+
+    const cartItems = await Cart.findOne({ userId }).populate("products.productId");
+    if (!cartItems || cartItems.products.length === 0) {
+      return res.status(400).json({ message: "Cart is empty" });
+    }
+
+    // --- Recalculate offers/discounts for each product ---
+    const activeOffers = await getActiveOffers();
+    let subTotal = 0;
+    let totalSavings = 0;
+
+    const productsWithOffers = cartItems.products.map(item => {
+      const gameObj = item.productId.toObject();
+      const itemObj = item.toObject();
+
+      // Find applicable offers
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' &&
+        offer.items.includes(gameObj._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' &&
+        offer.items.includes(gameObj.category._id.toString())
+      );
+
+      // Get best offer
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+      if (bestOffer) {
+        itemObj.originalPrice = gameObj.price;
+        itemObj.discountPercentage = bestOffer.discountPercentage;
+        itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+        itemObj.offerName = bestOffer.offerName;
+        const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+        totalSavings += itemSavings;
+      } else {
+        itemObj.price = gameObj.price;
+      }
+      subTotal += itemObj.price * item.quantity;
+      return itemObj;
+    });
+
+    // Coupon logic
+    let discount = 0;
+    let appliedCoupon = null;
+    let couponDescription = '';
+    if (coupon) {
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true });
+      if (couponDoc && subTotal >= couponDoc.minOrderAmount) {
+        if (couponDoc.discountType === 'percentage') {
+          discount = Math.floor(subTotal * (couponDoc.discountValue / 100));
+        } else {
+          discount = couponDoc.discountValue;
+        }
+        appliedCoupon = couponDoc.code;
+        couponDescription = couponDoc.description || '';
+      }
+    }
+
+    const totalAmount = Math.max(subTotal - discount, 0);
+    console.log('subTotal', subTotal, 'discount', discount, 'totalAmount', totalAmount);
+
+    // WALLET LOGIC
+    const wallet = await Wallet.findOne({ userId });
+    if (!wallet || wallet.balance < totalAmount) {
+      return res.status(400).json({ success: false, message: "Insufficient wallet balance" });
+    }
+
+    // Deduct from wallet
+    wallet.balance -= totalAmount;
+    wallet.transactions.push({
+      id: Date.now().toString(),
+      type: 'debit',
+      amount: totalAmount,
+      description: 'Order payment',
+      date: new Date(),
+      status: 'completed'
+    });
+    await wallet.save();
+
+    // Reduce stock
+    for (const item of productsWithOffers) {
+      const game = await Game.findById(item.productId);
+      if (!game || game.stockQuantity < item.quantity) {
+        return res.status(400).render('error', { message: `Not enough stock for ${game ? game.title : 'a product'}` });
+      }
+      game.stockQuantity -= item.quantity;
+      await game.save();
+    }
+
+    // Generate orderId
+    function generateOrderId(userId) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.toLocaleString('default', { month: 'short' }).toUpperCase();
+      const day = String(now.getDate()).padStart(2, '0');
+      const shortUserId = userId.toString().slice(-4).toUpperCase();
+      const randomStr = Math.random().toString(36).substr(2, 4).toUpperCase();
+      return `ORD-${year}${month}${day}-${randomStr}-${shortUserId}`;
+    }
+    const orderId = generateOrderId(userId);
+
+    // Group products
+    const productMap = new Map();
+    for (const item of productsWithOffers) {
+      const id = item.productId.toString();
+      if (productMap.has(id)) {
+        productMap.get(id).quantity += item.quantity;
+      } else {
+        productMap.set(id, {
+          productId: item.productId,
+          quantity: item.quantity,
+          productTitle: item.productTitle || item.name || '',
+        });
+      }
+    }
+    const groupedItems = Array.from(productMap.values()).map(item => ({
+      ...item,
+      status: 'Pending',
+    }));
+
+    // Create order
+    const order = new Order({
+      userId: userId,
+      items: groupedItems,
+      paymentMethod: "wallet",
+      totalAmount,
+      coupon: appliedCoupon,
+      orderId: orderId,
+      shippingAddress: {
+        name: shippingAddress.name,
+        phone: shippingAddress.phone,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        zipCode: shippingAddress.zipCode,
+        country: shippingAddress.country,
+      }
+    });
+    await order.save();
+
+    // Clear cart
+    await Cart.findOneAndDelete({ userId: userId });
+
+    // Respond
+    return res.json({ success: true, redirectUrl: "/orderSuccess" });
+  } catch (error) {
+    console.error("Error while ordering with wallet", error);
+    res.status(500).json({ success: false, message: "Server error, please try again." });
+  }
+};
+
+
+
 export const getOrderSuccessPage = async (req, res) => {
   try {
+
+   
     const userId = req.session.userId;
 
     const cart = await Cart.findOne({userId})
