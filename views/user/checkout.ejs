@@ -580,7 +580,7 @@
 </div>
 
 <div id="flashErrorBox" class="hidden mb-4 p-3 rounded text-white bg-red-500 shadow-md"></div>
-    <script>
+    <!-- <script>
       
 
       document.addEventListener('DOMContentLoaded', function () {
@@ -875,6 +875,7 @@ document.getElementById('editAddressForm').addEventListener('submit', async func
   const isDefault = isDefaultCheckbox && isDefaultCheckbox.checked;
 
   try {
+    console.log('edit address triggered')
     const response = await fetch(`/editAddress/${addressId}`, {
       method: 'POST',
       headers: {
@@ -975,7 +976,364 @@ function showToast(message, type = 'success') {
       localStorage.removeItem('toastType');
     }
   });
-    </script>
+    </script> -->
+
+
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- Add Address Modal Logic ---
+        const modal = document.getElementById("addressModal");
+        const addBtn = document.getElementById("addAddressBtn");
+        const closeBtn = document.getElementById("closeModal");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const form = document.getElementById("addressForm");
+      
+        // Show success toast if address added
+        const addressSuccess = localStorage.getItem('addressSuccess');
+        if (addressSuccess) {
+          showFlash(addressSuccess, 'success');
+          localStorage.removeItem('addressSuccess');
+        }
+      
+        // Reset form on open
+        addBtn.addEventListener("click", () => {
+          form.reset();
+          modal.classList.remove("hidden");
+        });
+      
+        // Close Modal with Reset
+        const closeModal = () => {
+          modal.classList.add("hidden");
+          form.reset();
+        };
+        closeBtn.addEventListener("click", closeModal);
+        cancelBtn.addEventListener("click", closeModal);
+      
+        // Form Submit (Add Address)
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(form);
+          const addressData = {};
+          for (const [key, value] of formData.entries()) {
+            addressData[key] = value;
+          }
+          addressData.isDefault = formData.has("isDefault");
+      
+          try {
+            const response = await fetch("/post-Address", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(addressData),
+            });
+      
+            if (response.ok) {
+              const result = await response.json();
+              localStorage.setItem('addressSuccess', result.message);
+              location.reload();
+            } else {
+              const errorData = await response.json();
+              if (errorData.errors) {
+                document.querySelectorAll(".error-message").forEach(el => el.textContent = "");
+                for (const field in errorData.errors) {
+                  const errorElement = document.querySelector(`#${field}Error`);
+                  if (errorElement) {
+                    errorElement.textContent = errorData.errors[field];
+                  }
+                }
+              } else {
+                showFlash(errorData.error || "Failed to save address", "error");
+              }
+            }
+          } catch (error) {
+            console.error("Error submitting form:", error);
+          }
+        });
+      
+        // Pincode autofill for add address
+        const addPincodeInput = document.getElementById('pincode');
+        if (addPincodeInput) {
+          addPincodeInput.addEventListener('input', async function () {
+            const pin = this.value;
+            const errorElement = document.getElementById('pincode-error');
+            if (pin.length === 6) {
+              try {
+                const res = await fetch(`/location?pincode=${pin}`);
+                const data = await res.json();
+                if (data.city && data.state) {
+                  document.getElementById('city').value = data.city;
+                  document.getElementById('state').value = data.state;
+                  errorElement.textContent = "";
+                } else {
+                  errorElement.textContent = 'Invalid or unknown pincode';
+                  document.getElementById('city').value = '';
+                  document.getElementById('state').value = '';
+                }
+              } catch (error) {
+                errorElement.textContent = 'Server error. Try again.';
+              }
+            } else {
+              errorElement.textContent = "";
+            }
+          });
+        }
+      
+        // --- Edit Address Modal Logic ---
+        const editModal = document.getElementById('editAddressModal');
+        const editCancelBtn = document.getElementById('editCancelBtn');
+        const editCloseBtn = document.getElementById('closeModal');
+        const openBtns = document.querySelectorAll('.openEditAddressModal');
+      
+        // Open modal for each edit button
+        openBtns.forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.getElementById('editAddressId').value = btn.dataset.id;
+            document.getElementById('edit-type').value = btn.dataset.type;
+            document.getElementById('edit-name').value = btn.dataset.name;
+            document.getElementById('edit-phone').value = btn.dataset.phone;
+            document.getElementById('edit-street').value = btn.dataset.street;
+            document.getElementById('edit-pincode').value = btn.dataset.zip;
+            document.getElementById('edit-city').value = btn.dataset.city;
+            document.getElementById('edit-state').value = btn.dataset.state;
+            document.getElementById('edit-isDefault').checked = btn.dataset.default === "true";
+            editModal.classList.remove('hidden');
+          });
+        });
+      
+        // Close modal on cancel button
+        editCancelBtn.addEventListener('click', () => {
+          editModal.classList.add('hidden');
+        });
+      
+        // Close modal on close (X) button
+        editCloseBtn.addEventListener('click', () => {
+          editModal.classList.add('hidden');
+        });
+      
+        // Close modal if user clicks outside the modal
+        window.addEventListener('click', (e) => {
+          if (e.target === editModal) {
+            editModal.classList.add('hidden');
+          }
+        });
+      
+        // Pincode autofill for edit address
+        const editPincodeInput = document.getElementById('edit-pincode');
+        if (editPincodeInput) {
+          editPincodeInput.addEventListener('input', async function () {
+            const pin = this.value;
+            const errorElement = document.getElementById('edit-pincode-error');
+            if (pin.length === 6) {
+              try {
+                const res = await fetch(`/location?pincode=${pin}`);
+                const data = await res.json();
+                if (data.city && data.state) {
+                  document.getElementById('edit-city').value = data.city;
+                  document.getElementById('edit-state').value = data.state;
+                  errorElement.textContent = "";
+                } else {
+                  errorElement.textContent = 'Invalid or unknown pincode';
+                  document.getElementById('edit-city').value = '';
+                  document.getElementById('edit-state').value = '';
+                }
+              } catch (error) {
+                errorElement.textContent = 'Server error. Try again.';
+              }
+            } else {
+              errorElement.textContent = "";
+            }
+          });
+        }
+      
+        // Edit Address Form Submit
+        document.getElementById('editAddressForm').addEventListener('submit', async function (e) {
+          e.preventDefault();
+          const form = e.target;
+          const formData = new FormData(form);
+          const addressId = formData.get('_id');
+          const isDefaultCheckbox = form.querySelector('#edit-isDefault');
+          const isDefault = isDefaultCheckbox && isDefaultCheckbox.checked;
+      
+          try {
+            const response = await fetch(`/editAddress/${addressId}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: formData.get('type'),
+                name: formData.get('name'),
+                phone: formData.get('phone'),
+                street: formData.get('street'),
+                zipCode: formData.get('zipCode'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                country: formData.get('country'),
+                isDefault
+              })
+            });
+      
+            const result = await response.json();
+      
+            if (result.success) {
+              localStorage.setItem("toastMessage", "Address updated successfully");
+              localStorage.setItem("toastType", "success");
+              location.reload();
+            } else if (result.errors) {
+              showFlashMessage(result.flash || "Something went wrong");
+              showFieldErrors(result.errors);
+            } else {
+              showFlashMessage("Something went wrong");
+            }
+          } catch (error) {
+            showToast('An error occurred', 'error');
+          }
+        });
+      
+        // Set Default Address
+        document.querySelectorAll('.set-default-address-form').forEach(form => {
+          form.addEventListener('change', async function(e) {
+            e.preventDefault();
+            const addressId = this.dataset.id;
+            try {
+              const response = await fetch(`/setDefaultAddress/${addressId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+              });
+              if (response.ok) {
+                localStorage.setItem('toastMessage', 'Default address updated');
+                localStorage.setItem('toastType', 'success');
+                location.reload();
+              } else {
+                showFlash('Failed to set default address', 'error');
+              }
+            } catch (err) {
+              showFlash('Network error', 'error');
+            }
+          });
+        });
+      
+        // Delete Address
+        let addressToDelete = null;
+        window.deleteAddress = function(addressId) {
+          addressToDelete = addressId;
+          document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        };
+        document.getElementById('cancelDeleteBtn').onclick = function() {
+          addressToDelete = null;
+          document.getElementById('deleteConfirmModal').classList.add('hidden');
+        };
+        document.getElementById('confirmDeleteBtn').onclick = async function() {
+          if (!addressToDelete) return;
+          try {
+            const response = await fetch(`deleteAddress/${addressToDelete}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            addressToDelete = null;
+            if (response.ok) {
+              location.reload();
+            }
+          } catch (error) {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+            addressToDelete = null;
+          }
+        };
+      
+        // Coupon Toggle
+        const toggleBtn = document.getElementById('toggleCouponBtn');
+        const couponList = document.getElementById('couponList');
+        const toggleIcon = document.getElementById('toggleIcon');
+        if (toggleBtn && couponList) {
+          toggleBtn.addEventListener('click', function () {
+            couponList.classList.toggle('hidden');
+            if (toggleIcon) {
+              toggleIcon.classList.toggle('rotate-180');
+            }
+            const span = toggleBtn.querySelector('span');
+            if (span) {
+              span.textContent = couponList.classList.contains('hidden')
+                ? 'Show Available Coupons'
+                : 'Hide Available Coupons';
+            }
+          });
+        }
+      });
+      
+      // Flash message function
+      function showFlash(message, type = "success") {
+        const flash = document.getElementById("flashMessage");
+        flash.textContent = message;
+        flash.className =
+          "fixed bottom-8 right-8 px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300 " +
+          (type === "error"
+            ? "bg-red-500 text-white"
+            : "bg-green-500 text-white");
+        flash.classList.remove("hidden");
+        setTimeout(() => {
+          flash.classList.add("hidden");
+        }, 3000);
+      }
+      
+      function showFlashMessage(message) {
+        const flashBox = document.getElementById("flashErrorBox");
+        flashBox.textContent = message;
+        flashBox.classList.remove("hidden");
+        setTimeout(() => {
+          flashBox.classList.add("hidden");
+        }, 4000);
+      }
+      
+      function showFieldErrors(errors) {
+        document.querySelectorAll("[id^='error-']").forEach(el => el.textContent = "");
+        for (const field in errors) {
+          const errorEl = document.getElementById(`error-${field}`);
+          if (errorEl) {
+            errorEl.textContent = errors[field];
+          }
+        }
+      }
+      
+      function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        const colorClasses = type === 'success'
+          ? 'bg-white border-l-4 border-green-500 text-green-700'
+          : 'bg-white border-l-4 border-red-500 text-red-700';
+      
+        const icon = type === 'success'
+          ? '<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>'
+          : '<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>';
+      
+        toast.className = `
+          flex items-start gap-3 w-80 px-4 py-3 rounded-xl shadow-lg animate-slide-in relative ${colorClasses}
+        `;
+      
+        toast.innerHTML = `
+          <div class="pt-1">${icon}</div>
+          <div class="flex-1 text-sm font-medium">${message}</div>
+          <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-400 hover:text-black">
+            &times;
+          </button>
+        `;
+      
+        document.getElementById('toast-container')?.appendChild(toast);
+      
+        setTimeout(() => {
+          toast.classList.add('opacity-0');
+          setTimeout(() => toast.remove(), 400);
+        }, 4000);
+      }
+      
+      // Display toast after reload
+      window.addEventListener('DOMContentLoaded', () => {
+        const message = localStorage.getItem('toastMessage');
+        const type = localStorage.getItem('toastType') || 'success';
+        if (message) {
+          showToast(message, type);
+          localStorage.removeItem('toastMessage');
+          localStorage.removeItem('toastType');
+        }
+      });
+      </script>
   
   <script src="/js/checkOut.js"></script>
 

@@ -76,6 +76,43 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
       showFlash('Wallet payment failed. Please try again.', 'error');
     }
   }
+
+
+  // if(selectPayment === 'razorpay'){
+  //   try{
+  //     const orderResponse = await fetch('/placeOrder/razorpay',{
+  //       method:'POST',
+  //       headers:{
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify(
+  //         {paymentMethod:selectPayment,
+  //           shippingAddress,
+  //           coupon:appliedCoupon
+  //         })
+  //     });
+
+  //     const orderData = await orderResponse.json();
+  //     if (!orderData.success) {
+  //       showFlash(orderData.message || 'Failed to initiate payment', 'error');
+  //       return;
+  //     }
+
+  //     const options = {
+  //       key:orderData.key,
+  //       amount:orderData.amount,
+  //       currency:'INR',
+  //       name: 'GameZone',
+  //       descripiton: 'Order Payment',
+  //       order_id: orderData.orderId,
+        
+  //     }
+  //     }catch(error){
+
+  //     }
+
+    
+  
 });
 
 
