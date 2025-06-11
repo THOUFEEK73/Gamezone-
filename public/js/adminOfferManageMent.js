@@ -192,6 +192,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
+    
+
 
 
 });
@@ -218,3 +220,74 @@ function showToast(title, message, type = 'success') {
         }
     }).showToast();
 }
+
+
+
+document.getElementById('editOfferForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+  
+    // Clear previous errors
+    document.querySelectorAll("[id^='edit'][id$='Error']").forEach(el => {
+      el.textContent = '';
+      el.classList.add('hidden');
+    });
+    document.querySelectorAll('#editOfferForm input, #editOfferForm select').forEach(input => {
+      input.classList.remove('border-red-500');
+    });
+  
+    const form = e.target;
+    const formData = new FormData(form);
+    const data = {
+      offerId: formData.get('offerId'),
+      offerName: formData.get('offerName'),
+      offerType: formData.get('offerType'),
+      discountPercentage: formData.get('discountPercentage'),
+      startDate: formData.get('startDate'),
+      endDate: formData.get('endDate'),
+      productSelect: formData.get('productSelect'),
+      categorySelect: formData.get('categorySelect')
+    };
+  
+    try {
+      const response = await fetch('/admin/offers/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (result.success) {
+        showToast('Success', result.message, 'success');
+        document.getElementById('editModalOverlay').classList.add('hidden');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        // Show field errors if present
+        if (result.errors) {
+          Object.entries(result.errors).forEach(([field, message]) => {
+            // Show toast for each error
+            showToast('Error', message, 'error');
+            // Show error under the field if possible
+            const errorElement = document.getElementById(`edit${capitalizeFirstLetter(field)}Error`);
+            if (errorElement) {
+              errorElement.textContent = message;
+              errorElement.classList.remove('hidden');
+              // Add red border to invalid field
+              const inputField = document.getElementById(`edit${capitalizeFirstLetter(field)}`);
+              if (inputField) {
+                inputField.classList.add('border-red-500');
+              }
+            }
+          });
+        } else {
+          showToast('Error', result.message || "Update failed", 'error');
+        }
+      }
+    } catch (err) {
+      showToast('Error', "Server error", 'error');
+    }
+  });
+  
+  // Helper function to capitalize first letter
+  function capitalizeFirstLetter(str) {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }

@@ -68,17 +68,22 @@
     <% if (offers && offers.length > 0) { %>
         <% offers.forEach(offer => { %>
             <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4"><%= offer.offerType.charAt(0).toUpperCase() + offer.offerType.slice(1) %></td>
+              <td class="px-6 py-4">
+                <%= offer.offerType ? (offer.offerType.charAt(0).toUpperCase() + offer.offerType.slice(1)) : 'N/A' %>
+              </td>
                 <td class="px-6 py-4 font-medium"><%= offer.offerName %></td>
                 <td class="px-6 py-4"><%= offer.discountPercentage %>%</td>
                 <td class="px-6 py-4"><%= new Date(offer.startDate).toLocaleDateString() %></td>
                 <td class="px-6 py-4"><%= new Date(offer.endDate).toLocaleDateString() %></td>
                <!-- Inside the table row -->
                <td class="px-6 py-4">
-                <% 
-                const now = new Date();
-                const startDate = new Date(offer.startDate);
-                const endDate = new Date(offer.endDate);
+                <%
+                function toDateOnly(date) {
+                  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                }
+                const nowDate = toDateOnly(new Date());
+                const startDateOnly = toDateOnly(new Date(offer.startDate));
+                const endDateOnly = toDateOnly(new Date(offer.endDate));
                 
                 let status;
                 let statusClass;
@@ -86,17 +91,15 @@
                 if (!offer.isActive) {
                     status = 'Inactive';
                     statusClass = 'bg-red-100 text-red-600';
+                } else if (nowDate < startDateOnly) {
+                    status = 'Scheduled';
+                    statusClass = 'bg-yellow-100 text-yellow-600';
+                } else if (nowDate > endDateOnly) {
+                    status = 'Expired';
+                    statusClass = 'bg-gray-100 text-gray-600';
                 } else {
-                    if (now < startDate) {
-                        status = 'Scheduled';
-                        statusClass = 'bg-yellow-100 text-yellow-600';
-                    } else if (now > endDate) {
-                        status = 'Expired';
-                        statusClass = 'bg-gray-100 text-gray-600';
-                    } else {
-                        status = 'Active';
-                        statusClass = 'bg-green-100 text-green-600';
-                    }
+                    status = 'Active';
+                    statusClass = 'bg-green-100 text-green-600';
                 }
                 %>
                 <span class="status-badge <%= statusClass %> text-xs font-semibold px-3 py-1 rounded-full">
@@ -105,11 +108,18 @@
             </td>
                 <td class="px-6 py-4 flex items-center gap-4">
                     <!-- Edit Button -->
-                    <button title="Edit" 
-                            data-offer-id="<%= offer._id %>"
-                            class="edit-offer-btn text-blue-600 hover:text-blue-800 transition-colors duration-200">
-                        <i class="fas fa-pen"></i>
-                    </button>
+                    <button title="Edit"
+                    data-offer-id="<%= offer._id %>"
+                    data-offer-name="<%= offer.offerName %>"
+                    data-offer-type="<%= offer.offerType %>"
+                    data-discount="<%= offer.discountPercentage %>"
+                    data-start="<%= offer.startDate.toISOString().slice(0,10) %>"
+                    data-end="<%= offer.endDate.toISOString().slice(0,10) %>"
+                    data-product="<%= offer.offerType === 'product' ? offer.items[0] : '' %>"
+                    data-category="<%= offer.offerType === 'category' ? offer.items[0] : '' %>"
+                    class="edit-offer-btn text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                    <i class="fas fa-pen"></i>
+                  </button>
                     
                     <!-- Status Toggle -->
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -233,6 +243,91 @@
     </div>
   </div>
   
+
+
+  <!-- Edit Offer Modal -->
+<div id="editModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md space-y-4 relative">
+    <!-- Close Button -->
+    <button id="editCloseModalBtn" class="absolute top-3 right-4 text-gray-500 hover:text-black text-xl">&times;</button>
+    <h2 class="text-xl font-semibold text-gray-800">Edit Offer</h2>
+    <!-- Edit Offer Form -->
+    <form id="editOfferForm" class="space-y-4">
+      <input type="hidden" id="editOfferId" name="offerId" />
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Offer Name</label>
+        <input type="text" id="editOfferName" name="offerName"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <span id="editOfferNameError" class="text-sm text-red-500"></span>
+      </div>
+      <div class="form-group">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Offer Type</label>
+        <select id="editOfferType" name="offerType"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" >
+          <option value="">Select type</option>
+          <option value="product">Product</option>
+          <option value="category">Category</option>
+        </select>
+        <span id="editOfferTypeError" class="text-sm text-red-500"></span>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Discount Percentage</label>
+        <input type="number" id="editDiscountPercentage" name="discountPercentage"
+          min="1" max="99"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <span id="editDiscountPercentageError" class="text-sm text-red-500"></span>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+        <input type="date" id="editStartDate" name="startDate"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <span id="editStartDateError" class="text-sm text-red-500"></span>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+        <input type="date" id="editEndDate" name="endDate"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+        <span id="editEndDateError" class="text-sm text-red-500"></span>
+      </div>
+      <div id="editProductSelectDiv" class="form-group" style="display: none;">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Select Product</label>
+        <select id="editProductSelect" name="productSelect"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select a product</option>
+          <% if (typeof games !== 'undefined' && games.length > 0) { %>
+            <% games.forEach(game => { %>
+              <option value="<%= game._id %>"><%= game.title %></option>
+            <% }); %>
+          <% } %>
+        </select>
+        <span id="editItemsError" class="text-sm text-red-500"></span>
+      </div>
+      <div id="editCategorySelectDiv" class="form-group" style="display: none;">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Select Category</label>
+        <select id="editCategorySelect" name="categorySelect"
+          class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">Select a category</option>
+          <% if (typeof category !== 'undefined' && category.length > 0) { %>
+            <% category.forEach(cat => { %>
+              <option value="<%= cat._id %>"><%= cat.categoryName %></option>
+            <% }); %>
+          <% } %>
+        </select>
+        <span id="editItemsError" class="text-sm text-red-500"></span>
+      </div>
+      <div class="flex justify-end gap-2 pt-4">
+        <button type="button" id="editCancelBtn"
+          class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-100">
+          Cancel
+        </button>
+        <button type="submit" id="editSubmitBtn"
+          class="px-4 py-2 bg-black text-white rounded-lg font-medium hover:bg-gray-900">
+          Update Offer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
   <script >
     const openBtn = document.getElementById('openModalBtn');
     const closeBtn = document.getElementById('closeModalBtn');
@@ -242,6 +337,54 @@
     openBtn.onclick = () => modal.classList.remove('hidden');
     closeBtn.onclick = () => modal.classList.add('hidden');
     cancelBtn.onclick = () => modal.classList.add('hidden');
+
+
+
+
+
+
+
+
+    document.querySelectorAll('.edit-offer-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    // Set all fields
+    document.getElementById('editOfferId').value = this.dataset.offerId || '';
+    document.getElementById('editOfferName').value = this.dataset.offerName || '';
+    document.getElementById('editOfferType').value = this.dataset.offerType || '';
+    document.getElementById('editDiscountPercentage').value = this.dataset.discount || '';
+    document.getElementById('editStartDate').value = this.dataset.start || '';
+    document.getElementById('editEndDate').value = this.dataset.end || '';
+
+    // Show/hide and enable/disable selects based on offerType
+    if (this.dataset.offerType === 'product') {
+      document.getElementById('editProductSelectDiv').style.display = '';
+      document.getElementById('editCategorySelectDiv').style.display = 'none';
+      document.getElementById('editProductSelect').disabled = false;
+      document.getElementById('editCategorySelect').disabled = true;
+      document.getElementById('editProductSelect').value = this.dataset.product || '';
+    } else if (this.dataset.offerType === 'category') {
+      document.getElementById('editProductSelectDiv').style.display = 'none';
+      document.getElementById('editCategorySelectDiv').style.display = '';
+      document.getElementById('editProductSelect').disabled = true;
+      document.getElementById('editCategorySelect').disabled = false;
+      document.getElementById('editCategorySelect').value = this.dataset.category || '';
+    } else {
+      document.getElementById('editProductSelectDiv').style.display = 'none';
+      document.getElementById('editCategorySelectDiv').style.display = 'none';
+      document.getElementById('editProductSelect').disabled = true;
+      document.getElementById('editCategorySelect').disabled = true;
+    }
+
+    document.getElementById('editModalOverlay').classList.remove('hidden');
+  });
+});
+
+document.getElementById('editCloseModalBtn').onclick = () => {
+  document.getElementById('editModalOverlay').classList.add('hidden');
+};
+document.getElementById('editCancelBtn').onclick = () => {
+  document.getElementById('editModalOverlay').classList.add('hidden');
+};
   </script>
 
 

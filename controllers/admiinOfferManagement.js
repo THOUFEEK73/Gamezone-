@@ -63,13 +63,20 @@ export const createOffer = async(req, res) => {
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-        if(!startDate) {
-            errors.startDate = 'Start date is required';
+        function toDateOnly(date) {
+          return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        }
+        
+        const today = toDateOnly(new Date());
+        const startDay = toDateOnly(start);
+        
+        if (!startDate) {
+          errors.startDate = 'Start date is required';
         } else if (isNaN(start.getTime())) {
-            errors.startDate = 'Invalid start date';
-        }//else if (start < currentDate) {
-        //     errors.startDate = 'Start date cannot be in the past';
-        // }
+          errors.startDate = 'Invalid start date';
+        } else if (startDay < today) {
+          errors.startDate = 'Start date cannot be in the past';
+        }
 
         if (!endDate) {
             errors.endDate = 'End date is required';
@@ -136,7 +143,125 @@ export const createOffer = async(req, res) => {
 
 
 
-
+export const postUpdateOffer = async (req, res) => {
+    try {
+      const {
+        offerId,
+        offerName,
+        offerType,
+        discountPercentage,
+        startDate,
+        endDate,
+        productSelect,
+        categorySelect
+      } = req.body;
+  
+      const errors = {};
+  
+      // Offer Name Validation
+      if (!offerName || offerName.trim().length < 3) {
+        errors.offerName = 'Offer name must be at least 3 characters long';
+      } else if (offerName.trim().length > 15) {
+        errors.offerName = 'Offer name must be less than 15 characters long';
+      }
+  
+      // Offer Type Validation
+      if (!offerType) {
+        errors.offerType = 'Please select an offer type';
+      } else if (!['product', 'category'].includes(offerType)) {
+        errors.offerType = 'Invalid offer type';
+      }
+  
+      // Discount Validation
+      const discount = parseInt(discountPercentage);
+      if (!discountPercentage) {
+        errors.discountPercentage = 'Discount percentage is required';
+      } else if (isNaN(discount) || discount < 1 || discount > 99) {
+        errors.discountPercentage = 'Discount percentage must be a number between 1 and 99';
+      }
+  
+      // Date Validation
+      
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+  
+      function toDateOnly(date) {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+      
+      const today = toDateOnly(new Date());
+      const startDay = toDateOnly(start);
+      
+      if (!startDate) {
+        errors.startDate = 'Start date is required';
+      } else if (isNaN(start.getTime())) {
+        errors.startDate = 'Invalid start date';
+      } else if (startDay < today) {
+        errors.startDate = 'Start date cannot be in the past';
+      }
+  
+      if (!endDate) {
+        errors.endDate = 'End date is required';
+      } else if (isNaN(end.getTime())) {
+        errors.endDate = 'Invalid end date';
+      } else if (end <= start) {
+        errors.endDate = 'End date must be after start date';
+      }
+  
+      // Items Validation
+      let items = [];
+      if (offerType === 'product') {
+        if (!productSelect) {
+          errors.items = 'Please select a product';
+        } else {
+          items = [productSelect];
+        }
+      } else if (offerType === 'category') {
+        if (!categorySelect) {
+          errors.items = 'Please select a category';
+        } else {
+          items = [categorySelect];
+        }
+      }
+  
+      // Offer Name Uniqueness Validation (exclude current offer)
+      const existingOffer = await Offer.findOne({
+        offerName: offerName.trim(),
+        isActive: true,
+        _id: { $ne: offerId }
+      });
+      if (existingOffer) {
+        errors.offerName = 'Offer name already exists';
+      }
+  
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({
+          success: false,
+          errors
+        });
+      }
+  
+      // Update Offer
+      const update = {
+        offerName: offerName.trim(),
+        offerType,
+        discountPercentage: discount,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+        items
+      };
+  
+      await Offer.findByIdAndUpdate(offerId, update);
+  
+      res.json({ success: true, message: 'Offer updated successfully' });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update offer',
+        error: error.message
+      });
+    }
+  };
 
 
 export const toggleOfferStatus = async(req,res)=>{
