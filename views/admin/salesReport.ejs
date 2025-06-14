@@ -9,6 +9,22 @@
     body {
       font-family: 'Inter', sans-serif;
     }
+    .toast-msg {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  font-weight: 500;
+  animation: fadein 0.3s;
+}
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(-10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
   </style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-6">
@@ -28,32 +44,31 @@
       <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm">
         Download Excel
       </button>
-
-      <div class="flex gap-2">
-        <button class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Daily</button>
-        <button class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Weekly</button>
-        <button class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Yearly</button>
-      </div>
-
-      <input type="date" class="border rounded-md px-3 py-1 text-sm" />
-      <span class="text-sm">to</span>
-      <input type="date" class="border rounded-md px-3 py-1 text-sm" />
-      <button class="bg-black text-white px-3 py-1 rounded-md hover:bg-gray-900 text-sm">Custom</button>
     </div>
+    <div class="flex flex-wrap items-center gap-4">
+        <button onclick="applyFilter('daily')" class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Daily</button>
+        <button onclick="applyFilter('weekly')" class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Weekly</button>
+        <button onclick="applyFilter('yearly')" class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Yearly</button>
+        <input type="date" id="fromDate" class="border rounded-md px-3 py-1 text-sm" />
+        <span class="text-sm">to</span>
+        <input type="date" id="toDate" class="border rounded-md px-3 py-1 text-sm" />
+        <button onclick="applyFilter('custom')" class="bg-black text-white px-3 py-1 rounded-md hover:bg-gray-900 text-sm">Custom</button>
+      </div>
 
     <!-- Metrics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
       <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
         <h2 class="text-sm text-gray-500 mb-1">Total Sales</h2>
-        <p class="text-2xl font-bold text-blue-600">₹0.00</p>
+        <p class="text-2xl font-bold text-blue-600">₹<%= totalSales.toLocaleString('en-IN') %></p>
+
       </div>
       <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
         <h2 class="text-sm text-gray-500 mb-1">Total Orders</h2>
-        <p class="text-2xl font-bold text-green-600">0</p>
+        <p class="text-2xl font-bold text-green-600"><%=totalOrders%></p>
       </div>
       <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
         <h2 class="text-sm text-gray-500 mb-1">Total Discount</h2>
-        <p class="text-2xl font-bold text-red-500">₹0.00</p>
+        <p class="text-2xl font-bold text-red-500">₹<%=totalDiscount%></p>
       </div>
     </div>
 
@@ -72,24 +87,146 @@
               <th class="text-left py-3 px-4">Coupon</th>
             </tr>
           </thead>
-          <tbody class="text-gray-700">
-            <tr>
-              <td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td>
-            </tr>
+          <tbody id="orders-tbody" class="text-gray-700">
+            <% if (allOrders.length > 0) { %>
+              <% allOrders.forEach(order => { %>
+                <tr class="border-b">
+                  <td class="py-3 px-4"><%= order.orderId %></td>
+                  <td class="py-3 px-4"><%= new Date(order.createdAt).toLocaleDateString('en-IN') %></td>
+                  <td class="py-3 px-4"><%= order.userId?.name || 'Guest' %></td>
+                  <td class="py-3 px-4">₹<%= order.totalAmount.toLocaleString('en-IN') %></td>
+                  <td class="py-3 px-4 capitalize">
+                    <%=order.paymentStatus%>
+                  </td>
+                  <td class="py-3 px-4">
+                    <% if (order.coupon) { %>
+                      <span class="font-semibold text-indigo-600"><%= order.coupon %></span>
+                      <% if (order.discount && order.discount > 0) { %>
+                        <span class="ml-2 text-green-600 font-bold">-₹<%= order.discount.toLocaleString('en-IN') %></span>
+                      <% } %>
+                    <% } else { %>
+                      No Coupon
+                    <% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td>
+              </tr>
+            <% } %>
           </tbody>
+          
+          
         </table>
+
+        <div id="toast-container" style="position:fixed;top:1rem;right:1rem;z-index:9999;"></div>
       </div>
 
-      <!-- Pagination -->
-      <div class="flex justify-between items-center mt-6 text-sm text-gray-500">
-        <span>Showing 1 to 0 of 0 orders</span>
-        <div class="flex gap-2">
-          <button class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded">‹</button>
-          <button class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded">›</button>
+  
+    </div>
+    <div class="flex justify-between items-center mt-6 text-sm text-gray-500">
+        <span id="orders-summary">
+          Showing <%= allOrders.length ? ((page - 1) * 10 + 1) : 0 %> to <%= ((page - 1) * 10) + allOrders.length %> of <%= totalOrders %> orders
+        </span>
+        <div class="flex gap-2" id="orders-pagination">
+          <button onclick="fetchOrders(<%= page - 1 %>)" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" <%= page === 1 ? 'disabled' : '' %>>‹</button>
+          <span>Page <%= page %> of <%= totalPages %></span>
+          <button onclick="fetchOrders(<%= page + 1 %>)" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" <%= page === totalPages ? 'disabled' : '' %>>›</button>
         </div>
       </div>
-    </div>
   </div>
+
+
+  <script>
+    let currentFilter = '';
+    let fromDate = '';
+    let toDate = '';
+    
+    async function fetchOrders(page = 1) {
+      let url = `/admin/salesReport?page=${page}`;
+      if (currentFilter) url += `&filter=${currentFilter}`;
+      if (currentFilter === 'custom' && fromDate && toDate) {
+        url += `&from=${fromDate}&to=${toDate}`;
+      }
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) {
+    const errorData = await res.json();
+    if (errorData.errors) {
+      Object.values(errorData.errors).forEach(msg => {
+        showToast(msg);
+      });
+    } else {
+      showToast('Failed to load orders');
+    }
+    return;
+  }
+      const data = await res.json();
+
+
+    
+      // Render orders
+      const tbody = document.getElementById('orders-tbody');
+      if (!data.allOrders.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td></tr>`;
+      } else {
+        tbody.innerHTML = data.allOrders.map(order => {
+  let couponHtml = 'No Coupon';
+  if (order.coupon) {
+    couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>`;
+    if (order.discount && order.discount > 0) {
+      couponHtml += `<span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>`;
+    }
+  }
+  return `
+    <tr class="border-b">
+      <td class="py-3 px-4">${order.orderId}</td>
+      <td class="py-3 px-4">${new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
+      <td class="py-3 px-4">${order.userId?.name || 'Guest'}</td>
+      <td class="py-3 px-4">₹${order.totalAmount.toLocaleString('en-IN')}</td>
+      <td class="py-3 px-4 capitalize">${order.paymentStatus || 'Pending'}</td>
+      <td class="py-3 px-4">${couponHtml}</td>
+    </tr>
+  `;
+}).join('');
+      }
+    
+      // Render summary
+      const summary = document.getElementById('orders-summary');
+      const start = (data.page - 1) * 10 + 1;
+      const end = Math.min(data.page * 10, data.totalOrders);
+      summary.textContent = `Showing ${data.allOrders.length ? start : 0} to ${data.allOrders.length ? end : 0} of ${data.totalOrders} orders`;
+    
+      // Render pagination
+      const pagDiv = document.getElementById('orders-pagination');
+      pagDiv.innerHTML = `
+        <button onclick="fetchOrders(${data.page - 1})" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" ${data.page === 1 ? 'disabled' : ''}>‹</button>
+        <span>Page ${data.page} of ${data.totalPages}</span>
+        <button onclick="fetchOrders(${data.page + 1})" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" ${data.page === data.totalPages ? 'disabled' : ''}>›</button>
+      `;
+    }
+
+    function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg';
+  toast.textContent = msg;
+  document.getElementById('toast-container').appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+    
+    function applyFilter(filterType) {
+      currentFilter = filterType;
+      if (filterType === 'custom') {
+        fromDate = document.getElementById('fromDate').value;
+        toDate = document.getElementById('toDate').value;
+        if (!fromDate || !toDate) {
+          alert('Please select both from and to dates.');
+          return;
+        }
+      }
+      fetchOrders(1);
+    }
+    </script>
 
 </body>
 </html>

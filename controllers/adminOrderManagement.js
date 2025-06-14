@@ -57,11 +57,11 @@ export const postOrderStatus = async(req,res)=>{
         
         const {status} = req.body;
         const {orderId,itemId} = req.params;
-        console.log(orderId,itemId)
-        
+      
+        console.log('status is ',status)
 
       const order = await Order.findById(orderId);
-      console.log(status)
+   
      
       if(!order) 
         return res.status(404).json({message:'Order not found'});
@@ -71,7 +71,17 @@ export const postOrderStatus = async(req,res)=>{
  const item = order.items.id(itemId);
      if (!item) return res.status(404).json({ message: 'Item not found' });
 
+     
      item.status = status;
+
+     if(order.paymentMethod==='cod' && status==='Delivered'){
+        order.paymentStatus = 'paid';
+     }
+     if(order.paymentMethod==='wallet' && status==='Delivered'){
+        order.paymentStatus = 'paid';
+     }
+
+     console.log('thhis is the payment method',order.paymentMethod)
 
       await order.save();
         res.json({success:true})

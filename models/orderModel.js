@@ -25,7 +25,8 @@ const orderSchema = new mongoose.Schema({
         'Out for Delivery',
         'Delivered',
         'Cancelled',
-        'Returned'
+        'Returned',
+        'Paid'
       ],
       default: 'Pending'
     },

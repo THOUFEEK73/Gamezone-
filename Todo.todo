@@ -88,9 +88,9 @@ Pending Task
 
 
 pending Task
-☐ implement edit offers
-☐ implement edit coupon
+✔ implement edit offers @done (14/06/2025, 20:09:01)
+✘ implement edit coupon @cancelled (14/06/2025, 20:09:03)
 ☐ implement sales report
-
+☐ fix the error on previous order also showing future offer 
 
 
