@@ -52,6 +52,8 @@ export const getOrdersPage = async(req,res)=>{
 
 export const postOrderStatus = async(req,res)=>{
     try{
+
+      console.log('testing the document')
         
         const {status} = req.body;
         const {orderId,itemId} = req.params;
@@ -91,6 +93,8 @@ export const getOrderDetail = async(req,res)=>{
       .populate('userId')
       .populate('items.productId')
       .lean();
+
+    
 
     if(!orders){
       return res.status(404).render('Order not found');
@@ -134,7 +138,7 @@ export const getOrderDetail = async(req,res)=>{
     // Use order.discount and order.totalAmount if present, else fallback
     const couponDiscount = orders.discount || 0;
     const finalTotal = Math.max(subtotal - couponDiscount, 0);
-    console.log('couponDiscount',couponDiscount)
+  
 
     let summaryStatus = 'Mixed';
     if (orders.items && orders.items.length > 0) {
@@ -160,24 +164,26 @@ export const getOrderDetail = async(req,res)=>{
 
 export const updateReturnStatus = async(req,res)=>{
       try{
-        console.log('triggered')
+
+        console.log('triggering the return status update');
+       
         const {orderId,itemId} = req.params
         const {returnStatus} = req.body;
-        console.log(itemId);
         
-         
+        console.log('this is return status:', returnStatus);
+
         const order = await Order.findById(orderId);
      if (!order) return res.status(404).json({ message: 'Order not found' });
-      console.log('function triggering 1');
+   
       
      const item = order.items.id(itemId);
      if (!item) return res.status(404).json({ message: 'Item not found' });
-       console.log('function triggering 2');
+     
 
         if (item.returnStatus !== 'Pending') {
       return res.status(400).json({ message: 'No pending return request' });
     }
-    console.log('function triggered here')
+   
     item.returnStatus = returnStatus;
     if(returnStatus === 'Accepted'){
         item.status ='Returned';

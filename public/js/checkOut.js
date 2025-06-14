@@ -78,40 +78,73 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
   }
 
 
-  // if(selectPayment === 'razorpay'){
-  //   try{
-  //     const orderResponse = await fetch('/placeOrder/razorpay',{
-  //       method:'POST',
-  //       headers:{
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify(
-  //         {paymentMethod:selectPayment,
-  //           shippingAddress,
-  //           coupon:appliedCoupon
-  //         })
-  //     });
 
-  //     const orderData = await orderResponse.json();
-  //     if (!orderData.success) {
-  //       showFlash(orderData.message || 'Failed to initiate payment', 'error');
-  //       return;
-  //     }
+  if (selectPayment === 'razorpay') {
+    try {
+          console.log('helo world')
+      const orderResponse = await fetch('/placeOrder/razorpay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentMethod: selectPayment,
+          shippingAddress,
+          coupon: appliedCoupon
+        })
+      });
 
-  //     const options = {
-  //       key:orderData.key,
-  //       amount:orderData.amount,
-  //       currency:'INR',
-  //       name: 'GameZone',
-  //       descripiton: 'Order Payment',
-  //       order_id: orderData.orderId,
-        
-  //     }
-  //     }catch(error){
-
-  //     }
+      const orderData = await orderResponse.json();
+      if (!orderData.success) {
+        showFlash(orderData.message || 'Failed to initiate payment', 'error');
+        return;
+      }
 
     
+      const options = {
+        key: orderData.key, 
+        amount: orderData.amount, 
+        currency: 'INR',
+        name: 'GameZone',
+        description: 'Order Payment',
+        order_id: orderData.orderId, 
+        handler: async function (response) {
+       
+          try {
+            const verifyRes = await fetch('/verify/razorpay', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              window.location.href = verifyData.redirectUrl || '/orders';
+            } else {
+              showFlash(verifyData.message || 'Payment verification failed', 'error');
+            }
+          } catch (err) {
+            showFlash('Payment verification failed. Please try again.', 'error');
+          }
+        },
+        prefill: {
+          name: orderData.userName,
+          email: orderData.userEmail,
+          contact: orderData.userPhone
+        },
+        theme: {
+          color: "#3399cc"
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (error) {
+      showFlash('Razorpay payment failed. Please try again.', 'error');
+      console.error('Razorpay Order failed:', error);
+    }
+  }
   
 });
 

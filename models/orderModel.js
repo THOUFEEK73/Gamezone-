@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import Razorpay from 'razorpay';
 
 const orderSchema = new mongoose.Schema({
   userId: {
@@ -50,13 +51,23 @@ const orderSchema = new mongoose.Schema({
     required: true,
 
   },
+  razorpayOrderId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   coupon: {
     type: String,
   },
   discount: {
     type: Number, default: 0
   },
-  paymentMethod: { type: String, enum: ['cod', 'online', 'wallet'], default: 'cod' },
+  paymentMethod: { type: String, enum: ['cod', 'razorpay', 'wallet'], default: 'cod' },
+  paymentStatus:{
+    type: String, 
+    enum: ['pending', 'paid', 'failed'], 
+    default: 'pending' 
+  },
   totalAmount: Number,
   createdAt: { type: Date, default: Date.now }
 });

@@ -1,143 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
 
-import express from "express";
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile</title>
+  <link rel="stylesheet" href="/styles/styles.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-import { getSignUpPage, getLoginPage, postSignUp,
-     postLogin, forgotPasswordPage,postForgotPassword,
-     verifyOTP, resendOTP, logout,
-     googleAuth,googleCallback,
-     logoutUser,authStatus,getResetPassworPage,
-     postResetPassword 
-    } from "../controllers/authController.js";
-import  isAuthenticated  from "../middleware/auth.js"
- 
-import { getHomePage,
-    homePageSearch,
-    allGameSearch,
-    getProfilePage,
-    getAddressPage,
-    postEditProfile,
-    postVerifyEmail,
-    sendVerificationCode,
-    postAddress,
-    deleteAddress,
-    postSetDefault,
-    postEditAddress,
-    getWishListPage,
-    getCartPage,
-    postAddCart,
-    removeCart,
-    updateQuantity,
-    getCheckoutPage,
-    postPlaceCODOrder,
-    getOrderSuccessPage,
-    getOrderDetailPage,
-    getViewOrderPage,
-    postCancelStatus,
-    postReturnStatus,
-    toggleWishlist,
-    removeWishlist,
-    getChangePasswordPage,
-    postPasswordChange
+ <link rel="stylesheet" href="/css/profile.css">
 
-
-    
+<style>
+.success-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  padding: 10px 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  max-width: 300px;
+  margin: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-20px);
+  opacity: 0;
+  transition: all 0.4s ease;
 }
-from "../controllers/userController.js";
-import generateInvoice from "../utils/generateInvoice.js";
-import getLocationByPinCode from '../controllers/locationController.js'
-import {getDetailPage} from '../controllers/gameDetail.js'
-import { showAllGames } from "../controllers/AllGamesController.js";
-import  filterGames  from "../controllers/filterGamesController.js";
-// import {get} from 'lodash';
-import  noCache  from '../middleware/Cache-Control.js'
-// import { get } from "lodash";
-const router = express.Router();
+
+.success-slide.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.check-icon {
+  width: 20px;
+  height: 20px;
+  stroke: #22c55e;
+  animation: drawCheck 0.6s ease forwards;
+}
+
+@keyframes drawCheck {
+  0% {
+    stroke-dasharray: 22;
+    stroke-dashoffset: 22;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+#edit-success-msg {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  padding: 10px 16px;
+  font-weight: 600;
+  border-radius: 12px;
+  max-width: 300px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(40px);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+#edit-success-msg.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+</style>
 
 
-// Existing routes
+</head>
 
-router.get("/signup",noCache, getSignUpPage);
-router.post("/signup",noCache, postSignUp);
-router.post('/verify-otp',noCache, verifyOTP);
-router.post('/resend-otp',noCache, resendOTP);
-router.get('/forgot-password',noCache,forgotPasswordPage)
-router.post('/forgot-password',noCache,postForgotPassword)
-router.get('/reset-password/:token',noCache,getResetPassworPage)
-router.post('/reset-password',noCache,postResetPassword)
+<body class="bg-gray-100 min-h-screen">
 
+<%- include('partials/navbar') %>
 
-router.get("/login",noCache, getLoginPage);
-router.post("/login",noCache, postLogin);
-router.get('/logout',noCache, logout);
+  <div class="flex flex-col lg:flex-row min-h-screen">
+    <%- include('partials/sidebar') %>
+   <main class="flex items-center justify-center bg-gray-50 px-4 min-h-screen w-full">
 
-router.get('/auth/google', googleAuth); 
-router.get('/auth/google/callback', googleCallback); 
-router.get('/logout', logoutUser); 
-router.get('/status', authStatus);
+ <div class="profile-page">
+ <div class="profile-card bg-white shadow-lg rounded-2xl p-6 w-full max-w-md">
 
-router.get('/home',noCache,isAuthenticated,getHomePage);
-router.get('/search',homePageSearch);
-router.get('/allsearch',allGameSearch); 
+    <button class="btn-edit" id="edit-btn">Edit</button>
 
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRH87TKQrWcl19xly2VNs0CjBzy8eaKNM-ZpA&s"
+         alt="User Avatar" class="avatar-img" />
 
-router.get('/profile',noCache,isAuthenticated,getProfilePage);
-router.post('/edit-profile',postEditProfile)
-router.post('/send-verification-code',sendVerificationCode);
-router.post('/verify-email', postVerifyEmail);
-router.get('/address',noCache,isAuthenticated,getAddressPage)
-router.post('/post-address',postAddress);
+    <div class="info-box">
+      <p class="label">Name</p>
+      <p class="value"><%= user.name %></p>
+    </div>
 
-router.get('/location',getLocationByPinCode)
-router.post('/deleteAddress/:id',deleteAddress);
-router.post('/setDefaultAddress/:id',postSetDefault)
-router.post('/editAddress/:id',postEditAddress)
-router.get('/password-change',isAuthenticated,getChangePasswordPage)
-router.post('/password-change',isAuthenticated,postPasswordChange)
+    <div class="info-box">
+      <p class="label">Email</p>
+      <p class="value"><%= user.email %></p>
+    </div>
 
-// router.get('/forgot-password',getforgorPassword)
+    <div class="info-box">
+      <p class="label">Phone</p>
+      <p class="value"><%= user.phone %></p>
+    </div>
 
+    <div class="referral-box">
+      <p class="referral-code" id="referral-code">OXY9BA5BD</p>
+      <div class="referral-icons">
+        <button id="copy-btn" title="Copy"><i class="fas fa-copy"></i></button>
+        <button id="share-btn" title="Share"><i class="fas fa-share-alt"></i></button>
+      </div>
+      <p class="referral-msg" id="copy-feedback">
+        Share this code with friends and get ₹200 in your wallet when they sign up!
+      </p>
+    </div>
 
-// wishList 
+    <% if (messages.success && messages.success.length > 0) { %>
+      <div class="flash-message success"><%= messages.success[0] %></div>
+    <% } %>
+    <% if (messages.error && messages.error.length > 0) { %>
+      <div class="flash-message error"><%= messages.error[0] %></div>
+    <% } %>
+  </div>
+</div>
 
-router.get('/wishlist',noCache,isAuthenticated,getWishListPage);
-// routes/user.js
-router.post('/wishlist/toggle', toggleWishlist);
-router.delete('/wishlist/remove/:id',removeWishlist)
+</main>
 
+  </div>
 
+ <!-- Edit Profile Modal -->
+<!-- Edit Profile Modal -->
+<div id="editProfileModal"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden transition duration-300">
+  <div
+    class="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl relative animate-fadeIn">
+    
+    <!-- Close Button -->
+    <button onclick="closeModal()" class="absolute top-3 right-4 text-gray-400 hover:text-black text-2xl">&times;</button>
 
-router.get('/cart',noCache,isAuthenticated,getCartPage)
-router.get('/orderDetails',noCache,isAuthenticated,getOrderDetailPage)
-
-router.post('/cart/add',postAddCart)
-router.delete('/cart/remove/:id',removeCart)
-router.put('/cart/update-Quantity',updateQuantity)
-
-
-router.get('/download-invoice/:orderId',generateInvoice);
-
-
-
-
-
-// router.get('/proceedTocheckout',isAuthenticated,proceedToCheckout )
-router.get('/checkout',noCache,isAuthenticated,getCheckoutPage)
-
-router.post('/placeOrder',postPlaceCODOrder)
-
-router.get('/orderSuccess',getOrderSuccessPage)
-
-router.get('/viewOrder/:id',getViewOrderPage)
-
-router.post('/return-item',postReturnStatus)
-router.post('/cancel-item',postCancelStatus)
+    <!-- Modal Header -->
+    <h2 class="text-xl font-semibold mb-4 text-center">Edit Profile</h2>
 
 
+    <!-- Form -->
+    <div class="space-y-5" id="edit-form">
+      
+      <!-- Avatar -->
+      <div class="flex justify-center">
+        <img src="/images/user.jpg" alt="Profile"
+          class="w-20 h-20 rounded-full object-cover shadow-md border-2 border-gray-200" />
+      </div>
+
+      <!-- Name Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+        <input type="text" name="name" id="edit-name" value="<%= user.name %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <span id="profile-error-name" class="flex items-center gap-1 text-red-600 text-sm font-medium mt-1 transition-all duration-300">
+  <svg class="w-4 h-4 text-red-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M12 9v2m0 4h.01m-6.938 4h13.856C18.07 19 19 18.07 19 16.938V7.062C19 5.93 18.07 5 16.938 5H7.062C5.93 5 5 5.93 5 7.062v9.876C5 18.07 5.93 19 7.062 19z">
+    </path>
+  </svg>
+  <span id="profile-error-name-text"></span>
+</span>
+
+      </div>
+
+      <!-- Email Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input type="email" name="email" value="<%= user.email %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" readonly />
+<button
+  type="button"
+  id="edit-email-btn"
+  class="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-md bg-blue-100 text-blue-700 hover:bg-blue-600 hover:text-white transition-colors duration-300 text-sm font-medium shadow-sm"
+>
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round"
+      d="M16 12H8m0 0l4-4m-4 4l4 4" />
+  </svg>
+ Tap to Verify Email
+</button>
+
+        <div id="emailError" class="text-red-600 text-xs mt-1"></div>
+      </div>
+
+      <!-- Phone Field -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+        <input type="text" name="phone" id="edit-phone" value="<%= user.phone %>"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+       <span id="profile-error-phone" class="profile-error text-red-600 text-sm font-medium flex items-center gap-1 mt-1 transition-all duration-300">
+  <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
+    xmlns="http://www.w3.org/2000/svg">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856C18.07 19 19 18.07 19 16.938V7.062C19 5.93 18.07 5 16.938 5H7.062C5.93 5 5 5.93 5 7.062v9.876C5 18.07 5.93 19 7.062 19z"></path>
+  </svg>
+  <span id="profile-error-phone-text"></span>
+</span>
+
+      </div>
+
+      <!-- Save Button -->
+      <div class="text-right">
+        <button onclick="submitEditForm()"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
-router.get('/allgames',noCache,isAuthenticated,showAllGames)
-router.get('/gamedetail/:id',noCache,isAuthenticated,getDetailPage);
-router.post('/filter-games',filterGames)
+
+<!-- Email Verification Modal -->
+<div id="emailVerificationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
+  <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg relative">
+    <button onclick="closeEmailModal()" class="absolute top-2 right-2 text-gray-400 hover:text-black text-2xl">&times;</button>
+    <h2 class="text-xl font-semibold mb-4 text-center">Verify Your Email</h2>
+
+    <form id="verificationForm" class="space-y-4">
+      <!-- Hidden Email -->
+      <input type="hidden" name="email" id="hiddenNewEmail" />
+
+      <!-- Label -->
+      <label class="block text-sm font-medium text-gray-700 text-center">Enter the 6-digit verification code</label>
+<!-- OTP Input Grid -->
+<div id="otp-inputs" class="flex justify-between gap-2">
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+  <input type="text" name="otp" maxlength="1" pattern="[0-9]*" inputmode="numeric"
+    class="otp-digit w-12 h-12 text-center border border-gray-300 rounded-lg text-2xl font-mono focus:outline-none focus:ring-2 focus:ring-green-500 transition" />
+</div>
+
+      <!-- Feedback Area -->
+      <div id="verificationFeedback" class="text-center text-sm font-medium text-red-600 mb-2"></div>
+
+      <!-- Verify Button -->
+      <button type="submit"
+        class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2 rounded-lg w-full shadow-md transition-all">
+        Verify
+      </button>
+    </form>
+  </div>
+</div>
 
 
-export default router;
+<!-- Success Message -->
+<div id="edit-success-msg" class="success-slide hidden">
+  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+    <path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+  </svg>
+  <span id="edit-success-text" class="ml-2"></span>
+</div>
+
+<script>
+  const originalEmail = "<%= user.email %>";
+  const editForm = document.getElementById("edit-form");
+  const editEmailBtn = document.getElementById("edit-email-btn");
+  const emailInput = editForm.querySelector('input[name="email"]');
+  const verificationForm = document.getElementById("verificationForm");
+  const emailVerificationModal = document.getElementById("emailVerificationModal");
+  const editProfileModal = document.getElementById("editProfileModal");
+  const hiddenNewEmail = document.getElementById("hiddenNewEmail");
+  const errorText = document.getElementById("errorText");
+  const verificationFeedback = document.getElementById("verificationFeedback");
+
+editEmailBtn.addEventListener("click", () => {
+  emailInput.removeAttribute("readonly");
+  emailInput.classList.add("border-blue-500", "bg-white");
+  emailInput.focus();
+});
+
+  document.getElementById("edit-btn").addEventListener("click", () => {
+    editProfileModal.classList.remove("hidden");
+  });
+
+  function closeModal() {
+    editProfileModal.classList.add("hidden");
+  }
+
+  function closeEmailModal() {
+    emailVerificationModal.classList.add("hidden");
+    verificationFeedback.textContent = "";
+    verificationFeedback.className = "text-center text-sm font-medium mb-2";
+  }
+
+  
+ async function submitEditForm() {
+    // Clear previous errors
+    document.getElementById("profile-error-name").innerText = "";
+    document.getElementById("profile-error-phone").innerText = "";
+    document.getElementById("edit-success-msg").classList.add("hidden");
+
+    // Get values
+    const name = document.getElementById("edit-name").value.trim();
+    const phone = document.getElementById("edit-phone").value.trim();
+    const email = emailInput.value.trim();
+
+    if(email !==originalEmail){
+      try{
+
+        const response = await fetch('/send-verification-code',{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json'
+          },
+          body: JSON.stringify({ email })
+        })
+        const result = await response.json();
+        if(result.success){
+          hiddenNewEmail.value = email;
+          closeModal();
+          emailVerificationModal.classList.remove("hidden");
+        verificationFeedback.textContent = "OTP sent to your new email!";
+        verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
+        }else{
+                  document.getElementById("emailError").innerText = result.message || "Failed to send OTP.";
+        }
+      }catch(error){
+document.getElementById("emailError").innerText = "Network error. Try again.";
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch('/edit-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, phone })
+      });
+
+      const result = await res.json();
+
+      if (result.errors) {
+        if (result.errors.name) {
+         document.getElementById("profile-error-name").innerText = result.errors.name;
+
+        }
+        if (result.errors.phone) {
+          document.getElementById("profile-error-phone").innerText = result.errors.phone;
+        }
+      } 
+        if (result.message) {
+  showSuccessMessage(result.message);
+  setTimeout(() => {
+    closeModal();
+    window.location.reload();
+  }, 1500); 
+}
+      
+
+    } catch (err) {
+      console.error("Failed to submit edit form:", err);
+    }
+  }
+
+verificationForm.addEventListener("submit", async function (e) {
+  e.preventDefault();
+  verificationFeedback.textContent = "";
+  const email = hiddenNewEmail.value;
+  // const verificationCode = verificationForm.elements["verificationCode"].value.trim();
+
+  const otpInputs = verificationForm.querySelectorAll('.otp-digit');
+  let verificationCode = '';
+
+  otpInputs.forEach(input=>{
+    verificationCode +=input.value.trim();
+  })
+
+  if (verificationCode.length!==6) {
+    verificationFeedback.textContent = "Please enter the OTP code.";
+    verificationFeedback.className = "text-center text-sm font-medium mb-2 text-red-600";
+    return;
+  }
+
+  try {
+    const res = await fetch('/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, verificationCode })
+    });
+    const result = await res.json();
+    if (result.success) {
+      verificationFeedback.textContent = "Email verified and updated!";
+      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-green-600";
+      setTimeout(() => {
+        closeEmailModal();
+        window.location.reload();
+      }, 1000);
+    } else {
+      verificationFeedback.textContent = result.message || "Invalid OTP.";
+      verificationFeedback.className = "text-center text-sm font-medium mb-2 text-red-600";
+    }
+  } catch (err) {
+    verificationFeedback.textContent = "Network error. Try again.";
+    verificationFeedback.className = "text-center text-sm font-medium mb-2 text-red-600";
+  }
+});
+
+
+
+
+
+function showSuccessMessage(message) {
+  const msgBox = document.getElementById("edit-success-msg");
+  const msgText = document.getElementById("edit-success-text");
+
+  msgText.innerText = message;
+  msgBox.classList.add("show");
+  msgBox.classList.remove("hidden");
+
+  setTimeout(() => {
+    msgBox.classList.remove("show");
+    setTimeout(() => {
+      msgBox.classList.add("hidden");
+    }, 400); // Wait for transition to complete
+  }, 3000);
+}
+
+
+
+
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

@@ -12,6 +12,8 @@ import bcrypt from "bcryptjs";
 import {comparePassword,hashPassword} from "../utils/hash.js";
 import Coupon from '../models/couponModel.js'
 import Wallet from '../models/walletModel.js';
+import Razorpay from 'razorpay';
+import * as crypto from "crypto";
 import mongoose from 'mongoose';
 
 
@@ -1064,6 +1066,199 @@ export const postPlaceCODOrder = async (req, res) => {
   }
 };
 
+
+export const createRazorpayOrder = async (req, res) => {
+  try {
+    const { paymentMethod, shippingAddress, coupon } = req.body;
+    const userId = req.session.userId;
+
+    // 1. Get cart and offers
+    const cartItems = await Cart.findOne({ userId }).populate("products.productId");
+    if (!cartItems || cartItems.products.length === 0) {
+      return res.status(400).json({ success: false, message: "Cart is empty" });
+    }
+    const activeOffers = await getActiveOffers();
+
+    // 2. Calculate totals and apply offers
+    let subTotal = 0;
+    let totalSavings = 0;
+    const productsWithOffers = cartItems.products.map(item => {
+      const gameObj = item.productId.toObject();
+      const itemObj = item.toObject();
+
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' && offer.items.includes(gameObj._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' && offer.items.includes(gameObj.category?.toString())
+      );
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+      if (bestOffer) {
+        itemObj.originalPrice = gameObj.price;
+        itemObj.discountPercentage = bestOffer.discountPercentage;
+        itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+        itemObj.offerName = bestOffer.offerName;
+        const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+        totalSavings += itemSavings;
+      } else {
+        itemObj.price = gameObj.price;
+      }
+      subTotal += itemObj.price * item.quantity;
+      return itemObj;
+    });
+
+    // 3. Coupon logic
+    let discount = 0;
+    let appliedCoupon = null;
+    let couponDescription = '';
+    if (coupon) {
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true });
+      if (couponDoc && subTotal >= couponDoc.minOrderAmount) {
+        if (couponDoc.discountType === 'percentage') {
+          discount = Math.floor(subTotal * (couponDoc.discountValue / 100));
+        } else {
+          discount = couponDoc.discountValue;
+        }
+        appliedCoupon = couponDoc.code;
+        couponDescription = couponDoc.description || '';
+      }
+    }
+
+    const totalAmount = Math.max(subTotal - discount, 0);
+
+    // 4. Stock check
+    for (const item of productsWithOffers) {
+      const game = await Game.findById(item.productId);
+      if (!game || game.stockQuantity < item.quantity) {
+        return res.status(400).json({ success: false, message: `Not enough stock for ${game ? game.title : 'a product'}` });
+      }
+    }
+
+    // 5. Create Razorpay order
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    });
+
+    const options = {
+      amount: totalAmount * 100, // in paise
+      currency: "INR",
+      receipt: `order_rcptid_${Date.now()}`,
+      payment_capture: 1
+    };
+    const razorpayOrder = await razorpay.orders.create(options);
+
+    // 6. Save a pending order in DB
+    function generateOrderId(userId) {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.toLocaleString('default', { month: 'short' }).toUpperCase();
+      const day = String(now.getDate()).padStart(2, '0');
+      const shortUserId = userId.toString().slice(-4).toUpperCase();
+      const randomStr = Math.random().toString(36).substr(2, 4).toUpperCase();
+      return `ORD-${year}${month}${day}-${randomStr}-${shortUserId}`;
+    }
+    const orderId = generateOrderId(userId);
+
+    const orderItems = productsWithOffers.map(item => ({
+      productId: item.productId,
+      quantity: item.quantity,
+      productTitle: item.productTitle || item.name || '',
+      discountedPrice: item.price,
+      originalPrice: item.originalPrice,
+      discountPercentage: item.discountPercentage,
+      offerName: item.offerName,
+      status: 'Pending',
+    }));
+
+    const order = new Order({
+      userId: userId,
+      items: orderItems,
+      paymentMethod: "razorpay",
+      totalAmount,
+      discount,
+      coupon: appliedCoupon,
+      orderId: orderId,
+      razorpayOrderId: razorpayOrder.id,
+      shippingAddress: {
+        name: shippingAddress.name,
+        phone: shippingAddress.phone,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        zipCode: shippingAddress.zipCode,
+        country: shippingAddress.country,
+      },
+      status: 'Pending'
+    });
+    await order.save();
+
+    // 7. Respond with Razorpay order details
+    const user = await User.findById(userId);
+    res.json({
+      success: true,
+      key: process.env.RAZORPAY_KEY_ID,
+      amount: razorpayOrder.amount,
+      orderId: razorpayOrder.id,
+      userName: user?.name || "Test User",
+      userEmail: user?.email || "test@example.com",
+      userPhone: user?.phone || "9999999999"
+    });
+
+  } catch (error) {
+    console.error("Error creating Razorpay order", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+
+export const verifyRazorpayPayment = async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    const userId = req.session.userId;
+
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(sign.toString())
+      .digest("hex");
+
+    if (expectedSignature === razorpay_signature) {
+      // Mark order as paid, reduce stock, clear cart
+      const order = await Order.findOne({ razorpayOrderId: razorpay_order_id, userId });
+      if (!order) {
+        return res.json({ success: false, message: "Order not found" });
+      }
+
+      // Reduce stock
+      for (const item of order.items) {
+        const game = await Game.findById(item.productId);
+        if (game) {
+          game.stockQuantity -= item.quantity;
+          await game.save();
+        }
+      }
+
+      order.status = 'Paid';
+      order.paymentStatus = 'paid'; //helo
+      order.paymentId = razorpay_payment_id;
+      await order.save();
+
+      // Clear cart
+      await Cart.findOneAndDelete({ userId });
+
+      res.json({ success: true, redirectUrl: "/orderSuccess" });
+    } else {
+      res.json({ success: false, message: "Payment verification failed" });
+    }
+  } catch (error) {
+    console.error("Error verifying Razorpay payment", error);
+    res.json({ success: false, message: "Payment verification failed" });
+  }
+};
+
 export const postPlaceWalletOrder = async (req, res) => {
   try {
     console.log('trigger testing....')
@@ -1433,7 +1628,7 @@ export const postReturnStatus = async(req,res)=>{
    
      item.returnStatus = 'Pending',
      item.returnReason = reason;
-     item.status = 'Returned'
+    
      await order.save();
 
      const userId = order.userId;

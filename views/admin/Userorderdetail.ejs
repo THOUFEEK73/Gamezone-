@@ -218,10 +218,16 @@
                 const newIndex = statusOrder.indexOf(status);
 
                 // Prevent selecting previous status or skipping steps
-                if (newIndex < currentIndex || newIndex > currentStatusIndex + 1) {
-                    selectElem.value = currentStatus;
-                    return;
-                }
+                // if (newIndex < currentIndex || newIndex > currentStatusIndex + 1) {
+                //     selectElem.value = currentStatus;
+                //     return;
+                // }
+
+
+                if (newIndex < currentIndex || newIndex > currentIndex + 1) {
+    selectElem.value = currentStatus;
+    return;
+}
 
                 const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/status`, {
                     method: 'POST',

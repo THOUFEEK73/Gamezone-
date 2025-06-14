@@ -38,6 +38,8 @@ import {
     getCheckoutPage,
     postPlaceCODOrder,
     getOrderSuccessPage,
+    createRazorpayOrder,
+    verifyRazorpayPayment,
     getOrderDetailPage,
     getViewOrderPage,
     postCancelStatus,
@@ -60,6 +62,7 @@ import getLocationByPinCode from '../controllers/locationController.js';
 import { getDetailPage } from '../controllers/gameDetail.js';
 import { showAllGames } from "../controllers/AllGamesController.js";
 import filterGames from "../controllers/filterGamesController.js";
+
 
 const router = express.Router();
 
@@ -117,6 +120,21 @@ router.put('/cart/update-Quantity', updateQuantity);
 router.get('/orderDetails', noCache, isAuthenticated, getOrderDetailPage);
 router.get('/checkout', noCache, isAuthenticated, getCheckoutPage);
 router.post('/placeOrder', postPlaceCODOrder);
+router.post('/placeOrder/razorpay',createRazorpayOrder);
+router.post('/verify/razorpay', verifyRazorpayPayment);
+router.post('/razorpay/webhook', express.json(), async (req, res) => {
+    console.log('Webhook received:', req.body);
+    const event = req.body;
+    if (event.event === 'payment.failed') {
+      const razorpayOrderId = event.payload.payment.entity.order_id;
+      const order = await Order.findOne({ razorpayOrderId });
+      if (order) {
+        order.paymentStatus = 'failed';
+        await order.save();
+      }
+    }
+    res.status(200).send('OK');
+  });
 router.post('/placeOrder/wallet',postPlaceWalletOrder)
 router.get('/orderSuccess', getOrderSuccessPage);
 router.get('/viewOrder/:id', getViewOrderPage);

@@ -26,7 +26,8 @@
       border-radius: 10px;
     }
   </style>
-  
+   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 </head>
 
 <body>
@@ -465,7 +466,7 @@
     </div>
   </label>
   <label class="flex items-start gap-3 p-4 border rounded-lg cursor-pointer hover:border-indigo-400 transition">
-    <input type="radio" name="paymentMethod" value="online" class="mt-1 accent-indigo-600">
+    <input type="radio" name="paymentMethod" value="razorpay" class="mt-1 accent-indigo-600">
     <div>
       <h3 class="font-semibold text-gray-800">Online Payment</h3>
       <p class="text-sm text-gray-500">Pay securely with Razorpay</p>
@@ -475,7 +476,9 @@
     <input type="radio" name="paymentMethod" value="wallet" class="mt-1 accent-indigo-600">
     <div>
       <h3 class="font-semibold text-gray-800">Wallet Balance</h3>
-      <p class="text-sm text-gray-500">Available balance: ₹ <%= wallet.balance %></p>
+      <p class="text-sm text-gray-500">
+        Available balance: ₹ <%= wallet && wallet.balance !== undefined ? wallet.balance : 'N/A' %>
+      </p>
     </div>
   </label>
 </div>
