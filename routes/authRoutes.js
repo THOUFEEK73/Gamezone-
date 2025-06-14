@@ -40,6 +40,8 @@ import {
     getOrderSuccessPage,
     createRazorpayOrder,
     verifyRazorpayPayment,
+    retryRezorpayPayment,
+    getPaymentFailedPage,
     getOrderDetailPage,
     getViewOrderPage,
     postCancelStatus,
@@ -62,6 +64,8 @@ import getLocationByPinCode from '../controllers/locationController.js';
 import { getDetailPage } from '../controllers/gameDetail.js';
 import { showAllGames } from "../controllers/AllGamesController.js";
 import filterGames from "../controllers/filterGamesController.js";
+
+import Order from '../models/orderModel.js';
 
 
 const router = express.Router();
@@ -135,6 +139,8 @@ router.post('/razorpay/webhook', express.json(), async (req, res) => {
     }
     res.status(200).send('OK');
   });
+router.post('/retry-payment/:orderId',isAuthenticated,retryRezorpayPayment);
+router.get('/payments-failed',getPaymentFailedPage);
 router.post('/placeOrder/wallet',postPlaceWalletOrder)
 router.get('/orderSuccess', getOrderSuccessPage);
 router.get('/viewOrder/:id', getViewOrderPage);

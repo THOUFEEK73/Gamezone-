@@ -81,7 +81,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
 
   if (selectPayment === 'razorpay') {
     try {
-          console.log('helo world')
+     
       const orderResponse = await fetch('/placeOrder/razorpay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,6 +93,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
       });
 
       const orderData = await orderResponse.json();
+      console.log(orderData);
       if (!orderData.success) {
         showFlash(orderData.message || 'Failed to initiate payment', 'error');
         return;
@@ -122,6 +123,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
             if (verifyData.success) {
               window.location.href = verifyData.redirectUrl || '/orders';
             } else {
+              window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
               showFlash(verifyData.message || 'Payment verification failed', 'error');
             }
           } catch (err) {
@@ -135,9 +137,17 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
         },
         theme: {
           color: "#3399cc"
+        },
+        modal: {
+          ondismiss: function() {
+          
+            window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
+          }
         }
-      };
 
+
+      };
+ 
       const rzp = new Razorpay(options);
       rzp.open();
     } catch (error) {
@@ -147,6 +157,25 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
   }
   
 });
+
+function showFlash(message, type = "success") {
+  let flash = document.getElementById("flashMessage");
+  if (!flash) {
+    flash = document.createElement("div");
+    flash.id = "flashMessage";
+    document.body.appendChild(flash);
+  }
+  flash.textContent = message;
+  flash.className =
+    "fixed bottom-8 right-8 px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300 " +
+    (type === "error"
+      ? "bg-red-500 text-white"
+      : "bg-green-500 text-white");
+  flash.classList.remove("hidden");
+  setTimeout(() => {
+    flash.classList.add("hidden");
+  }, 3000);
+}
 
 
 document.addEventListener('DOMContentLoaded', function () {

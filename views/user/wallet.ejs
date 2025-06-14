@@ -1,73 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Wallet</title>
+  <title>Wallet</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-<body class="bg-gray-100 min-h-screen">
+
+<body class="bg-gray-50 min-h-screen font-sans text-gray-800">
   <%- include('partials/navbar') %>
-  <div class="flex flex-col md:flex-row min-h-screen">
+
+  <div class="flex flex-col md:flex-row">
     <!-- Sidebar -->
-    <aside class="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-gray-200">
-      <div class="md:block">
-        <%- include('partials/sidebar') %>
-      </div>
+    <aside class="w-full md:w-60 bg-white shadow-md border-r border-gray-200 min-h-screen">
+      <%- include('partials/sidebar') %>
     </aside>
-    <!-- Main Content -->
-    <main class="flex-1 flex justify-center items-start py-6 px-2 sm:px-4 md:px-8">
-      <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden mx-auto">
-        <div class="p-4 sm:p-8 md:p-12">
-          <h2 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-8 text-center tracking-tight">My Wallet</h2>
 
-          <!-- Stylish Balance Card -->
-          <div class="relative bg-gradient-to-tr from-indigo-600 to-purple-700 text-white rounded-2xl p-6 sm:p-10 md:p-12 flex flex-col sm:flex-row items-center justify-between mb-10 shadow-lg overflow-hidden">
-            <div class="mb-4 sm:mb-0">
-              <p class="text-base sm:text-lg opacity-80">Current Balance</p>
-              <p class="text-3xl sm:text-5xl font-extrabold mt-2 tracking-wide">
-                ₹<%= wallet?.balance?.toLocaleString('en-IN') || 0 %>
-              </p>
+    <!-- Main -->
+    <main class="flex-1 px-4 py-6 sm:px-8">
+      <div class="max-w-4xl mx-auto">
+        <!-- Wallet Card -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+          <div class="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 sm:p-8 text-white flex justify-between items-center">
+            <div>
+              <p class="text-sm">Current Balance</p>
+              <p class="text-3xl font-bold mt-2">₹<%= wallet?.balance?.toLocaleString('en-IN') || 0 %></p>
             </div>
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-wallet text-4xl sm:text-6xl opacity-80"></i>
-            </div>
-            <div class="absolute right-0 bottom-0 opacity-10 text-[6rem] sm:text-[8rem] md:text-[10rem] pointer-events-none select-none">
-              <i class="fa-solid fa-coins"></i>
-            </div>
+            <i class="fa-solid fa-wallet text-4xl"></i>
           </div>
+        </div>
 
-          <!-- Recent Transactions -->
-          <h3 class="text-xl sm:text-2xl font-semibold text-gray-700 mb-6 sm:mb-7">Recent Transactions</h3>
-          <div class="space-y-4 sm:space-y-6">
+        <!-- Transactions -->
+        <div class="bg-white rounded-2xl shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-4 border-b pb-2">Recent Transactions</h2>
+          <div class="space-y-4" id="transactions">
             <% if (wallet && wallet.transactions && wallet.transactions.length > 0) { %>
-              <% wallet.transactions.slice(-10).reverse().forEach(function(txn) { %>
-                <div class="<%= txn.type === 'credit' ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500' %> border-l-4 p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm hover:shadow-md transition">
-                  <div class="flex items-center gap-3 sm:gap-4 mb-2 sm:mb-0">
-                    <div class="<%= txn.type === 'credit' ? 'bg-green-100' : 'bg-red-100' %> rounded-full p-2 sm:p-3">
-                      <i class="fa-solid <%= txn.type === 'credit' ? 'fa-arrow-down' : 'fa-arrow-up' %> <%= txn.type === 'credit' ? 'text-green-600' : 'text-red-600' %> text-lg sm:text-xl"></i>
+              <% wallet.transactions.forEach(function(txn) { %>
+                <div class="flex justify-between items-center px-4 py-3 border-l-4 rounded-md shadow-sm <%= txn.type === 'credit' ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500' %>">
+                  <div class="flex items-center gap-4">
+                    <div class="rounded-full p-2 <%= txn.type === 'credit' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>">
+                      <i class="fa-solid <%= txn.type === 'credit' ? 'fa-arrow-down' : 'fa-arrow-up' %>"></i>
                     </div>
                     <div>
-                      <p class="font-medium <%= txn.type === 'credit' ? 'text-green-800' : 'text-red-800' %> text-base sm:text-lg"><%= txn.description %></p>
-                      <p class="text-xs sm:text-sm text-gray-500">
+                      <p class="font-medium text-sm sm:text-base"><%= txn.description %></p>
+                      <p class="text-xs text-gray-500">
                         <%= new Date(txn.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) %>
                         <% if (txn.id) { %> • <span class="font-mono"><%= txn.id %></span><% } %>
                       </p>
                     </div>
                   </div>
-                  <span class="<%= txn.type === 'credit' ? 'text-green-700' : 'text-red-700' %> font-bold text-lg sm:text-2xl">
+                  <div class="text-right font-bold text-base <%= txn.type === 'credit' ? 'text-green-700' : 'text-red-700' %>">
                     <%= txn.type === 'credit' ? '+' : '-' %> ₹<%= txn.amount.toLocaleString('en-IN') %>
-                  </span>
+                  </div>
                 </div>
               <% }) %>
             <% } else { %>
-              <div class="text-center text-gray-400 py-8">No transactions yet.</div>
+              <p class="text-center text-gray-400 py-8">No transactions yet.</p>
+            <% } %>
+          </div>
+
+          <!-- Pagination -->
+          <div id="pagination" class="flex justify-center items-center mt-8 space-x-3">
+            <% if (currentPage > 1) { %>
+              <button onclick="fetchWalletTransactions(<%= currentPage - 1 %>)" class="px-4 py-2 bg-white border border-indigo-500 text-indigo-500 rounded-full hover:bg-indigo-50">Prev</button>
+            <% } else { %>
+              <button disabled class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-400 rounded-full cursor-not-allowed">Prev</button>
+            <% } %>
+
+            <span class="text-sm text-gray-600">Page <%= currentPage %> of <%= totalPages %></span>
+
+            <% if (currentPage < totalPages) { %>
+              <button onclick="fetchWalletTransactions(<%= currentPage + 1 %>)" class="px-4 py-2 bg-white border border-indigo-500 text-indigo-500 rounded-full hover:bg-indigo-50">Next</button>
+            <% } else { %>
+              <button disabled class="px-4 py-2 bg-gray-100 border border-gray-300 text-gray-400 rounded-full cursor-not-allowed">Next</button>
             <% } %>
           </div>
         </div>
       </div>
     </main>
   </div>
+
+  <script>
+    async function fetchWalletTransactions(page) {
+      try {
+        const res = await fetch(`/wallet?page=${page}`);
+        const html = await res.text();
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        const newTxns = doc.querySelector('#transactions');
+        const newPagination = doc.querySelector('#pagination');
+
+        document.querySelector('#transactions').replaceWith(newTxns);
+        document.querySelector('#pagination').replaceWith(newPagination);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        alert('Failed to load transactions.');
+      }
+    }
+  </script>
 </body>
+
 </html>

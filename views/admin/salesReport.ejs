@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sales Report</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 p-6">
+    <%- include('partials/sidebar') %>
+  <div class="max-w-7xl mx-auto space-y-6">
+    <!-- Header -->
+    <div>
+      <h1 class="text-3xl font-extrabold">📊 Sales Report</h1>
+      <p class="text-gray-500 text-sm">View and analyze your sales data</p>
+    </div>
+
+    <!-- Actions & Filters -->
+    <div class="flex flex-wrap items-center gap-4">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm">
+        Download PDF
+      </button>
+      <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm">
+        Download Excel
+      </button>
+
+      <div class="flex gap-2">
+        <button class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Daily</button>
+        <button class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Weekly</button>
+        <button class="bg-gray-200 hover:bg-gray-300 text-sm px-3 py-1 rounded-md">Yearly</button>
+      </div>
+
+      <input type="date" class="border rounded-md px-3 py-1 text-sm" />
+      <span class="text-sm">to</span>
+      <input type="date" class="border rounded-md px-3 py-1 text-sm" />
+      <button class="bg-black text-white px-3 py-1 rounded-md hover:bg-gray-900 text-sm">Custom</button>
+    </div>
+
+    <!-- Metrics Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
+        <h2 class="text-sm text-gray-500 mb-1">Total Sales</h2>
+        <p class="text-2xl font-bold text-blue-600">₹0.00</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
+        <h2 class="text-sm text-gray-500 mb-1">Total Orders</h2>
+        <p class="text-2xl font-bold text-green-600">0</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
+        <h2 class="text-sm text-gray-500 mb-1">Total Discount</h2>
+        <p class="text-2xl font-bold text-red-500">₹0.00</p>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+      <h3 class="text-lg font-semibold mb-4">📦 Orders</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse text-sm">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="text-left py-3 px-4">Order ID</th>
+              <th class="text-left py-3 px-4">Date</th>
+              <th class="text-left py-3 px-4">Customer</th>
+              <th class="text-left py-3 px-4">Total</th>
+              <th class="text-left py-3 px-4">Status</th>
+              <th class="text-left py-3 px-4">Coupon</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700">
+            <tr>
+              <td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-between items-center mt-6 text-sm text-gray-500">
+        <span>Showing 1 to 0 of 0 orders</span>
+        <div class="flex gap-2">
+          <button class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded">‹</button>
+          <button class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

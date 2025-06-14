@@ -23,6 +23,7 @@ import { compareSync } from "bcryptjs";
 
 // import { getSystemErrorMessage } from "util";
 import { calculateDiscountedPrice,getActiveOffers } from "../utils/offerUtils.js";
+import { Console } from "console";
 
 export const getHomePage = async (req, res) => {
   try {
@@ -1194,7 +1195,8 @@ export const createRazorpayOrder = async (req, res) => {
       status: 'Pending'
     });
     await order.save();
-
+        
+    console.log('orderId ',order._id)
     // 7. Respond with Razorpay order details
     const user = await User.findById(userId);
     res.json({
@@ -1202,6 +1204,7 @@ export const createRazorpayOrder = async (req, res) => {
       key: process.env.RAZORPAY_KEY_ID,
       amount: razorpayOrder.amount,
       orderId: razorpayOrder.id,
+      _id: order._id,
       userName: user?.name || "Test User",
       userEmail: user?.email || "test@example.com",
       userPhone: user?.phone || "9999999999"
@@ -1213,6 +1216,70 @@ export const createRazorpayOrder = async (req, res) => {
   }
 };
 
+export const retryRezorpayPayment = async(req,res)=>{
+  
+  try{
+    const orderId = req.params.orderId;
+    console.log(orderId)
+    const order = await Order.findById(orderId);
+
+    if(!order)
+      return res.status(404).send('Order not found');
+
+    const razorpay = new Razorpay({
+      key_id:process.env.RAZORPAY_KEY_ID,
+      key_secret:process.env.RAZORPAY_KEY_SECRET
+    })
+    
+    console.log('tigger one')
+    const newRazorpayOrder = await razorpay.orders.create({
+      amount: order.totalAmount * 100,
+      currency: 'INR',
+      receipt: order.orderId,
+      payment_capture: 1,
+    });
+
+    order.razorpayOrderId = newRazorpayOrder.id;
+    order.paymentStatus = 'failed';
+    await order.save();
+
+    const user = await User.findById(order.userId);
+    console.log('orderId ',order._id)
+    res.json({
+      success: true,
+      key: process.env.RAZORPAY_KEY_ID,
+      amount: newRazorpayOrder.amount,
+      orderId: newRazorpayOrder.id,
+      _id:order._id,
+      userName: user?.name || "Test User",
+      userEmail: user?.email || "test@example.com",
+      userPhone: user?.phone || "9999999999"
+    });
+   
+    console.log('trigger three')
+
+  }catch(error){
+    console.error("Error retrying Razorpay payment", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+}
+}
+
+
+export const getPaymentFailedPage = async(req,res)=>{
+  try {
+    const orderId = req.query.orderId;
+    console.log('this is the orderId',orderId)
+    let order = null;
+    if (orderId) {
+      order = await Order.findById(orderId); 
+    }
+    res.render('user/paymentFailed', { order,page: 'paymentFailed' });
+  }catch(error){
+       console.error("Error rendering payment failed page", error);
+       res.render('user/paymentFailed', { order: null });
+    }
+
+}
 
 export const verifyRazorpayPayment = async (req, res) => {
   try {
@@ -1432,71 +1499,82 @@ export const getOrderSuccessPage = async (req, res) => {
 
 
 
-export const getOrderDetailPage = async(req,res)=>{
-   try{
- 
+export const getOrderDetailPage = async (req, res) => {
+  try {
     const userId = req.session.userId;
-    
-    const orders = await Order.find({ userId })
-            .populate('items.productId')
-            .sort({ createdAt: -1 });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const skip = (page - 1) * limit;
 
-            const cartItems = await Cart.findOne({ userId });
-            let cartCount = 0;
-            if (cartItems && cartItems.products.length > 0) {
-              cartCount = cartItems.products.reduce(
-                (total, item) => total + item.quantity,
-                0
-              );
-            }
+    // Get paginated orders and total count
+    const [orders, totalOrders] = await Promise.all([
+      Order.find({ userId })
+        .populate('items.productId')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Order.countDocuments({ userId })
+    ]);
 
-             const activeOffers = await getActiveOffers();
-            const mappedOrders = orders.map(order => {
-              // ...order.toObject(),
-              const orderObj = order.toObject();
-               orderObj.items = orderObj.items.map(item => {
-                const product = item.productId;
-                if (!product) return item;
-        
-                // Find applicable offers
-                const productOffer = activeOffers.find(offer =>
-                  offer.offerType === 'product' &&
-                  offer.items.includes(product._id.toString())
-                );
-                const categoryOffer = activeOffers.find(offer =>
-                  offer.offerType === 'category' &&
-                  offer.items.includes(product.category?.toString())
-                );
-        
-                // Get best offer
-                const bestOffer = [productOffer, categoryOffer]
-                  .filter(Boolean)
-                  .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
-        
-                if (bestOffer) {
-                  item.originalPrice = product.price;
-                  item.discountPercentage = bestOffer.discountPercentage;
-                  item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
-                  item.offerName = bestOffer.offerName;
-                } else {
-                  item.discountedPrice = product.price;
-                }
-                return item;
-              });
-              orderObj.status = order.status || 'Pending';
-              return orderObj;
-            });
+    // Cart count
+    const cartItems = await Cart.findOne({ userId });
+    let cartCount = 0;
+    if (cartItems && cartItems.products.length > 0) {
+      cartCount = cartItems.products.reduce(
+        (total, item) => total + item.quantity,
+        0
+      );
+    }
 
-    // const orderId = orders.orderId;
-   
-    res.render('user/orderDetails',{page:'orderDetails',order:mappedOrders,cartCount})
-   }catch(error){
-      console.error('Error fetching order details', error);
-      res.status(500).render('error',{message:'Server is down please try after some times'});
-      
-   }
-     
-}
+    // Offers mapping
+    const activeOffers = await getActiveOffers();
+    const mappedOrders = orders.map(order => {
+      const orderObj = order.toObject();
+      orderObj.items = orderObj.items.map(item => {
+        const product = item.productId;
+        if (!product) return item;
+
+        // Find applicable offers
+        const productOffer = activeOffers.find(offer =>
+          offer.offerType === 'product' &&
+          offer.items.includes(product._id.toString())
+        );
+        const categoryOffer = activeOffers.find(offer =>
+          offer.offerType === 'category' &&
+          offer.items.includes(product.category?.toString())
+        );
+
+        // Get best offer
+        const bestOffer = [productOffer, categoryOffer]
+          .filter(Boolean)
+          .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+        if (bestOffer) {
+          item.originalPrice = product.price;
+          item.discountPercentage = bestOffer.discountPercentage;
+          item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+          item.offerName = bestOffer.offerName;
+        } else {
+          item.discountedPrice = product.price;
+        }
+        return item;
+      });
+      orderObj.status = order.status || 'Pending';
+      return orderObj;
+    });
+
+    res.render('user/orderDetails', {
+      page: 'orderDetails',
+      order: mappedOrders,
+      cartCount,
+      currentPage: page,
+      totalPages: Math.ceil(totalOrders / limit)
+    });
+  } catch (error) {
+    console.error('Error fetching order details', error);
+    res.status(500).render('error', { message: 'Server is down please try after some times' });
+  }
+};
 
 
 export const getViewOrderPage = async(req,res)=>{

@@ -66,6 +66,9 @@ import {
 } from '../controllers/adminCouponManagement.js';
 import Coupon from "../models/couponModel.js";
 
+import {
+  getSalesReportPage
+} from '../controllers/salesReportController.js';
 const adminRoutes = express.Router();
 
 // Middleware
@@ -172,6 +175,10 @@ adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)
 adminRoutes.get('/coupons',getCouponPage);
 adminRoutes.post('/coupons/add',postCoupon);
 adminRoutes.patch('/coupons/toggleStatus/:id',CouponStatus)
+
+// Sales Report
+
+adminRoutes.get('/salesReport',getSalesReportPage);
 
 
 // Logout

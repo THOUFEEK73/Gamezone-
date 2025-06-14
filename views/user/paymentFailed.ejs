@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Failed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="/css/output.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/checkout.css">
+  <style>
+    /* Custom animation for entrance */
+    @keyframes fadeScaleIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .fade-scale {
+      animation: fadeScaleIn 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <%- include('partials/navbar') %>
+  <!-- Card Container -->
+  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-md text-center fade-scale">
+    
+    <!-- Failure Icon with bounce -->
+    <div class="text-red-500 mb-4 animate-bounce">
+      <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 9v3m0 3h.01m-6.938 4h13.856c1.054 0 1.635-1.14 
+              1.027-2.05L13.028 4.95c-.526-.79-1.73-.79-2.256 
+              0L3.055 16.95c-.608.91-.027 2.05 1.027 2.05z" />
+      </svg>
+    </div>
+
+    <!-- Heading -->
+    <h2 class="text-2xl font-bold text-gray-800 mb-2">Payment Failed</h2>
+    <p class="text-gray-600 mb-6">We couldn't complete your payment. Please try again or view your orders.</p>
+
+    <!-- Action Buttons -->
+    <div class="flex flex-col sm:flex-row justify-center gap-4">
+      <!-- View Orders -->
+      <a href="/orderDetails"
+         class="px-6 py-2 bg-gray-300 text-gray-800 rounded-full font-medium transition-all hover:bg-gray-400 hover:scale-105 duration-300">
+        View Orders
+      </a>
+
+      <!-- Retry Payment -->
+   <!-- Only show the Retry button if order exists -->
+<% if (order) { %>
+    <form class="inline-block" onsubmit="return retryPayment('<%= order._id %>')">
+      <button type="submit"
+              class="px-6 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-full font-semibold shadow transition-all hover:from-red-600 hover:to-orange-600 hover:scale-105 duration-300">
+        Retry Payment
+      </button>
+    </form>
+  <% } else { %>
+    <div class="text-red-600 font-semibold mt-4">Order not found or invalid order ID.</div>
+  <% } %>
+    </div>
+  </div>
+
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+async function retryPayment(orderId){
+  event.preventDefault();
+
+  try{
+    const res = await fetch(`/retry-payment/${orderId}`, {method:'POST'});
+    const data = await res.json();
+    if(data.success){
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: 'INR',
+        name: 'GameZone',
+        description: 'Order Payment',
+        order_id: data.orderId,
+        handler: function(response){
+          fetch('/verify/razorpay', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+          }).then(res => res.json()).then(result => {
+            if(result.success){
+              window.location.href = result.redirectUrl || '/orderSuccess';
+            } else {
+              alert(result.message || 'Payment verification failed');
+            }
+          });
+        },
+        prefill: {
+          name: data.userName,
+          email: data.userEmail,
+          contact: data.userPhone
+        },
+        theme: { color: "#3399cc" }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+    }
+  } catch(error){
+    console.error('Error retrying payment:', error);
+    alert('Error retrying payment');
+  }
+  return false;
+}
+  </script>
+
+</body>
+</html>

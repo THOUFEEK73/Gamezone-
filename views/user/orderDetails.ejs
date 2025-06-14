@@ -41,100 +41,260 @@
                 <th class="px-6 py-3">Actions</th>
               </tr>
             </thead>
-            <tbody class="text-gray-700">
-              <% order.forEach(order => { %>
-                <tr class="border-b hover:bg-gray-50">
-                  <td class="px-6 py-4 font-medium">
-                    <%= order.orderId %>
-                  </td>
-                  <td class="px-6 py-4">
-                    <%= order.createdAt.toDateString() %>
-                  </td>
-                  <td class="px-6 py-4 text-green-600">&#8377; <%= order.totalAmount %>
-                  </td>
-                  <td class="px-6 py-4 text-green-600">
-                    <div class="flex flex-col gap-1">
-                      <% order.items.forEach(item => { %>
-                        <div>
-                          <span class="font-semibold"><%= item.productId.title %></span>
-                          <span class="ml-2 text-gray-500">x<%= item.quantity %></span>
-                          <% if (item.discountPercentage) { %>
-                            <span class="ml-2 line-through text-gray-400">₹<%= item.originalPrice %></span>
-                            <span class="ml-1 text-green-700 font-bold">₹<%= item.discountedPrice %></span>
-                            <span class="ml-1 text-xs text-red-500">-<%= item.discountPercentage %>% (<%= item.offerName %>)</span>
-                          <% } else { %>
-                            <span class="ml-2">₹<%= item.discountedPrice %></span>
-                          <% } %>
-                        </div>
-                      <% }) %>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4">
-                    <%
-                    // Find the most relevant status among items
-                    let itemStatuses = order.items.map(i => i.status);
-                    let displayStatus = 'Pending';
-                    if (itemStatuses.includes('Cancelled')) displayStatus = 'Cancelled';
-                    else if (itemStatuses.includes('Returned')) displayStatus = 'Returned';
-                    else if (itemStatuses.includes('Delivered')) displayStatus = 'Delivered';
-                    else if (itemStatuses.includes('Out for Delivery')) displayStatus = 'Out for Delivery';
-                    else if (itemStatuses.includes('Shipped')) displayStatus = 'Shipped';
-                    else if (itemStatuses.includes('Pending')) displayStatus = 'Pending';
-
-                    let statusColor;
-                    switch(displayStatus.toLowerCase()) {
-                      case 'pending':
-                        statusColor = 'bg-yellow-100 text-yellow-600';
-                        break;
-                      case 'shipped':
-                        statusColor = 'bg-purple-100 text-purple-600';
-                        break;
-                      case 'out for delivery':
-                        statusColor = 'bg-blue-100 text-blue-600';
-                        break;
-                      case 'delivered':
-                        statusColor = 'bg-green-100 text-green-600';
-                        break;
-                      case 'cancelled':
-                        statusColor = 'bg-red-100 text-red-600';
-                        break;
-                      case 'returned':
-                        statusColor = 'bg-yellow-100 text-yellow-600';
-                        break;
-                      default:
-                        statusColor = 'bg-gray-100 text-gray-600';
-                    }
-                    %>
-                    <span class="<%= statusColor %> text-xs px-3 py-1 rounded-full inline-block">
-                      <%= displayStatus %>
-                    </span>
-                    <% if (order.paymentStatus === 'failed' && order.paymentMethod === 'razorpay') { %>
-                      <span class="block mt-2 text-xs text-red-500 font-semibold">Payment Failed</span>
-                    <% } %>
-                  </td>
-                  <td class="px-6 py-4">
-                    <a href="/viewOrder/<%= order._id %>">
-                      <button
-                        class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-5 py-2 rounded-full shadow-md hover:from-blue-600 hover:to-indigo-700 transition duration-300">
-                        View
-                      </button>
-                    </a>
-                    <% if (order.paymentStatus === 'failed' && order.paymentMethod === 'razorpay') { %>
-                      <form action="/retry-payment/<%= order._id %>" method="POST" class="inline-block ml-2">
-                        <button type="submit"
-                          class="bg-gradient-to-r from-red-500 to-orange-500 text-white font-semibold px-4 py-2 rounded-full shadow-md hover:from-red-600 hover:to-orange-600 transition duration-300 mt-2 md:mt-0">
-                          Retry Payment
-                        </button>
-                      </form>
-                    <% } %>
+            <tbody class="text-gray-700 text-sm divide-y divide-gray-200">
+              <% if (order.length === 0) { %>
+                <tr>
+                  <td colspan="6" class="text-center py-10 text-gray-400 font-medium text-lg">
+                    No orders yet.
                   </td>
                 </tr>
-              <% }) %>
+              <% } else { %>
+                <% order.forEach(order => { %>
+                  <tr class="hover:bg-gray-50 align-top">
+                    <!-- Order ID -->
+                    <td class="px-4 py-4 whitespace-nowrap font-medium text-gray-900 w-[140px]">
+                      <%= order.orderId %>
+                    </td>
+                    <!-- Date -->
+                    <td class="px-4 py-4 whitespace-nowrap text-gray-600 w-[130px]">
+                      <%= order.createdAt.toDateString() %>
+                    </td>
+                    <!-- Total Amount -->
+                    <td class="px-4 py-4 whitespace-nowrap text-green-600 font-semibold w-[110px]">
+                      ₹ <%= order.totalAmount %>
+                    </td>
+                    <!-- Items -->
+                    <td class="px-4 py-4 w-[320px]">
+                      <div class="flex flex-col gap-2">
+                        <% order.items.forEach(item => { %>
+                          <div class="flex flex-col">
+                            <span class="font-semibold text-gray-800"><%= item.productId.title %></span>
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                              x<%= item.quantity %>
+                              <% if (item.discountPercentage) { %>
+                                <span class="line-through text-gray-400">₹<%= item.originalPrice %></span>
+                                <span class="text-green-700 font-bold">₹<%= item.discountedPrice %></span>
+                                <span class="text-xs text-red-500">-<%= item.discountPercentage %>% (<%= item.offerName %>)</span>
+                              <% } else { %>
+                                <span class="text-gray-700">₹<%= item.discountedPrice %></span>
+                              <% } %>
+                            </div>
+                          </div>
+                        <% }) %>
+                      </div>
+                    </td>
+                    <!-- Order Status -->
+                    <td class="px-4 py-4 w-[140px]">
+                      <% if (order.paymentStatus === 'failed' && order.paymentMethod === 'razorpay') { %>
+                        <span class="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full inline-block">
+                          Payment Failed
+                        </span>
+                      <% } else { 
+                          let itemStatuses = order.items.map(i => i.status);
+                          let displayStatus = 'Pending';
+                          if (itemStatuses.includes('Cancelled')) displayStatus = 'Cancelled';
+                          else if (itemStatuses.includes('Returned')) displayStatus = 'Returned';
+                          else if (itemStatuses.includes('Delivered')) displayStatus = 'Delivered';
+                          else if (itemStatuses.includes('Out for Delivery')) displayStatus = 'Out for Delivery';
+                          else if (itemStatuses.includes('Shipped')) displayStatus = 'Shipped';
+                          else if (itemStatuses.includes('Pending')) displayStatus = 'Pending';
+            
+                          let statusColor;
+                          switch(displayStatus.toLowerCase()) {
+                            case 'pending':
+                              statusColor = 'bg-yellow-100 text-yellow-600';
+                              break;
+                            case 'shipped':
+                              statusColor = 'bg-purple-100 text-purple-600';
+                              break;
+                            case 'out for delivery':
+                              statusColor = 'bg-blue-100 text-blue-600';
+                              break;
+                            case 'delivered':
+                              statusColor = 'bg-green-100 text-green-600';
+                              break;
+                            case 'cancelled':
+                              statusColor = 'bg-red-100 text-red-600';
+                              break;
+                            case 'returned':
+                              statusColor = 'bg-yellow-100 text-yellow-600';
+                              break;
+                            default:
+                              statusColor = 'bg-gray-100 text-gray-600';
+                          }
+                      %>
+                        <span class="<%= statusColor %> text-xs px-3 py-1 rounded-full inline-block">
+                          <%= displayStatus %>
+                        </span>
+                      <% } %>
+                    </td>
+                    <!-- Actions -->
+                    <td class="px-4 py-4 w-[120px] whitespace-nowrap">
+                      <% if (order.paymentStatus === 'failed' && order.paymentMethod === 'razorpay') { %>
+                        <form onsubmit="return retryPayment('<%= order._id %>')" class="inline-block">
+                          <button type="submit"
+                            class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-white border border-red-500 text-red-600 font-semibold text-sm shadow hover:bg-red-50 hover:border-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-300">
+                            <i class="fa-solid fa-rotate-right text-base"></i>
+                            Retry
+                          </button>
+                        </form>
+                      <% } else { %>
+                        <a href="/viewOrder/<%= order._id %>">
+                          <button
+                            class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-white border border-blue-500 text-blue-600 font-semibold text-sm shadow hover:bg-blue-50 hover:border-blue-600 transition focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            <i class="fa-solid fa-eye"></i>
+                            View
+                          </button>
+                        </a>
+                      <% } %>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } %>
             </tbody>
+            
           </table>
         </div>
       </div>
+      <!-- Pagination Controls -->
+      <div id="pagination" class="flex justify-center items-center mt-8 space-x-4">
+        <% if (currentPage > 1) { %>
+          <button
+            class="flex items-center gap-1 px-4 py-2 rounded-full border border-blue-500 text-blue-500 bg-white hover:bg-blue-100 transition"
+            onclick="fetchOrders(<%= currentPage - 1 %>)">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Prev
+          </button>
+        <% } else { %>
+          <button
+            class="flex items-center gap-1 px-4 py-2 rounded-full border border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
+            disabled>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Prev
+          </button>
+        <% } %>
+      
+        <!-- Page Indicator -->
+        <span class="text-gray-700 font-medium text-sm sm:text-base">
+          Page <%= currentPage %> of <%= totalPages %>
+        </span>
+      
+        <% if (currentPage < totalPages) { %>
+          <button
+            class="flex items-center gap-1 px-4 py-2 rounded-full border border-blue-500 text-blue-500 bg-white hover:bg-blue-100 transition"
+            onclick="fetchOrders(<%= currentPage + 1 %>)">
+            Next
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        <% } else { %>
+          <button
+            class="flex items-center gap-1 px-4 py-2 rounded-full border border-gray-300 text-gray-400 bg-gray-100 cursor-not-allowed"
+            disabled>
+            Next
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        <% } %>
+      </div>
+      
     </main>
   </div>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+async function retryPayment(orderId){
+  event.preventDefault();
+
+  try{
+    const res = await fetch(`/retry-payment/${orderId}`, {method:'POST'});
+    const data = await res.json();
+    if(data.success){
+      const options = {
+        key: data.key,
+        amount: data.amount,
+        currency: 'INR',
+        name: 'GameZone',
+        description: 'Order Payment',
+        order_id: data.orderId,
+        handler: function(response){
+          fetch('/verify/razorpay', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            })
+          }).then(res => res.json()).then(result => {
+            if(result.success){
+              window.location.href = result.redirectUrl || '/orderSuccess';
+            } else {
+              alert(result.message || 'Payment verification failed');
+            }
+          });
+        },
+        prefill: {
+          name: data.userName,
+          email: data.userEmail,
+          contact: data.userPhone
+        },
+        theme: { color: "#3399cc" }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+    }
+  } catch(error){
+    console.error('Error retrying payment:', error);
+    alert('Error retrying payment');
+  }
+  return false;
+}
+
+
+
+// pagination
+
+async function fetchOrders(page){
+  try {
+    const res = await fetch(`/orderDetails?page=${page}`);
+    const html = await res.text();
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const newTable = doc.querySelector('table');
+    const newPagination = doc.querySelector('#pagination');
+    document.querySelector('table').replaceWith(newTable);
+    document.querySelector('#pagination').replaceWith(newPagination);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(error) {
+    showFlash('Failed to load orders', 'error');
+  }
+}
+function showFlash(message, type = "success") {
+  let flash = document.getElementById("flashMessage");
+  if (!flash) {
+    flash = document.createElement("div");
+    flash.id = "flashMessage";
+    document.body.appendChild(flash);
+  }
+  flash.textContent = message;
+  flash.className =
+    "fixed bottom-8 right-8 px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300 " +
+    (type === "error"
+      ? "bg-red-500 text-white"
+      : "bg-green-500 text-white");
+  flash.classList.remove("hidden");
+  setTimeout(() => {
+    flash.classList.add("hidden");
+  }, 3000);
+}
+  </script>
+
 </body>
 </html>
