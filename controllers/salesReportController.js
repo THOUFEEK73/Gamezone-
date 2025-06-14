@@ -29,10 +29,11 @@ export const getSalesReportPage = async (req, res) => {
       if (fromDate > toDate) {
         errors.date = 'From date cannot be after To date.';
       }
-    //   if (fromDate > today || toDate > today) {
-    //     errors.future = 'Dates cannot be in the future.';
-    //   }
-  
+      // Uncomment if you want to block future dates
+      // if (fromDate > today || toDate > today) {
+      //   errors.future = 'Dates cannot be in the future.';
+      // }
+
       if ((req.headers.accept && req.headers.accept.includes('application/json')) && Object.keys(errors).length) {
         return res.status(400).json({ errors });
       }
@@ -42,7 +43,6 @@ export const getSalesReportPage = async (req, res) => {
         return res.redirect('/admin/salesReport');
       }
     }
-
 
     if (filter === 'daily') {
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -71,19 +71,37 @@ export const getSalesReportPage = async (req, res) => {
       matchConditions.createdAt = dateFilter;
     }
 
-    const orders = await Order.aggregate([
-      { $unwind: '$items' },
+    // 1. Aggregate offerDiscount from items
+    const offerDiscountAgg = await Order.aggregate([
+      { $match: matchConditions },
+     
+      {
+        $group: {
+          _id: null,
+          offerDiscount: { $sum: { $ifNull: ['$offerDiscount', 0] } }
+        }
+      }
+    ]);
+    const offerDiscount = offerDiscountAgg[0]?.offerDiscount || 0;
+
+    console.log('offerDiscount:', offerDiscount);
+
+    // 2. Aggregate coupon discount and total sales at order level
+    const orderLevelAgg = await Order.aggregate([
       { $match: matchConditions },
       {
         $group: {
           _id: null,
           totalSales: { $sum: '$totalAmount' },
-          totalOrders: { $sum: 1 },
-          totalDiscount: { $sum: '$discount' }
+          couponDiscount: { $sum: { $ifNull: ['$discount', 0] } },
+          totalOrders: { $sum: 1 }
         }
       }
     ]);
+    const aggResult = orderLevelAgg[0] || { totalSales: 0, couponDiscount: 0, totalOrders: 0 };
 
+    const totalDiscount = offerDiscount + aggResult.couponDiscount;
+    console.log('totalDiscount:', totalDiscount);
     const allOrders = await Order.find(matchConditions)
       .populate('userId', 'name')
       .sort({ createdAt: -1 })
@@ -92,28 +110,30 @@ export const getSalesReportPage = async (req, res) => {
 
     const totalOrderCount = await Order.countDocuments(matchConditions);
     const totalPages = Math.ceil(totalOrderCount / limit);
-
-    const result = orders[0] || {
-      totalSales: 0,
-      totalOrders: 0,
-      totalDiscount: 0
-    };
-
+    
+  
     if (req.headers.accept && req.headers.accept.includes('application/json')) {
       return res.json({
         allOrders,
         page,
         totalOrders: totalOrderCount,
         totalPages,
-        totalSales: result.totalSales,
-        totalDiscount: result.totalDiscount
+        totalSales: aggResult.totalSales,
+        totalDiscount,
+        offerDiscount,
+        couponDiscount: aggResult.couponDiscount
       });
     }
 
+
+   
+
     res.render('admin/salesReport', {
-      totalSales: result.totalSales,
-      totalOrders: result.totalOrders,
-      totalDiscount: result.totalDiscount,
+      totalSales: aggResult.totalSales,
+      totalOrders: aggResult.totalOrders,
+      totalDiscount,
+      offerDiscount,
+      couponDiscount: aggResult.couponDiscount,
       allOrders,
       page,
       totalPages,

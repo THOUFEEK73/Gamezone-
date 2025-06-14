@@ -13,6 +13,7 @@ const orderSchema = new mongoose.Schema({
       required: true,
 
     },
+
     productTitle: String,
     quantity: Number,
 
@@ -63,6 +64,11 @@ const orderSchema = new mongoose.Schema({
   discount: {
     type: Number, default: 0
   },
+  offerDiscount:{
+    type: Number, default: 0
+  },
+
+
   paymentMethod: { type: String, enum: ['cod', 'razorpay', 'wallet'], default: 'cod' },
   paymentStatus:{
     type: String, 

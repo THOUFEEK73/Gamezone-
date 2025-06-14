@@ -946,7 +946,7 @@ export const postPlaceCODOrder = async (req, res) => {
     const activeOffers = await getActiveOffers();
     let subTotal = 0;
     let totalSavings = 0;
-
+    let offerDiscount = 0;
     const productsWithOffers = cartItems.products.map(item => {
       const gameObj = item.productId.toObject();
       const itemObj = item.toObject();
@@ -973,6 +973,8 @@ export const postPlaceCODOrder = async (req, res) => {
         itemObj.offerName = bestOffer.offerName;
         const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
         totalSavings += itemSavings;
+        offerDiscount +=itemSavings;
+        
       } else {
         itemObj.price = gameObj.price;
       }
@@ -982,6 +984,7 @@ export const postPlaceCODOrder = async (req, res) => {
 
     // Coupon logic
     let discount = 0;
+ 
     let appliedCoupon = null;
     let couponDescription = '';
     if (coupon) {
@@ -1030,9 +1033,12 @@ export const postPlaceCODOrder = async (req, res) => {
       originalPrice: item.originalPrice,
       discountPercentage: item.discountPercentage,
       offerName: item.offerName,
+      offerDiscount: item.originalPrice && item.price
+    ? (item.originalPrice - item.price) * item.quantity
+    : 0,
       status: 'Pending',
     }));
-
+    const totalOfferDiscount = orderItems.reduce((sum, item) => sum + (item.offerDiscount || 0), 0);
     // Create order
     const order = new Order({
       userId: userId,
@@ -1042,6 +1048,7 @@ export const postPlaceCODOrder = async (req, res) => {
       coupon: appliedCoupon,
       orderId: orderId,
       discount,
+      offerDiscount:totalOfferDiscount,
       shippingAddress: {
         name: shippingAddress.name,
         phone: shippingAddress.phone,
@@ -1083,6 +1090,7 @@ export const createRazorpayOrder = async (req, res) => {
     // 2. Calculate totals and apply offers
     let subTotal = 0;
     let totalSavings = 0;
+    let offerDiscount = 0;
     const productsWithOffers = cartItems.products.map(item => {
       const gameObj = item.productId.toObject();
       const itemObj = item.toObject();
@@ -1104,6 +1112,7 @@ export const createRazorpayOrder = async (req, res) => {
         itemObj.offerName = bestOffer.offerName;
         const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
         totalSavings += itemSavings;
+        offerDiscount += itemSavings;
       } else {
         itemObj.price = gameObj.price;
       }
@@ -1172,15 +1181,19 @@ export const createRazorpayOrder = async (req, res) => {
       originalPrice: item.originalPrice,
       discountPercentage: item.discountPercentage,
       offerName: item.offerName,
+      offerDiscount: item.originalPrice && item.price
+      ? (item.originalPrice - item.price) * item.quantity
+      : 0,
       status: 'Pending',
     }));
-
+    const totalOfferDiscount = orderItems.reduce((sum, item) => sum + (item.offerDiscount || 0), 0);
     const order = new Order({
       userId: userId,
       items: orderItems,
       paymentMethod: "razorpay",
       totalAmount,
       discount,
+      offerDiscount:totalOfferDiscount,
       coupon: appliedCoupon,
       orderId: orderId,
       razorpayOrderId: razorpayOrder.id,
@@ -1341,6 +1354,7 @@ export const postPlaceWalletOrder = async (req, res) => {
     const activeOffers = await getActiveOffers();
     let subTotal = 0;
     let totalSavings = 0;
+    let offerDiscount = 0;
 
     const productsWithOffers = cartItems.products.map(item => {
       const gameObj = item.productId.toObject();
@@ -1368,6 +1382,7 @@ export const postPlaceWalletOrder = async (req, res) => {
         itemObj.offerName = bestOffer.offerName;
         const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
         totalSavings += itemSavings;
+        offerDiscount += itemSavings;
       } else {
         itemObj.price = gameObj.price;
       }
@@ -1444,9 +1459,12 @@ export const postPlaceWalletOrder = async (req, res) => {
       originalPrice: item.originalPrice,
       discountPercentage: item.discountPercentage,
       offerName: item.offerName,
+      offerDiscount: item.originalPrice && item.price
+      ? (item.originalPrice - item.price) * item.quantity
+      : 0,
       status: 'Pending',
     }));
-
+    const totalOfferDiscount = orderItems.reduce((sum, item) => sum + (item.offerDiscount || 0), 0);
     // Create order
     const order = new Order({
       userId: userId,
@@ -1454,6 +1472,7 @@ export const postPlaceWalletOrder = async (req, res) => {
       paymentMethod: "wallet",
       totalAmount,
       discount,
+      offerDiscount:totalOfferDiscount,
       coupon: appliedCoupon,
       orderId: orderId,
       shippingAddress: {

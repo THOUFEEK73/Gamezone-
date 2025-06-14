@@ -68,7 +68,7 @@
       </div>
       <div class="bg-white rounded-xl shadow-md p-5 text-center border border-gray-100">
         <h2 class="text-sm text-gray-500 mb-1">Total Discount</h2>
-        <p class="text-2xl font-bold text-red-500">₹<%=totalDiscount%></p>
+        <p class="text-2xl font-bold text-red-500">₹<%=totalDiscount.toLocaleString('en-IN') %></p>
       </div>
     </div>
 
@@ -99,13 +99,22 @@
                     <%=order.paymentStatus%>
                   </td>
                   <td class="py-3 px-4">
-                    <% if (order.coupon) { %>
+                    <% 
+                      const hasCoupon = order.coupon && order.discount && order.discount > 0;
+                      const hasOffer = order.offerDiscount && order.offerDiscount > 0;
+                    %>
+                    <% if (hasCoupon && hasOffer) { %>
                       <span class="font-semibold text-indigo-600"><%= order.coupon %></span>
-                      <% if (order.discount && order.discount > 0) { %>
-                        <span class="ml-2 text-green-600 font-bold">-₹<%= order.discount.toLocaleString('en-IN') %></span>
-                      <% } %>
+                      <span class="ml-2 text-green-600 font-bold">-₹<%= order.discount.toLocaleString('en-IN') %></span>
+                      <span class="ml-2 text-yellow-600 font-bold">| Offer -₹<%= order.offerDiscount.toLocaleString('en-IN') %></span>
+                    <% } else if (hasCoupon) { %>
+                      <span class="font-semibold text-indigo-600"><%= order.coupon %></span>
+                      <span class="ml-2 text-green-600 font-bold">-₹<%= order.discount.toLocaleString('en-IN') %></span>
+                      <span class="ml-2 text-yellow-600">No Offer</span>
+                    <% } else if (hasOffer) { %>
+                      <span class="text-yellow-600 font-bold">Offer -₹<%= order.offerDiscount.toLocaleString('en-IN') %></span>
                     <% } else { %>
-                      No Coupon
+                      No Discount
                     <% } %>
                   </td>
                 </tr>
@@ -171,13 +180,23 @@
         tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td></tr>`;
       } else {
         tbody.innerHTML = data.allOrders.map(order => {
-  let couponHtml = 'No Coupon';
-  if (order.coupon) {
-    couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>`;
-    if (order.discount && order.discount > 0) {
-      couponHtml += `<span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>`;
-    }
+  let couponHtml = '';
+  const hasCoupon = order.coupon && order.discount && order.discount > 0;
+  const hasOffer = order.offerDiscount && order.offerDiscount > 0;
+
+  if (hasCoupon && hasOffer) {
+    couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>
+      <span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>
+      <span class="ml-2 text-yellow-600 font-bold">| Offer -₹${order.offerDiscount.toLocaleString('en-IN')}</span>`;
+  } else if (hasCoupon) {
+    couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>
+      <span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>`;
+  } else if (hasOffer) {
+    couponHtml = `<span class="text-yellow-600 font-bold">Offer -₹${order.offerDiscount.toLocaleString('en-IN')}</span>`;
+  } else {
+    couponHtml = 'No Discount';
   }
+
   return `
     <tr class="border-b">
       <td class="py-3 px-4">${order.orderId}</td>
