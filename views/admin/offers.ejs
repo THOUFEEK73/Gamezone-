@@ -73,39 +73,40 @@
               </td>
                 <td class="px-6 py-4 font-medium"><%= offer.offerName %></td>
                 <td class="px-6 py-4"><%= offer.discountPercentage %>%</td>
-                <td class="px-6 py-4"><%= new Date(offer.startDate).toLocaleDateString() %></td>
-                <td class="px-6 py-4"><%= new Date(offer.endDate).toLocaleDateString() %></td>
+                <td class="px-6 py-4">
+                  <%= offer.startDate ? new Date(offer.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-' %>
+                </td>
+                <td class="px-6 py-4">
+                  <%= offer.endDate ? new Date(offer.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-' %>
+                </td>
                <!-- Inside the table row -->
                <td class="px-6 py-4">
                 <%
-                function toDateOnly(date) {
-                  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-                }
-                const nowDate = toDateOnly(new Date());
-                const startDateOnly = toDateOnly(new Date(offer.startDate));
-                const endDateOnly = toDateOnly(new Date(offer.endDate));
-                
-                let status;
-                let statusClass;
-                
-                if (!offer.isActive) {
+                  const now = new Date();
+                  const start = new Date(offer.startDate);
+                  const end = new Date(offer.endDate);
+              
+                  let status = '';
+                  let statusClass = '';
+              
+                  if (!offer.isActive) {
                     status = 'Inactive';
                     statusClass = 'bg-red-100 text-red-600';
-                } else if (nowDate < startDateOnly) {
+                  } else if (now < start) {
                     status = 'Scheduled';
                     statusClass = 'bg-yellow-100 text-yellow-600';
-                } else if (nowDate > endDateOnly) {
+                  } else if (now > end) {
                     status = 'Expired';
                     statusClass = 'bg-gray-100 text-gray-600';
-                } else {
+                  } else {
                     status = 'Active';
                     statusClass = 'bg-green-100 text-green-600';
-                }
+                  }
                 %>
                 <span class="status-badge <%= statusClass %> text-xs font-semibold px-3 py-1 rounded-full">
-                    <%= status %>
+                  <%= status %>
                 </span>
-            </td>
+              </td>
                 <td class="px-6 py-4 flex items-center gap-4">
                     <!-- Edit Button -->
                     <button title="Edit"

@@ -847,7 +847,7 @@ export const getCheckoutPage = async (req, res) => {
     });
     const wallet = await Wallet.findOne({ userId }).lean();
     const address = await Address.find({ userId });
-    const coupons = await Coupon.find({ isActive: true }).sort({ createdAt: -1 });
+    const coupons = await Coupon.find({ isActive: true, isExpired: false }).sort({ createdAt: -1 });
 
     if (!cartItems || cartItems.products.length === 0) {
       return res.redirect("/cart");

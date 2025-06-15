@@ -92,17 +92,35 @@ function generateCouponCode() {
   
       const data = await response.json();
   
-      if (response.ok && data.success) {
+      if (response.ok && data.success && data.coupon) {
         // Update status badge in the table row
         const row = document.querySelector(`tr[data-coupon-id="${couponId}"]`);
         if (row) {
           const statusTd = row.querySelector('.coupon-status');
           if (statusTd) {
-            if (isActive) {
-              statusTd.innerHTML = '<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Active</span>';
+            // Use the same logic as EJS
+            const now = new Date();
+            const start = new Date(data.coupon.startDate);
+            const end = new Date(data.coupon.endDate);
+  
+            let status = '';
+            let statusClass = '';
+  
+            if (!data.coupon.isActive) {
+              status = 'Inactive';
+              statusClass = 'bg-red-100 text-red-700';
+            } else if (now < start) {
+              status = 'Scheduled';
+              statusClass = 'bg-yellow-100 text-yellow-700';
+            } else if (now > end) {
+              status = 'Expired';
+              statusClass = 'bg-gray-100 text-gray-700';
             } else {
-              statusTd.innerHTML = '<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Inactive</span>';
+              status = 'Active';
+              statusClass = 'bg-green-100 text-green-700';
             }
+  
+            statusTd.innerHTML = `<span class="${statusClass} px-2 py-1 rounded text-xs font-semibold">${status}</span>`;
           }
         }
         showToast(isActive ? "Coupon activated" : "Coupon deactivated");
@@ -113,6 +131,92 @@ function generateCouponCode() {
       showToast("Server error");
     }
   }
+
+// Attach click event to all edit buttons
+document.querySelectorAll('.edit-coupon-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const coupon = JSON.parse(this.dataset.coupon.replace(/&apos;/g, "'"));
+    openUpdateCouponModal(coupon);
+  });
+});
+
+function openUpdateCouponModal(coupon) {
+  document.getElementById('updateCouponModal').classList.remove('hidden');
+  document.getElementById('updateCouponId').value = coupon._id;
+  document.getElementById('updateCouponCode').value = coupon.code || '';
+  document.getElementById('updateDiscountType').value = coupon.discountType || '';
+  document.getElementById('updateDiscountValue').value = coupon.discountValue || '';
+  document.getElementById('updateMinOrderAmount').value = coupon.minOrderAmount || '';
+  document.getElementById('updateMaxOrderAmount').value = coupon.maxOrderAmount || '';
+  document.getElementById('updateDescription').value = coupon.description || '';
+  document.getElementById('updateStartDate').value = coupon.startDate ? coupon.startDate.split('T')[0] : '';
+  document.getElementById('updateEndDate').value = coupon.endDate ? coupon.endDate.split('T')[0] : '';
+}
+
+document.getElementById('updateCouponForm').addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  const fields = [
+    'code', 'discountType', 'discountValue', 'minOrderAmount',
+    'maxOrderAmount', 'description', 'startDate', 'endDate'
+  ];
+
+  // Clear previous errors
+  fields.forEach(field => {
+    const errorEl = document.getElementById('error-update-' + field);
+    if (errorEl) errorEl.textContent = '';
+  });
+
+  const generalError = document.getElementById('updateCouponError');
+  generalError.classList.add('hidden');
+  generalError.textContent = '';
+
+  const couponId = document.getElementById('updateCouponId').value;
+  const formData = {
+    code: document.getElementById('updateCouponCode').value,
+    discountType: document.getElementById('updateDiscountType').value,
+    discountValue: document.getElementById('updateDiscountValue').value,
+    minOrderAmount: document.getElementById('updateMinOrderAmount').value,
+    maxOrderAmount: document.getElementById('updateMaxOrderAmount').value,
+    description: document.getElementById('updateDescription').value,
+    startDate: document.getElementById('updateStartDate').value,
+    endDate: document.getElementById('updateEndDate').value
+  };
+
+  try {
+    const res = await fetch(`/admin/coupons/update/${couponId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+
+    const data = await res.json(); // Read the response first
+
+    if (!res.ok) {
+      if (data.errors) {
+        for (const field in data.errors) {
+          const errorEl = document.getElementById('error-update-' + field);
+          if (errorEl) errorEl.textContent = data.errors[field];
+        }
+      } else {
+        generalError.classList.remove('hidden');
+        generalError.textContent = data.message || 'Failed to update coupon.';
+      }
+      return;
+    }
+    
+  
+    // ✅ Success
+    localStorage.setItem('couponUpdated', 'Coupon updated successfully');
+    location.reload();
+    
+    // Optional: reload or refresh coupon list
+  } catch (err) {
+    console.log(err)
+    generalError.classList.remove('hidden');
+    generalError.textContent = 'Server error. Please try again.';
+  }
+});
 
 
   function showToast(msg) {

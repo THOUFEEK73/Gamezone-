@@ -7,6 +7,7 @@ import sessionMiddleware from "./middleware/sessionMiddleWare.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import passport from './config/passport.js'; 
 import flash from 'connect-flash';
+import './utils/offerExpiryJob.js'
 
 
 dotenv.config();

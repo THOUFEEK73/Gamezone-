@@ -62,7 +62,7 @@ import {
 
 import {
   getCouponPage,postCoupon,
-  CouponStatus
+  CouponStatus,updateCoupon,
 } from '../controllers/adminCouponManagement.js';
 import Coupon from "../models/couponModel.js";
 
@@ -175,6 +175,7 @@ adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)
 adminRoutes.get('/coupons',getCouponPage);
 adminRoutes.post('/coupons/add',postCoupon);
 adminRoutes.patch('/coupons/toggleStatus/:id',CouponStatus)
+adminRoutes.patch('/coupons/update/:id',updateCoupon)
 
 // Sales Report
 
