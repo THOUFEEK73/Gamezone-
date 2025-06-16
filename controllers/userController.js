@@ -887,7 +887,7 @@ export const getCheckoutPage = async (req, res) => {
           const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
           totalSavings += itemSavings;
         }
-        subTotal += itemObj.price * item.quantity;
+        subTotal += gameObj.price * item.quantity;
         cartCount +=item.quantity;
 
        
@@ -907,7 +907,7 @@ export const getCheckoutPage = async (req, res) => {
 
     const usedCoupons = await Coupon.find({ usedBy: userId }).select('code -_id');
 const usedCouponCodes = usedCoupons.map(c => c.code);
-    
+const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coupon.code));
 
     // cartItems.products.forEach((prd) => {
     //   subTotal = prd.price * prd.quantity;
@@ -920,7 +920,7 @@ const usedCouponCodes = usedCoupons.map(c => c.code);
       subTotal,
       address,
       totalSavings,
-      coupons,
+      coupons:availableCoupons,
       wallet,
       usedCouponCodes
     });

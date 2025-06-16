@@ -271,3 +271,90 @@ function showFlash(message, type = "success") {
     flash.classList.add("hidden");
   }, 3000);
 }
+
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  let appliedCoupon = null;
+
+  const couponBtns = document.querySelectorAll('.applyCouponBtn');
+  const appliedCouponBox = document.getElementById('appliedCouponBox');
+  const appliedCouponCodeSpan = document.getElementById('appliedCouponCode');
+  const removeCouponBtn = document.getElementById('removeCouponBtn');
+
+  // Apply coupon
+  couponBtns.forEach(btn => {
+    // If the coupon is already used (disabled and has .text-red-500 in its parent), show alert
+    if (
+      btn.disabled &&
+      btn.closest('div').querySelector('.text-red-500')
+    ) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        showFlash('You have already used this coupon.', 'error');
+      });
+      return; // Don't add the normal apply handler
+    }
+
+    // Normal apply handler
+    btn.addEventListener('click', function () {
+      const code = this.dataset.code;
+      appliedCoupon = code;
+      appliedCouponBox.classList.remove('hidden');
+      appliedCouponCodeSpan.textContent = code;
+
+      // Disable all apply buttons except the one applied
+      couponBtns.forEach(b => {
+        if (b.dataset.code !== code) {
+          b.disabled = true;
+          b.style.opacity = 0.5;
+          b.style.cursor = 'not-allowed';
+        } else {
+          b.textContent = 'Applied';
+          b.disabled = true;
+          b.style.opacity = 1;
+          b.style.cursor = 'default';
+        }
+      });
+    });
+  });
+
+  // Remove coupon
+  if (removeCouponBtn) {
+    removeCouponBtn.addEventListener('click', function () {
+      appliedCoupon = null;
+      appliedCouponBox.classList.add('hidden');
+      appliedCouponCodeSpan.textContent = '';
+
+      // Re-enable all apply buttons (except already used)
+      couponBtns.forEach(b => {
+        if (b.closest('div').querySelector('.text-red-500')) {
+          b.disabled = true;
+          b.style.opacity = 0.5;
+          b.style.cursor = 'not-allowed';
+        } else {
+          b.textContent = 'Apply';
+          b.disabled = false;
+          b.style.opacity = 1;
+          b.style.cursor = '';
+        }
+      });
+
+      // Restore subtotal and total
+      const subtotalEl = document.getElementById('subTotal');
+      const totalEl = document.getElementById('orderTotal');
+      if (subtotalEl && totalEl) {
+        subtotalEl.classList.remove('line-through', 'text-gray-400');
+        const badge = document.getElementById('couponAppliedBadge');
+        if (badge) badge.remove();
+        const originalSubtotal = subtotalEl.textContent.replace(/[^\d]/g, '');
+        totalEl.textContent = `₹${originalSubtotal}`;
+      }
+      const savingsEl = document.getElementById('couponSavings');
+      if (savingsEl) savingsEl.remove();
+    });
+  }
+
+  window.getAppliedCoupon = () => appliedCoupon;
+});

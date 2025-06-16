@@ -8,8 +8,8 @@ export const getSalesReportPage = async (req, res) => {
 
     let matchConditions = {
       $or: [
-        { paymentStatus: 'paid' },
-        { paymentMethod: 'cod', 'items.status': 'Delivered' },
+        { paymentStatus: 'paid','items.status': 'Delivered', 'items.status': { $ne: 'Pending' } },
+        { paymentMethod: 'cod', 'items.status': 'Delivered','items.status':{$ne:'Pending'} },
         { paymentMethod: 'wallet', paymentStatus: 'paid' }
       ]
     };

@@ -161,11 +161,11 @@ export const downloadSalesReportPDF = async (req, res) => {
       doc.text(order.orderId.slice(0, 10), 40, rowY);
       doc.text(formattedDate, 105, rowY, { width: 90 });
       doc.text(order.userId?.name || 'Guest', 200, rowY, { width: 80 });
-      doc.text(`₹${order.totalAmount}`, 285, rowY);
+      doc.text(`RS-${order.totalAmount}`, 285, rowY);
       doc.text(order.paymentStatus, 340, rowY);
       doc.text(order.coupon || '—', 395, rowY, { width: 70 });
-      doc.text(`₹${order.discount || 0}`, 470, rowY);
-      doc.text(`₹${order.offerDiscount || 0}`, 515, rowY);
+      doc.text(`RS-${order.discount || 0}`, 470, rowY);
+      doc.text(`RS-${order.offerDiscount || 0}`, 515, rowY);
       doc.moveDown(0.7);
     });
 

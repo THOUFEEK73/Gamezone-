@@ -535,7 +535,10 @@
                 </svg>
               </button>
 
-              
+              <div id="appliedCouponBox" class="mb-2 hidden">
+                <span class="text-green-600 font-semibold">Applied Coupon: <span id="appliedCouponCode"></span></span>
+                <button id="removeCouponBtn" class="ml-2 text-xs text-red-500 underline">Remove</button>
+              </div>
         
               <div id="couponList" class="hidden mt-4 space-y-3">
                 <% if (coupons && coupons.length > 0) { %>
