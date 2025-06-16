@@ -15,6 +15,8 @@ export const getSalesReportPage = async (req, res) => {
     };
 
     const filter = req.query.filter;
+
+    console.log('Filter:', filter);
     let dateFilter = {};
     const now = new Date();
 
@@ -45,6 +47,7 @@ export const getSalesReportPage = async (req, res) => {
     }
 
     if (filter === 'daily') {
+     console.log('Daily filter applied');
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const end = new Date(start);
       end.setDate(end.getDate() + 1);

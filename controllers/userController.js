@@ -890,7 +890,7 @@ export const getCheckoutPage = async (req, res) => {
         subTotal += itemObj.price * item.quantity;
         cartCount +=item.quantity;
 
-        console.log('triggering check 4',subTotal);
+       
         return itemObj;
     
     })
@@ -905,7 +905,8 @@ export const getCheckoutPage = async (req, res) => {
       );
     }
 
-    
+    const usedCoupons = await Coupon.find({ usedBy: userId }).select('code -_id');
+const usedCouponCodes = usedCoupons.map(c => c.code);
     
 
     // cartItems.products.forEach((prd) => {
@@ -921,6 +922,7 @@ export const getCheckoutPage = async (req, res) => {
       totalSavings,
       coupons,
       wallet,
+      usedCouponCodes
     });
   } catch (error) {
     console.error("Error while fetching checkout Page", error);
@@ -988,7 +990,12 @@ export const postPlaceCODOrder = async (req, res) => {
     let appliedCoupon = null;
     let couponDescription = '';
     if (coupon) {
-      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true });
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true,isExpired:false});
+     
+      if(couponDoc.usedBy && couponDoc.usedBy.includes(userId)){
+        return res.status(400).json({ success: false, message: 'You have already used this coupon.' });
+      }
+
       if (couponDoc && subTotal >= couponDoc.minOrderAmount) {
         if (couponDoc.discountType === 'percentage') {
           discount = Math.floor(subTotal * (couponDoc.discountValue / 100));
@@ -998,6 +1005,10 @@ export const postPlaceCODOrder = async (req, res) => {
         appliedCoupon = couponDoc.code;
         couponDescription = couponDoc.description || '';
       }
+    }
+
+    if(appliedCoupon){
+       await Coupon.findOneAndUpdate({code:appliedCoupon},{$addToSet:{usedBy:userId}},{new:true});
     }
 
     const totalAmount = Math.max(subTotal - discount, 0);
@@ -1125,7 +1136,7 @@ export const createRazorpayOrder = async (req, res) => {
     let appliedCoupon = null;
     let couponDescription = '';
     if (coupon) {
-      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true });
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true,isExpired:false });
       if (couponDoc && subTotal >= couponDoc.minOrderAmount) {
         if (couponDoc.discountType === 'percentage') {
           discount = Math.floor(subTotal * (couponDoc.discountValue / 100));
@@ -1137,6 +1148,12 @@ export const createRazorpayOrder = async (req, res) => {
       }
     }
 
+    if (appliedCoupon) {
+      await Coupon.findOneAndUpdate(
+        { code: appliedCoupon },
+        { $addToSet: { usedBy: userId } }
+      );
+    }
     const totalAmount = Math.max(subTotal - discount, 0);
 
     // 4. Stock check
@@ -1395,7 +1412,7 @@ export const postPlaceWalletOrder = async (req, res) => {
     let appliedCoupon = null;
     let couponDescription = '';
     if (coupon) {
-      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true });
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true,isExpired:false });
       if (couponDoc && subTotal >= couponDoc.minOrderAmount) {
         if (couponDoc.discountType === 'percentage') {
           discount = Math.floor(subTotal * (couponDoc.discountValue / 100));
@@ -1405,6 +1422,13 @@ export const postPlaceWalletOrder = async (req, res) => {
         appliedCoupon = couponDoc.code;
         couponDescription = couponDoc.description || '';
       }
+    }
+
+    if (appliedCoupon) {
+      await Coupon.findOneAndUpdate(
+        { code: appliedCoupon },
+        { $addToSet: { usedBy: userId } }
+      );
     }
 
     const totalAmount = Math.max(subTotal - discount, 0);

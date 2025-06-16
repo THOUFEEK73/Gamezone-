@@ -38,10 +38,10 @@
 
     <!-- Actions & Filters -->
     <div class="flex flex-wrap items-center gap-4">
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm">
+      <button id="downloadPdfBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-sm">
         Download PDF
       </button>
-      <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm">
+      <button id="downloadExcelBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow-sm">
         Download Excel
       </button>
     </div>
@@ -245,6 +245,24 @@
       }
       fetchOrders(1);
     }
+
+    document.getElementById('downloadExcelBtn').addEventListener('click',function(){
+      let url = '/admin/salesReport/excel';
+  if (currentFilter) url += `?filter=${currentFilter}`;
+  if (currentFilter === 'custom' && fromDate && toDate) {
+    url += `&from=${fromDate}&to=${toDate}`;
+  }
+  window.location.href = url;
+    })
+
+    document.getElementById('downloadPdfBtn').addEventListener('click', function() {
+  let url = '/admin/salesReport/pdf';
+  if (currentFilter) url += `?filter=${currentFilter}`;
+  if (currentFilter === 'custom' && fromDate && toDate) {
+    url += `&from=${fromDate}&to=${toDate}`;
+  }
+  window.location.href = url;
+});
     </script>
 
 </body>

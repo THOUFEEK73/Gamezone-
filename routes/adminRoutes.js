@@ -69,6 +69,10 @@ import Coupon from "../models/couponModel.js";
 import {
   getSalesReportPage
 } from '../controllers/salesReportController.js';
+
+import {
+  downloadSalesReportExcel,downloadSalesReportPDF,
+} from '../utils/downloadSalesReports.js';
 const adminRoutes = express.Router();
 
 // Middleware
@@ -180,7 +184,8 @@ adminRoutes.patch('/coupons/update/:id',updateCoupon)
 // Sales Report
 
 adminRoutes.get('/salesReport',getSalesReportPage);
-
+adminRoutes.get('/salesReport/excel', downloadSalesReportExcel);
+adminRoutes.get('/salesReport/pdf', downloadSalesReportPDF);
 
 // Logout
 adminRoutes.get("/logout", adminLogout);
