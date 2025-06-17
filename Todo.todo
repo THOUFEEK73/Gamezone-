@@ -94,7 +94,19 @@ pending Task
 ☐ fix the error on previous order also showing future offer 
 
 
-☐ limit the coupon and only users can use the coupon once
-☐ users can add or remove the coupon 
+✔ limit the coupon and only users can use the coupon once @done (16/06/2025, 20:05:32)
+✔ users can add or remove the coupon @done (16/06/2025, 20:05:37)
+
+
+☐ User Side 
+☐ Order above rs 1000 should not be allowed for cod
+☐ Delivery charge can be applied according to location / fixed charges (optionsal)
+
+☐ Admin side
+☐ Admin Dashboard - chart with filter (year , month, day)
+☐ Best selling products (top 10)
+☐ Best selling categories (top 10)
+☐ Best selling companies (top 10)
+☐ Generate Ledger Book (optional)
 
 

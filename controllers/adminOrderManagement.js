@@ -5,7 +5,11 @@ import { getActiveOffers } from '../utils/offerUtils.js';
 export const getOrdersPage = async(req,res)=>{
     try{
 
-        const orders = await Order.find().populate('userId','name email').populate('items.productId').sort({createdAt:-1}).lean()
+        const orders = await Order.find()
+        .populate('userId','name email')
+        .populate('items.productId')
+        .sort({createdAt:-1})
+        .lean()
         const activeOffers = await getActiveOffers();
 
 

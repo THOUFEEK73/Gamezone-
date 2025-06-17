@@ -91,9 +91,8 @@
               <% } %>
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
-              <% if (originalTotal !== discountedTotal) { %>
-                <span class="original-total">₹ <%= originalTotal.toLocaleString('en-IN') %></span><br>
-                <span class="discounted-total">₹ <%= discountedTotal.toLocaleString('en-IN') %></span>
+              <% if (typeof order.grandTotal !== 'undefined') { %>
+                <span class="discounted-total">₹ <%= order.grandTotal.toLocaleString('en-IN') %></span>
               <% } else { %>
                 <span class="discounted-total">₹ <%= discountedTotal.toLocaleString('en-IN') %></span>
               <% } %>

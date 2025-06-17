@@ -16,6 +16,11 @@ const orderSchema = new mongoose.Schema({
 
     productTitle: String,
     quantity: Number,
+    originalPrice: Number,
+    discountedPrice: Number,
+    discountPercentage: Number,
+    offerName: String,
+    
 
     // total:Number,
     status: {
@@ -65,6 +70,12 @@ const orderSchema = new mongoose.Schema({
     type: Number, default: 0
   },
   offerDiscount:{
+    type: Number, default: 0
+  },
+  grandTotal:{
+    type: Number, default: 0
+  },
+  deliveryCharge:{
     type: Number, default: 0
   },
 

@@ -61,7 +61,7 @@
                     </td>
                     <!-- Total Amount -->
                     <td class="px-4 py-4 whitespace-nowrap text-green-600 font-semibold w-[110px]">
-                      ₹ <%= order.totalAmount %>
+                      ₹ <%= order.grandTotal %>
                     </td>
                     <!-- Items -->
                     <td class="px-4 py-4 w-[320px]">
@@ -85,7 +85,7 @@
                     </td>
                     <!-- Order Status -->
                     <td class="px-4 py-4 w-[140px]">
-                      <% if (order.paymentStatus === 'failed' && order.paymentMethod === 'razorpay') { %>
+                      <% if (order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay') { %>
                         <span class="bg-red-100 text-red-600 text-xs px-3 py-1 rounded-full inline-block">
                           Payment Failed
                         </span>
@@ -130,7 +130,7 @@
                     </td>
                     <!-- Actions -->
                     <td class="px-4 py-4 w-[120px] whitespace-nowrap">
-                      <% if (order.paymentStatus === 'failed' && order.paymentMethod === 'razorpay') { %>
+                      <% if (order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay') { %>
                         <form onsubmit="return retryPayment('<%= order._id %>')" class="inline-block">
                           <button type="submit"
                             class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-white border border-red-500 text-red-600 font-semibold text-sm shadow hover:bg-red-50 hover:border-red-600 transition focus:outline-none focus:ring-2 focus:ring-red-300">

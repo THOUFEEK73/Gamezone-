@@ -18,9 +18,8 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
 
   const shippingAddress = JSON.parse(defaultAddressDiv.getAttribute('data-address'));
 
-  const appliedCouponBtn = document.querySelector('.applyCouponBtn[disabled]');
-  const appliedCoupon = appliedCouponBtn ? appliedCouponBtn.dataset.code : null;
-
+  const appliedCouponInput = document.getElementById('appliedCouponInput');
+  const appliedCoupon = appliedCouponInput ? appliedCouponInput.value : null;
 
   if (selectPayment === 'cod') {
     try {
@@ -178,183 +177,30 @@ function showFlash(message, type = "success") {
 }
 
 
+
+
+
 document.addEventListener('DOMContentLoaded', function () {
+  console.log('triggered')
+  // Apply coupon: reload with coupon code in URL
   document.querySelectorAll('.applyCouponBtn').forEach(btn => {
-    btn.addEventListener('click', async function () {
-      const code = this.dataset.code;
-      const subtotalEl = document.getElementById('subTotal');
-      let cartTotal = 0;
-      if (subtotalEl) {
-        cartTotal = Number(subtotalEl.textContent.replace(/[^\d]/g, ''));
-      }
-      try {
-        const response = await fetch('/apply-coupon', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, cartTotal })
-        });
-        const data = await response.json();
-        if (data.success) {
-          // Strike-through subtotal and add "Coupon Applied" badge
-          if (subtotalEl) {
-            subtotalEl.classList.add('line-through', 'text-gray-400');
-            // Add badge if not present
-            let badge = document.getElementById('couponAppliedBadge');
-            if (!badge) {
-              badge = document.createElement('span');
-              badge.id = 'couponAppliedBadge';
-              badge.className = 'ml-2 inline-block bg-green-100 text-green-700 text-xs px-2 py-1 rounded font-semibold align-middle';
-              badge.textContent = 'Coupon Applied';
-              subtotalEl.parentNode.appendChild(badge);
-            }
-          }
-          // Update only the total amount in order summary
-          const totalEl = document.getElementById('orderTotal');
-          if (totalEl) {
-            totalEl.textContent = `₹${data.newTotal}`;
-            totalEl.classList.add('bg-green-100', 'rounded', 'px-2', 'transition');
-            setTimeout(() => totalEl.classList.remove('bg-green-100', 'rounded', 'px-2', 'transition'), 1500);
-          }
-          const summaryDiv = document.getElementById('orderSummary');
-          const subtotalRow = document.getElementById('subTotal')?.parentNode;
-          let savingsEl = document.getElementById('couponSavings');
-          if (!savingsEl && summaryDiv && subtotalRow) {
-            savingsEl = document.createElement('div');
-            savingsEl.id = 'couponSavings';
-            savingsEl.className = 'flex justify-between items-center border-b border-blue-200 pb-2 bg-blue-50 rounded transition';
-            summaryDiv.insertBefore(savingsEl, subtotalRow.nextSibling);
-          }
-          if (savingsEl) {
-            savingsEl.innerHTML = `
-              <span class="text-blue-700 font-semibold flex items-center gap-1">
-                <svg class="w-4 h-4 text-blue-500 inline" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 14l2-2 4 4m0 0l-4-4-2 2"></path></svg>
-                Coupon Discount
-              </span>
-              <span class="font-semibold text-blue-700">-₹${data.discount}</span>
-            `;
-            savingsEl.classList.add('animate-pulse');
-            setTimeout(() => savingsEl.classList.remove('animate-pulse'), 1200);
-          }
-          // Change button to "Applied"
-          document.querySelectorAll('.applyCouponBtn').forEach(b => {
-            b.textContent = 'Apply';
-            b.disabled = false;
-            b.classList.remove('bg-green-600', 'text-white', 'cursor-not-allowed');
-            b.classList.add('text-blue-600', 'hover:underline');
-          });
-          this.textContent = 'Applied';
-          this.disabled = true;
-          this.classList.remove('text-blue-600', 'hover:underline');
-          this.classList.add('bg-green-600', 'text-white', 'cursor-not-allowed');
-          // Show flash message
-          showFlash(data.message || "Coupon applied successfully !", "success");
-        } else {
-          showFlash(data.message || "Invalid coupon", "error");
-        }
-      } catch (error) {
-        console.error('Error applying coupon:', error);
-        showFlash("Server error. Please try again.", "error");
-      }
-    });
-  });
-});
-function showFlash(message, type = "success") {
-  const flash = document.getElementById("flashMessage");
-  flash.textContent = message;
-  flash.className =
-    "fixed bottom-8 right-8 px-4 py-3 rounded-md shadow-lg z-[9999] transition-all duration-300 " +
-    (type === "error"
-      ? "bg-red-500 text-white"
-      : "bg-green-500 text-white");
-  flash.classList.remove("hidden");
-  setTimeout(() => {
-    flash.classList.add("hidden");
-  }, 3000);
-}
-
-
-
-
-document.addEventListener('DOMContentLoaded', function () {
-  let appliedCoupon = null;
-
-  const couponBtns = document.querySelectorAll('.applyCouponBtn');
-  const appliedCouponBox = document.getElementById('appliedCouponBox');
-  const appliedCouponCodeSpan = document.getElementById('appliedCouponCode');
-  const removeCouponBtn = document.getElementById('removeCouponBtn');
-
-  // Apply coupon
-  couponBtns.forEach(btn => {
-    // If the coupon is already used (disabled and has .text-red-500 in its parent), show alert
-    if (
-      btn.disabled &&
-      btn.closest('div').querySelector('.text-red-500')
-    ) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        showFlash('You have already used this coupon.', 'error');
-      });
-      return; // Don't add the normal apply handler
-    }
-
-    // Normal apply handler
+    console.log('Button found:', btn);
     btn.addEventListener('click', function () {
+      console.log('Apply button clicked', this.dataset.code);
       const code = this.dataset.code;
-      appliedCoupon = code;
-      appliedCouponBox.classList.remove('hidden');
-      appliedCouponCodeSpan.textContent = code;
-
-      // Disable all apply buttons except the one applied
-      couponBtns.forEach(b => {
-        if (b.dataset.code !== code) {
-          b.disabled = true;
-          b.style.opacity = 0.5;
-          b.style.cursor = 'not-allowed';
-        } else {
-          b.textContent = 'Applied';
-          b.disabled = true;
-          b.style.opacity = 1;
-          b.style.cursor = 'default';
-        }
-      });
+      const url = new URL(window.location.href);
+      url.searchParams.set('coupon', code);
+      window.location.href = url.toString();
     });
   });
 
-  // Remove coupon
+  // Remove coupon: remove coupon param and reload
+  const removeCouponBtn = document.getElementById('removeCouponBtn');
   if (removeCouponBtn) {
     removeCouponBtn.addEventListener('click', function () {
-      appliedCoupon = null;
-      appliedCouponBox.classList.add('hidden');
-      appliedCouponCodeSpan.textContent = '';
-
-      // Re-enable all apply buttons (except already used)
-      couponBtns.forEach(b => {
-        if (b.closest('div').querySelector('.text-red-500')) {
-          b.disabled = true;
-          b.style.opacity = 0.5;
-          b.style.cursor = 'not-allowed';
-        } else {
-          b.textContent = 'Apply';
-          b.disabled = false;
-          b.style.opacity = 1;
-          b.style.cursor = '';
-        }
-      });
-
-      // Restore subtotal and total
-      const subtotalEl = document.getElementById('subTotal');
-      const totalEl = document.getElementById('orderTotal');
-      if (subtotalEl && totalEl) {
-        subtotalEl.classList.remove('line-through', 'text-gray-400');
-        const badge = document.getElementById('couponAppliedBadge');
-        if (badge) badge.remove();
-        const originalSubtotal = subtotalEl.textContent.replace(/[^\d]/g, '');
-        totalEl.textContent = `₹${originalSubtotal}`;
-      }
-      const savingsEl = document.getElementById('couponSavings');
-      if (savingsEl) savingsEl.remove();
+      const url = new URL(window.location.href);
+      url.searchParams.delete('coupon');
+      window.location.href = url.toString();
     });
   }
-
-  window.getAppliedCoupon = () => appliedCoupon;
 });

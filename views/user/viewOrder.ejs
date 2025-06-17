@@ -168,7 +168,7 @@
   <div class="flex justify-between">
     <span class="text-gray-700">Subtotal</span>
     <span>
-      ₹<%= order.items.reduce((sum, item) => sum + (item.discountedPrice * item.quantity), 0).toLocaleString('en-IN') %>
+      ₹<%=subTotal.toLocaleString('en-IN') %>
     </span>
   </div>
   <% if (order.coupon && order.discount > 0) { %>
@@ -176,7 +176,7 @@
       <div>
         <span class="text-blue-700 font-semibold flex items-center gap-1">
           <i class="fa-solid fa-ticket"></i>
-          Coupon (<%= order.coupon %>)
+          Coupon Applied: <span class="ml-1"><%= order.coupon %></span>
         </span>
         <% if (order.couponDescription) { %>
           <div class="text-xs text-blue-500 ml-6"><%= order.couponDescription %></div>
@@ -187,7 +187,7 @@
   <% } %>
   <div class="flex justify-between font-bold text-lg pt-2 border-t">
     <span>Total</span>
-    <span>₹<%= order.totalAmount.toLocaleString('en-IN') %></span>
+    <span>₹<%= order.grandTotal.toLocaleString('en-IN') %></span>
   </div>
 </div>
 

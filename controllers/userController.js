@@ -614,6 +614,7 @@ export const removeWishlist = async (req,res)=>{
 
 export const getCartPage = async (req, res) => {
   try {
+    console.log('this is coupon code ',req.query.coupon)
     const userId = req.session.userId;
     const cartItems = await Cart.findOne({ userId }).populate({
       path: "products.productId",
@@ -635,11 +636,15 @@ export const getCartPage = async (req, res) => {
     let cartCount = 0;
     let subTotal = 0;
     let totalSavings = 0;
+    let offerDiscount = 0;
+    let total = 0;
 
     const productsWithOffers = cartItems.products.map(item => {
       const gameObj = item.productId.toObject();
       const itemObj = item.toObject();
 
+      subTotal += gameObj.price * item.quantity;
+      cartCount += item.quantity;
       // Find applicable offers
       const productOffer = activeOffers.find(offer =>
         offer.offerType === 'product' && 
@@ -667,9 +672,7 @@ export const getCartPage = async (req, res) => {
         itemObj.price = gameObj.price;
       }
 
-      subTotal += itemObj.price * item.quantity;
-      console.log('checking the actual price ',subTotal)
-      cartCount += item.quantity;
+  
 
       return itemObj;
     });
@@ -690,12 +693,14 @@ export const getCartPage = async (req, res) => {
     // });
 
     cartItems.products = productsWithOffers;
-
+    
+    total = Math.max(subTotal - totalSavings);
     res.render("user/cart", {
       page: "cart",
       cart: cartItems,
       cartCount,
       subTotal,
+      total,
       totalSavings,
     });
   } catch (error) {
@@ -838,6 +843,10 @@ export const getCheckoutPage = async (req, res) => {
     //   return res.redirect('/cart');
     // }
 
+    const appliedCoupon = req.query.coupon || null;
+
+    console.log("applied coupon is ", appliedCoupon);
+
     req.session.canAccessCheckout = false;
 
     const userId = req.session.userId;
@@ -859,6 +868,7 @@ export const getCheckoutPage = async (req, res) => {
     let cartCount = 0;
     let subTotal = 0;
     let totalSavings = 0;
+    let total = 0;
 
     const productsWithOffers = cartItems.products.map((item)=>{
           const gameObj =item.productId.toObject();
@@ -887,6 +897,7 @@ export const getCheckoutPage = async (req, res) => {
           const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
           totalSavings += itemSavings;
         }
+
         subTotal += gameObj.price * item.quantity;
         cartCount +=item.quantity;
 
@@ -905,14 +916,45 @@ export const getCheckoutPage = async (req, res) => {
       );
     }
 
-    const usedCoupons = await Coupon.find({ usedBy: userId }).select('code -_id');
-const usedCouponCodes = usedCoupons.map(c => c.code);
-const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coupon.code));
+    let couponDiscount = 0
+    let appliedCouponDoc = null;
 
+    if (appliedCoupon) {
+      appliedCouponDoc = await Coupon.findOne({ code: appliedCoupon, isActive: true, isExpired: false });
+      if (appliedCouponDoc && (subTotal - totalSavings) >= appliedCouponDoc.minOrderAmount) {
+        if (appliedCouponDoc.discountType === 'percentage') {
+          couponDiscount = Math.floor((subTotal - totalSavings) * (appliedCouponDoc.discountValue / 100));
+        } else {
+          couponDiscount = appliedCouponDoc.discountValue;
+        }
+      }
+    }
+
+    console.log('this is the amount of coupon discount' ,couponDiscount)
+
+
+
+
+
+console.log("this is the coupon value",coupons.discountValue)
+     total = Math.max(subTotal - totalSavings - couponDiscount,0);
+// total = Math.max(subTotal - totalSavings, 0);
     // cartItems.products.forEach((prd) => {
     //   subTotal = prd.price * prd.quantity;
     // });
 
+    const DELIVERY_CHARGE = 100;
+    let deliveryCharge = 0;
+
+    if(subTotal< 1000){
+      deliveryCharge = DELIVERY_CHARGE
+    
+    }
+
+    const grandTotal = total + deliveryCharge;
+    const usedCoupons = await Coupon.find({ usedBy: userId }).select('code -_id');
+const usedCouponCodes = usedCoupons.map(c => c.code);
+const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coupon.code));
     res.render("user/checkout", {
       page: "checkout",
       cartCount,
@@ -920,6 +962,11 @@ const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coup
       subTotal,
       address,
       totalSavings,
+      total,
+      grandTotal,
+      deliveryCharge,
+      appliedCoupon,
+      couponDiscount,
       coupons:availableCoupons,
       wallet,
       usedCouponCodes
@@ -939,12 +986,14 @@ export const postPlaceCODOrder = async (req, res) => {
     const userId = req.session.userId;
     const { shippingAddress, coupon } = req.body;
 
+    console.log('placed cod order with coupon code',coupon);
+
     const cartItems = await Cart.findOne({ userId }).populate("products.productId");
     if (!cartItems || cartItems.products.length === 0) {
       return res.status(400).json({ message: "Cart is empty" });
     }
 
-    // --- Recalculate offers/discounts for each product ---
+
     const activeOffers = await getActiveOffers();
     let subTotal = 0;
     let totalSavings = 0;
@@ -953,7 +1002,7 @@ export const postPlaceCODOrder = async (req, res) => {
       const gameObj = item.productId.toObject();
       const itemObj = item.toObject();
 
-      // Find applicable offers
+  
       const productOffer = activeOffers.find(offer =>
         offer.offerType === 'product' &&
         offer.items.includes(gameObj._id.toString())
@@ -963,7 +1012,7 @@ export const postPlaceCODOrder = async (req, res) => {
         offer.items.includes(gameObj.category._id.toString())
       );
 
-      // Get best offer
+
       const bestOffer = [productOffer, categoryOffer]
         .filter(Boolean)
         .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
@@ -1013,6 +1062,16 @@ export const postPlaceCODOrder = async (req, res) => {
 
     const totalAmount = Math.max(subTotal - discount, 0);
 
+    const DELIVERY_CHARGE = 100;
+    let deliveryCharge = 0;
+    if(totalAmount < 1000){
+      deliveryCharge = DELIVERY_CHARGE;
+    }
+
+    const grandTotal = totalAmount + deliveryCharge;
+
+    console.log('This is the grand total',grandTotal);
+
     // Reduce stock
     for (const item of productsWithOffers) {
       const game = await Game.findById(item.productId);
@@ -1059,6 +1118,7 @@ export const postPlaceCODOrder = async (req, res) => {
       coupon: appliedCoupon,
       orderId: orderId,
       discount,
+      grandTotal,
       offerDiscount:totalOfferDiscount,
       shippingAddress: {
         name: shippingAddress.name,
@@ -1156,6 +1216,13 @@ export const createRazorpayOrder = async (req, res) => {
     }
     const totalAmount = Math.max(subTotal - discount, 0);
 
+    const DELIVERY_CHARGE = 100;
+    let deliveryCharge = 0;
+    if (subTotal < 1000) {
+      deliveryCharge = DELIVERY_CHARGE;
+    }
+    const grandTotal = totalAmount + deliveryCharge;
+
     // 4. Stock check
     for (const item of productsWithOffers) {
       const game = await Game.findById(item.productId);
@@ -1171,7 +1238,7 @@ export const createRazorpayOrder = async (req, res) => {
     });
 
     const options = {
-      amount: totalAmount * 100, // in paise
+      amount: grandTotal * 100, // in paise
       currency: "INR",
       receipt: `order_rcptid_${Date.now()}`,
       payment_capture: 1
@@ -1210,6 +1277,8 @@ export const createRazorpayOrder = async (req, res) => {
       paymentMethod: "razorpay",
       totalAmount,
       discount,
+      grandTotal,
+      deliveryCharge,
       offerDiscount:totalOfferDiscount,
       coupon: appliedCoupon,
       orderId: orderId,
@@ -1263,7 +1332,7 @@ export const retryRezorpayPayment = async(req,res)=>{
     
     console.log('tigger one')
     const newRazorpayOrder = await razorpay.orders.create({
-      amount: order.totalAmount * 100,
+      amount: order.grandTotal * 100,
       currency: 'INR',
       receipt: order.orderId,
       payment_capture: 1,
@@ -1432,7 +1501,13 @@ export const postPlaceWalletOrder = async (req, res) => {
     }
 
     const totalAmount = Math.max(subTotal - discount, 0);
-    console.log('subTotal', subTotal, 'discount', discount, 'totalAmount', totalAmount);
+    const DELIVERY_CHARGE = 100;
+    let deliveryCharge = 0;
+    if (subTotal < 1000) {
+      deliveryCharge = DELIVERY_CHARGE;
+    }
+    const grandTotal = totalAmount + deliveryCharge;
+
 
     // WALLET LOGIC
     const wallet = await Wallet.findOne({ userId });
@@ -1441,11 +1516,11 @@ export const postPlaceWalletOrder = async (req, res) => {
     }
 
     // Deduct from wallet
-    wallet.balance -= totalAmount;
+    wallet.balance -= grandTotal;
     wallet.transactions.push({
       id: Date.now().toString(),
       type: 'debit',
-      amount: totalAmount,
+      amount: grandTotal,
       description: 'Order payment',
       date: new Date(),
       status: 'completed'
@@ -1496,6 +1571,7 @@ export const postPlaceWalletOrder = async (req, res) => {
       paymentMethod: "wallet",
       totalAmount,
       discount,
+      grandTotal,
       offerDiscount:totalOfferDiscount,
       coupon: appliedCoupon,
       orderId: orderId,
@@ -1675,9 +1751,18 @@ export const getViewOrderPage = async(req,res)=>{
         return item;
       });
 
+      let subTotal = 0;
+      order.items.forEach(item => {
+        const product = item.productId;
+        if (product) {
+          // Use item.originalPrice if present, else fallback to product.price
+          const price = item.originalPrice || product.price;
+          subTotal += price * item.quantity;
+        }
+      });
 
 
-      res.render('user/viewOrder',{page:'viewOrder',order,cartCount});
+      res.render('user/viewOrder',{page:'viewOrder',order,cartCount,subTotal});
 
      }catch(error){
         console.error('Error fetching order details', error);
@@ -1708,6 +1793,37 @@ export const postCancelStatus = async(req,res)=>{
 
     item.status = 'Cancelled';
     await order.save();
+
+    if (['razorpay', 'wallet'].includes(order.paymentMethod)) {
+      const userId = order.userId;
+      const wallet = await Wallet.findOne({ userId });
+      if (wallet) {
+       
+        let refundAmount = 0;
+
+        if (item.discountedPrice) {
+  
+          refundAmount = item.discountedPrice * item.quantity;
+          console.log('this is the discounted price ',discountedPrice)
+        } else if (item.price) {
+          refundAmount = item.price * item.quantity;
+        } else {
+          const product = await Game.findById(item.productId);
+          refundAmount = product ? product.price * item.quantity : 0;
+        }
+
+        wallet.balance += refundAmount;
+        wallet.transactions.push({
+          id: Date.now().toString(),
+          type: 'credit',
+          amount: refundAmount,
+          description: `Refund for cancelled order item (${order.orderId})`,
+          date: new Date(),
+          status: 'completed'
+        });
+        await wallet.save();
+      }
+    }
 
     const product = await Game.findById(item.productId);
     if(product){
@@ -1788,8 +1904,11 @@ export const postReturnStatus = async(req,res)=>{
 
 export const postApplyCoupon = async (req, res) => {
   try {
+    console.log('helo testing')
     const { code } = req.body;
     const cartTotal = Number(req.body.cartTotal);
+
+    console.log('CartTotal:', cartTotal);
 
     if (isNaN(cartTotal)) {
       return res.status(400).json({ success: false, message: 'Invalid cart total.' });
