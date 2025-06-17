@@ -73,6 +73,10 @@ import {
 import {
   downloadSalesReportExcel,downloadSalesReportPDF,
 } from '../utils/downloadSalesReports.js';
+
+import{
+  getDashBoardPage,getDashBoardFilter
+} from '../controllers/adminDashboardMangement.js';
 const adminRoutes = express.Router();
 
 // Middleware
@@ -87,9 +91,9 @@ adminRoutes.post("/login", noCache, postAdminLogin);
 adminRoutes.use(isAdminAuthenticated);
 
 // Dashboard
-adminRoutes.get("/dashboard", (req, res) => {
-  res.render("admin/dashboard", { name: req.session.admin.name });
-});
+
+adminRoutes.get('/dashboard',getDashBoardPage);
+adminRoutes.get('/dashboard-filter',getDashBoardFilter)
 
 // User Management
 adminRoutes.get('/users', getAllUsersPage);

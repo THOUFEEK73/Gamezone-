@@ -1118,6 +1118,7 @@ export const postPlaceCODOrder = async (req, res) => {
       coupon: appliedCoupon,
       orderId: orderId,
       discount,
+      deliveryCharge,
       grandTotal,
       offerDiscount:totalOfferDiscount,
       shippingAddress: {
@@ -1804,9 +1805,14 @@ export const postCancelStatus = async(req,res)=>{
         if (item.discountedPrice) {
   
           refundAmount = item.discountedPrice * item.quantity;
-          console.log('this is the discounted price ',discountedPrice)
+          if(order.deliveryCharge){
+            refundAmount += order.deliveryCharge;
+          }
+          console.log('refund amount is :',refundAmount)
+ 
         } else if (item.price) {
           refundAmount = item.price * item.quantity;
+          console.log('second refund amount is :',refundAmount)
         } else {
           const product = await Game.findById(item.productId);
           refundAmount = product ? product.price * item.quantity : 0;
@@ -1874,6 +1880,9 @@ export const postReturnStatus = async(req,res)=>{
        let refundAmount = 0;
        if(item.discountedPrice){
          refundAmount = item.discountedPrice * item.quantity;
+         if(order.deliveryCharge){
+          refundAmount += order.deliveryCharge;
+        }
        }else if(item.price){
         refundAmount = item.price * item.quantity;
        }else{
