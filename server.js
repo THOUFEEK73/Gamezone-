@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 // Static files
 app.use(express.static('public'));
 
+
 // View engine setup
 app.set("view engine", "ejs");
 app.set("views", "views");

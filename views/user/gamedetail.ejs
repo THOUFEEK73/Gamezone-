@@ -1063,7 +1063,7 @@
 
         <script>
             // for Screenshots  
-            const screenshotsList = <% - JSON.stringify(game.media.screenshots || []) %>;
+            const screenshotsList = <%- JSON.stringify(game.media && game.media.screenshots ? game.media.screenshots : []) %>;
 
             // for Image Zooming 
             const coverImageContainer = document.getElementById('coverImageContainer');

@@ -98,16 +98,23 @@ pending Task
 ✔ users can add or remove the coupon @done (16/06/2025, 20:05:37)
 
 
-☐ User Side 
+✔ User Side @done (18/06/2025, 20:27:19)
 ✔ implement Delivery charge @done (17/06/2025, 17:32:10)
 ✔ Order above rs 1000 should not be allowed for cod @done (17/06/2025, 17:32:23)
 ☐ Delivery charge can be applied according to location / fixed charges (optionsal)
 
-☐ Admin side
-☐ Admin Dashboard - chart with filter (year , month, day)
-☐ Best selling products (top 10)
-☐ Best selling categories (top 10)
-☐ Best selling companies (top 10)
+✔ Admin side @done (18/06/2025, 20:27:32)
+✔ Admin Dashboard - chart with filter (year , month, day) @done (18/06/2025, 20:27:22)
+✔ Best selling products (top 10) @done (18/06/2025, 20:27:25)
+✔ Best selling categories (top 10) @done (18/06/2025, 20:27:27)
+✔ Best selling companies (top 10) @done (18/06/2025, 20:27:28)
 ☐ Generate Ledger Book (optional)
 
 
+Pending Tasks
+
+☐ OrderManagement pagination
+☐ orderManagement search
+☐ Game Company add pagination and search
+☐ add pagination in offer and search functionality
+☐ add pagination in coupon and search functionality

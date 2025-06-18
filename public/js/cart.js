@@ -122,9 +122,12 @@ async function updateQuantity(itemId, action) {
 }
 
 
-document.getElementById('placeOrderBtn').addEventListener('click',async()=>{
-    console.log('function triggered')
-})
+const placeOrderBtn = document.getElementById('placeOrderBtn');
+if (placeOrderBtn) {
+  placeOrderBtn.addEventListener('click', async () => {
+    console.log('function triggered');
+  });
+}
 
 
 
