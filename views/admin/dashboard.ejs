@@ -171,12 +171,11 @@
           <span class="ml-auto text-xs text-gray-500">x${item.totalSold || 0}</span>
         </li>`;
       } else {
-        list.innerHTML += `<li>${item.name || item}</li>`;
+        list.innerHTML += `<li>${item.name} <span class="ml-auto text-xs text-gray-500">x${item.totalSold || 0}</span></li>`;
       }
     });
   }
 }
-    
     // Fetch and update dashboard data
     async function fetchDashboardData(filter) {
       try {

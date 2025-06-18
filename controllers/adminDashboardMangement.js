@@ -213,20 +213,20 @@ export const getDashBoardFilter = async (req, res) => {
 
 
     const topProducts = await Order.aggregate([
-      // Only include paid orders
+
       { $match: { paymentStatus: 'paid' } },
 
-      // Deconstruct items array
+    
       { $unwind: '$items' },
 
-      // Exclude cancelled/returned items
+
       {
         $match: {
           'items.status': { $nin: ['Cancelled', 'Returned'] }
         }
       },
 
-      // Group by productId and sum quantity
+
       {
         $group: {
           _id: '$items.productId',
@@ -245,7 +245,6 @@ export const getDashBoardFilter = async (req, res) => {
       },
       { $unwind: '$product' },
 
-      // Project the final fields
       {
         $project: {
           title: '$product.title',
@@ -254,12 +253,113 @@ export const getDashBoardFilter = async (req, res) => {
         }
       },
 
-      // Sort and limit
+
       { $sort: { totalSold: -1 } },
       { $limit: 10 }
     ]);
 
-    // res.json(topProducts);
+
+    const topCategories = await Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $unwind: '$items' },
+      { $match: { 'items.status': { $nin: ['Cancelled', 'Returned'] } } },
+      {
+        $lookup: {
+          from: 'games',
+          localField: 'items.productId',
+          foreignField: '_id',
+          as: 'game'
+        }
+      },
+      { $unwind: '$game' },
+      {
+        $group: {
+          _id: '$game.category', // This is likely a string (category name)
+          totalSold: { $sum: '$items.quantity' }
+        }
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: '_id',      // category name
+          foreignField: '_id',   // categories.name
+          as: 'category'
+        }
+      },
+      { $unwind: '$category' },
+      {
+        $project: {
+          name: '$category.categoryName',
+          totalSold: 1
+        }
+      },
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 }
+    ]);
+
+
+    const topBrands = await Order.aggregate([
+      // 1. Only paid orders
+      { $match: { paymentStatus: 'paid' } },
+    
+      // 2. Unwind items array
+      { $unwind: '$items' },
+    
+      // 3. Exclude cancelled and returned items
+      {
+        $match: {
+          'items.status': { $nin: ['Cancelled', 'Returned'] }
+        }
+      },
+    
+      // 4. Lookup Game to get company (brand) info
+      {
+        $lookup: {
+          from: 'games',
+          localField: 'items.productId',
+          foreignField: '_id',
+          as: 'game'
+        }
+      },
+      { $unwind: '$game' },
+    
+      // 5. Group by company (brand) ID and sum quantities
+      {
+        $group: {
+          _id: '$game.company',
+          totalSold: { $sum: '$items.quantity' }
+        }
+      },
+    
+      // 6. Lookup company (brand) details
+      {
+        $lookup: {
+          from: 'gamecompanies', // Make sure your GameCompany collection is named this
+          localField: '_id',
+          foreignField: '_id',
+          as: 'brand'
+        }
+      },
+      { $unwind: '$brand' },
+    
+      // 7. Project brand name and totalSold
+      {
+        $project: {
+          name: '$brand.name',
+          totalSold: 1
+        }
+      },
+    
+      // 8. Sort and limit
+      { $sort: { totalSold: -1 } },
+      { $limit: 10 }
+    ]);
+    
+
+ 
+    
+
+   
 
     res.json({
       totalRevenue: revenue,
@@ -269,6 +369,8 @@ export const getDashBoardFilter = async (req, res) => {
       salesChart,
       monthlyTarget,
       topProducts,
+      topCategories,
+      topBrands,
       dailyTarget
     });
   } catch (error) {
