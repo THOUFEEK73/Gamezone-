@@ -87,23 +87,48 @@
     </div>
     
 
-    <!-- Top 10 Sections -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">Top 10 Products</h2>
-        <ul id="topProducts" class="text-sm text-gray-700 space-y-2">
-        
-        </ul>
-      </div>
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">Top 10 Categories</h2>
-        <ul id="topCategories" class="text-sm text-gray-700 space-y-1"></ul>
-      </div>
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-semibold mb-2">Top 10 Brands</h2>
-        <ul id="topBrands" class="text-sm text-gray-700 space-y-1"></ul>
-      </div>
-    </div>
+<!-- Top 10 Sections -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <!-- Top Products -->
+  <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" stroke-width="2"
+        viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+          d="M3 3h18v18H3V3z" /></svg>
+      Top 10 Products
+    </h2>
+    <ul id="topProducts" class="space-y-3 text-gray-700 text-sm">
+      <!-- JS Injected -->
+    </ul>
+  </div>
+
+  <!-- Top Categories -->
+  <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2"
+        viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+          d="M4 6h16M4 12h8m-8 6h16" /></svg>
+      Top 10 Categories
+    </h2>
+    <ul id="topCategories" class="space-y-3 text-gray-700 text-sm">
+      <!-- JS Injected -->
+    </ul>
+  </div>
+
+  <!-- Top Brands -->
+  <div class="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300">
+    <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" stroke-width="2"
+        viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 17v-6h13v6m-13 0h-4m4 0a3 3 0 01-3-3m3 3a3 3 0 003-3m0 0V5a2 2 0 00-2-2H6a2 2 0 00-2 2v12" /></svg>
+      Top 10 Brands
+    </h2>
+    <ul id="topBrands" class="space-y-3 text-gray-700 text-sm">
+      <!-- JS Injected -->
+    </ul>
+  </div>
+</div>
+    
 
     <!-- Ledger Book (Optional) -->
     <!-- <div class="bg-white p-4 rounded shadow">
@@ -158,20 +183,22 @@
       }
     }
     
-    // Update Top 10 lists
     function updateTopList(elementId, items, isProduct = false) {
   const list = document.getElementById(elementId);
   list.innerHTML = '';
   if (Array.isArray(items)) {
-    items.forEach(item => {
+    items.forEach((item, idx) => {
       if (isProduct) {
-        list.innerHTML += `<li class="flex items-center gap-2">
-          <img src="${item.coverImage || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded" alt="Product"/>
-          <span>${item.title}</span>
-          <span class="ml-auto text-xs text-gray-500">x${item.totalSold || 0}</span>
+        list.innerHTML += `<li class="flex items-center gap-3 p-2 rounded-lg ${idx === 0 ? 'bg-indigo-50 font-bold' : 'hover:bg-gray-50'}">
+          <img src="${item.coverImage || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded shadow" alt="Product"/>
+          <span class="flex-1">${item.title}</span>
+          <span class="ml-auto text-xs text-gray-500 font-semibold">x${item.totalSold || 0}</span>
         </li>`;
       } else {
-        list.innerHTML += `<li>${item.name} <span class="ml-auto text-xs text-gray-500">x${item.totalSold || 0}</span></li>`;
+        list.innerHTML += `<li class="flex items-center gap-3 p-2 rounded-lg ${idx === 0 ? 'bg-emerald-50 font-bold' : 'hover:bg-gray-50'}">
+          <span class="flex-1">${item.name}</span>
+          <span class="ml-auto text-xs text-gray-500 font-semibold">x${item.totalSold || 0}</span>
+        </li>`;
       }
     });
   }
