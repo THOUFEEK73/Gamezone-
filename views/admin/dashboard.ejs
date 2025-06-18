@@ -17,11 +17,11 @@
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-      <select id="filterSelect" class="border px-4 py-2 rounded-md shadow-sm text-sm">
+      <!-- <select id="filterSelect" class="border px-4 py-2 rounded-md shadow-sm text-sm">
         <option value="monthly">Monthly</option>
         <option value="daily">Daily</option>
         <option value="yearly">Yearly</option>
-      </select>
+      </select> -->
     </div>
 
     <!-- Summary Cards -->
@@ -55,15 +55,14 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold">Sales Analytics</h2>
           <div class="flex gap-2">
-            <select class="text-sm border rounded px-3 py-2">
-              <option>Jul 2023</option>
-              <option>Aug 2023</option>
-              <option>Sep 2023</option>
-              <option>Oct 2023</option>
+            <select id="filterSelect" class="text-sm border rounded px-3 py-2">
+              <option value="monthly">Monthly</option>
+              <option value="daily">Daily</option>
+              <option value="custom">Custom</option>
             </select>
-            <input type="date" class="text-sm border rounded px-3 py-2" placeholder="dd-mm-yyyy">
+            <input type="date" id="fromDate" class="text-sm border rounded px-3 py-2" disabled>
             <span class="text-sm flex items-center">to</span>
-            <input type="date" class="text-sm border rounded px-3 py-2" placeholder="dd-mm-yyyy">
+            <input type="date" id="toDate" class="text-sm border rounded px-3 py-2" disabled>
           </div>
         </div>
         <canvas id="salesChart" height="100"></canvas>
@@ -76,13 +75,13 @@
           <div class="relative w-32 h-32">
             <canvas id="salesTargetChart"></canvas>
             <div class="absolute inset-0 flex flex-col items-center justify-center">
-              <span class="text-sm text-gray-500">Monthly</span>
-              <span class="font-bold text-lg">145,000</span>
+              <span class="text-sm text-gray-500" id="targetTypeLabel">Monthly</span>
+              <span class="font-bold text-lg" id="monthlyTargetValue">0,000</span>
             </div>
           </div>
         </div>
         <div class="text-center mt-4">
-          <p class="text-sm text-gray-600">Daily Target: <span class="font-semibold text-gray-800">650</span></p>
+          <p class="text-sm text-gray-600">Daily Target: <span class="font-semibold text-gray-800" id="dailyTargetValue">0,000</span></p>
         </div>
       </div>
     </div>
@@ -93,11 +92,7 @@
       <div class="bg-white p-4 rounded shadow">
         <h2 class="text-lg font-semibold mb-2">Top 10 Products</h2>
         <ul id="topProducts" class="text-sm text-gray-700 space-y-2">
-          <li class="flex items-center gap-2"><img src="https://via.placeholder.com/40" class="w-10 h-10 rounded" alt="Product"/><span>Product 1</span></li>
-          <li class="flex items-center gap-2"><img src="https://via.placeholder.com/40" class="w-10 h-10 rounded" alt="Product"/><span>Product 2</span></li>
-          <li class="flex items-center gap-2"><img src="https://via.placeholder.com/40" class="w-10 h-10 rounded" alt="Product"/><span>Product 3</span></li>
-          <li class="flex items-center gap-2"><img src="https://via.placeholder.com/40" class="w-10 h-10 rounded" alt="Product"/><span>Product 4</span></li>
-          <li class="flex items-center gap-2"><img src="https://via.placeholder.com/40" class="w-10 h-10 rounded" alt="Product"/><span>Product 5</span></li>
+        
         </ul>
       </div>
       <div class="bg-white p-4 rounded shadow">
@@ -117,50 +112,140 @@
     </div> -->
   </div>
 
-  <<script>
-
-  
-document.getElementById('filterSelect').addEventListener('change',async function(){
-  const filter = this.value;
-
-  try{
-    const response = await fetch(`/admin/dashboard-filter?filter=${filter}`);
-    const data = await response.json();
-    console.log('this is the data',data)
-    document.getElementById('totalRevenue').textContent = '₹' + Number(data.totalRevenue).toLocaleString('en-IN');
-    document.getElementById('totalOrders').textContent = data.totalOrders;
-    document.getElementById('totalCustomers').textContent = data.totalCustomers;
-    document.getElementById('pendingDelivery').textContent = data.pendingDelivery;
-
-  }catch(error){
-    console.error('Error fetching data:', error);
-  }
-})
-
-
-    // Sales Chart (Line Chart)
-    const salesChartCtx = document.getElementById('salesChart').getContext('2d');
-    const salesChart = new Chart(salesChartCtx, {
-      type: 'line',
-      data: {
-        labels: ['22 Jul', '24 Jul', '26 Jul', '27 Jul', '28 Jul', '29 Jul'],
-        datasets: [{
-          label: 'Income',
-          data: [3000, 5000, 2000, 6000, 4000, 7200],
-          borderColor: '#34D399',
-          backgroundColor: 'rgba(52, 211, 153, 0.1)',
-          fill: true,
-          tension: 0.4
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true }
-        }
+  <script>
+    let salesChart;
+    
+    // Render or update the sales chart
+    function renderSalesChart(labels, data) {
+      const ctx = document.getElementById('salesChart').getContext('2d');
+      if (salesChart) {
+        salesChart.data.labels = labels;
+        salesChart.data.datasets[0].data = data;
+        salesChart.update();
+      } else {
+        salesChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Income',
+              data: data,
+              backgroundColor: 'rgba(52, 211, 153, 0.5)',
+              borderColor: '#34D399',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                min: 0,
+                max: 50000,
+                ticks: {
+                  stepSize: 10000,
+                  callback: function(value) {
+                    return '₹' + value.toLocaleString('en-IN');
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+    
+    // Update Top 10 lists
+    function updateTopList(elementId, items, isProduct = false) {
+  const list = document.getElementById(elementId);
+  list.innerHTML = '';
+  if (Array.isArray(items)) {
+    items.forEach(item => {
+      if (isProduct) {
+        list.innerHTML += `<li class="flex items-center gap-2">
+          <img src="${item.coverImage || 'https://via.placeholder.com/40'}" class="w-10 h-10 rounded" alt="Product"/>
+          <span>${item.title}</span>
+          <span class="ml-auto text-xs text-gray-500">x${item.totalSold || 0}</span>
+        </li>`;
+      } else {
+        list.innerHTML += `<li>${item.name || item}</li>`;
       }
     });
-  
+  }
+}
+    
+    // Fetch and update dashboard data
+    async function fetchDashboardData(filter) {
+      try {
+        let url = `/admin/dashboard-filter?filter=${filter}`;
+        if (filter === 'custom') {
+          const from = document.getElementById('fromDate').value;
+          const to = document.getElementById('toDate').value;
+          if (from && to) {
+            url += `&from=${from}&to=${to}`;
+          }
+        }
+        const response = await fetch(url);
+        const data = await response.json();
+        document.getElementById('totalRevenue').textContent = '₹' + Number(data.totalRevenue).toLocaleString('en-IN');
+        document.getElementById('totalOrders').textContent = data.totalOrders;
+        document.getElementById('totalCustomers').textContent = data.totalCustomers;
+        document.getElementById('pendingDelivery').textContent = data.pendingDelivery;
+    
+        if (data.salesChart) {
+          renderSalesChart(data.salesChart.labels, data.salesChart.data);
+        }
+        updateTopList('topProducts', data.topProducts, true);
+        updateTopList('topCategories', data.topCategories);
+        updateTopList('topBrands', data.topBrands);
+    
+        // --- Dynamic Sales Target ---
+        if (data.monthlyTarget !== undefined) {
+          document.getElementById('monthlyTargetValue').textContent = Number(data.monthlyTarget).toLocaleString('en-IN');
+        }
+        if (data.dailyTarget !== undefined) {
+          document.getElementById('dailyTargetValue').textContent = Number(data.dailyTarget).toLocaleString('en-IN');
+        }
+        // Optionally update the label if you want to show which target is being displayed
+        if (filter === 'daily') {
+          document.getElementById('targetTypeLabel').textContent = 'Daily';
+        } else {
+          document.getElementById('targetTypeLabel').textContent = 'Monthly';
+        }
+    
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+    
+    // Enable/disable date inputs for custom filter
+    document.getElementById('filterSelect').addEventListener('change', function() {
+      const isCustom = this.value === 'custom';
+      document.getElementById('fromDate').disabled = !isCustom;
+      document.getElementById('toDate').disabled = !isCustom;
+      fetchDashboardData(this.value);
+    });
+    
+    // Listen for date changes in custom filter
+    document.getElementById('fromDate').addEventListener('change', function() {
+      if (document.getElementById('filterSelect').value === 'custom') {
+        fetchDashboardData('custom');
+      }
+    });
+    document.getElementById('toDate').addEventListener('change', function() {
+      if (document.getElementById('filterSelect').value === 'custom') {
+        fetchDashboardData('custom');
+      }
+    });
+    
+    // Fetch initial data on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      fetchDashboardData(document.getElementById('filterSelect').value);
+    });
+    
     // Sales Target Chart (Doughnut)
     const salesTargetChart = new Chart(document.getElementById('salesTargetChart'), {
       type: 'doughnut',
@@ -179,19 +264,10 @@ document.getElementById('filterSelect').addEventListener('change',async function
         }
       }
     });
-  
-    // Top 10 Lists
-    const top10 = ['Item 6', 'Item 7', 'Item 8', 'Item 9', 'Item 10'];
-    ['topCategories', 'topBrands'].forEach(id => {
-      const list = document.getElementById(id);
-      top10.forEach(item => {
-        list.innerHTML += `<li>${item}</li>`;
-      });
-    });
-  
 
-  </script>
-  
+
+
+    </script>
 </body>
 
 </html>

@@ -75,7 +75,8 @@ import {
 } from '../utils/downloadSalesReports.js';
 
 import{
-  getDashBoardPage,getDashBoardFilter
+  getDashBoardPage,getDashBoardFilter,
+
 } from '../controllers/adminDashboardMangement.js';
 const adminRoutes = express.Router();
 
@@ -94,6 +95,7 @@ adminRoutes.use(isAdminAuthenticated);
 
 adminRoutes.get('/dashboard',getDashBoardPage);
 adminRoutes.get('/dashboard-filter',getDashBoardFilter)
+// adminRoutes.get('/dashboard/top-products',getTop10Products);
 
 // User Management
 adminRoutes.get('/users', getAllUsersPage);
