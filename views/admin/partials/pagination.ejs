@@ -1,0 +1,14 @@
+<!-- Example for pagination.ejs -->
+<div class="flex justify-center mt-6 space-x-2">
+    <% if (currentPage > 1) { %>
+      <a href="?page=<%= currentPage - 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" class="px-3 py-1 border rounded bg-white hover:bg-gray-100 text-gray-700">Previous</a>
+    <% } %>
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <a href="?page=<%= i %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" class="px-3 py-1 border rounded <%= currentPage === i ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100 text-gray-700' %>">
+        <%= i %>
+      </a>
+    <% } %>
+    <% if (currentPage < totalPages) { %>
+      <a href="?page=<%= currentPage + 1 %><%= searchQuery ? '&search=' + encodeURIComponent(searchQuery) : '' %>" class="px-3 py-1 border rounded bg-white hover:bg-gray-100 text-gray-700">Next</a>
+    <% } %>
+  </div>

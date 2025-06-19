@@ -58,12 +58,14 @@ import {
 
 import {
   getOfferPage,createOffer,
-  toggleOfferStatus,postUpdateOffer
+  toggleOfferStatus,postUpdateOffer,
+  getOffersApi,
 } from '../controllers/admiinOfferManagement.js';
 
 import {
   getCouponPage,postCoupon,
   CouponStatus,updateCoupon,
+  getCouponApi,
 } from '../controllers/adminCouponManagement.js';
 import Coupon from "../models/couponModel.js";
 
@@ -177,6 +179,7 @@ adminRoutes.post('/company/toggle/:id', toggleCompanyStatus);
 
 // Offer Management
 adminRoutes.get('/offers',getOfferPage);
+adminRoutes.get('/offers/api',getOffersApi);
 adminRoutes.post('/offers/add',createOffer)
 adminRoutes.post('/offers/update',postUpdateOffer);
 adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)
@@ -185,6 +188,7 @@ adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)
 // coupon Management
 
 adminRoutes.get('/coupons',getCouponPage);
+adminRoutes.get('/coupons/api',getCouponApi)
 adminRoutes.post('/coupons/add',postCoupon);
 adminRoutes.patch('/coupons/toggleStatus/:id',CouponStatus)
 adminRoutes.patch('/coupons/update/:id',updateCoupon)

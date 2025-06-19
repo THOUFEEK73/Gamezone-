@@ -1,0 +1,181 @@
+<script >
+    const openBtn = document.getElementById('openModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const modal = document.getElementById('modalOverlay');
+  
+    openBtn.onclick = () => modal.classList.remove('hidden');
+    closeBtn.onclick = () => modal.classList.add('hidden');
+    cancelBtn.onclick = () => modal.classList.add('hidden');
+
+
+
+
+
+
+
+
+    document.querySelectorAll('.edit-offer-btn').forEach(btn => {
+  btn.addEventListener('click', function () {
+    // Set all fields
+    document.getElementById('editOfferId').value = this.dataset.offerId || '';
+    document.getElementById('editOfferName').value = this.dataset.offerName || '';
+    document.getElementById('editOfferType').value = this.dataset.offerType || '';
+    document.getElementById('editDiscountPercentage').value = this.dataset.discount || '';
+    document.getElementById('editStartDate').value = this.dataset.start || '';
+    document.getElementById('editEndDate').value = this.dataset.end || '';
+
+    // Show/hide and enable/disable selects based on offerType
+    if (this.dataset.offerType === 'product') {
+      document.getElementById('editProductSelectDiv').style.display = '';
+      document.getElementById('editCategorySelectDiv').style.display = 'none';
+      document.getElementById('editProductSelect').disabled = false;
+      document.getElementById('editCategorySelect').disabled = true;
+      document.getElementById('editProductSelect').value = this.dataset.product || '';
+    } else if (this.dataset.offerType === 'category') {
+      document.getElementById('editProductSelectDiv').style.display = 'none';
+      document.getElementById('editCategorySelectDiv').style.display = '';
+      document.getElementById('editProductSelect').disabled = true;
+      document.getElementById('editCategorySelect').disabled = false;
+      document.getElementById('editCategorySelect').value = this.dataset.category || '';
+    } else {
+      document.getElementById('editProductSelectDiv').style.display = 'none';
+      document.getElementById('editCategorySelectDiv').style.display = 'none';
+      document.getElementById('editProductSelect').disabled = true;
+      document.getElementById('editCategorySelect').disabled = true;
+    }
+
+    document.getElementById('editModalOverlay').classList.remove('hidden');
+  });
+});
+
+document.getElementById('editCloseModalBtn').onclick = () => {
+  document.getElementById('editModalOverlay').classList.add('hidden');
+};
+document.getElementById('editCancelBtn').onclick = () => {
+  document.getElementById('editModalOverlay').classList.add('hidden');
+};
+
+
+
+
+
+
+
+
+
+
+
+const offerTableBody = document.querySelector('tbody');
+const searchInput = document.getElementById('offerSearchInput');
+const clearBtn = document.getElementById('clearSearchBtn');
+const searchForm = document.getElementById('offerSearchForm');
+
+function renderOffers(offers) {
+  offerTableBody.innerHTML = '';
+  if (!offers.length) {
+    offerTableBody.innerHTML = `
+      <tr>
+        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+          No offers found
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  offers.forEach(offer => {
+    // Status logic
+    const now = new Date();
+    const start = new Date(offer.startDate);
+    const end = new Date(offer.endDate);
+    let status = '';
+    let statusClass = '';
+    if (!offer.isActive) {
+      status = 'Inactive';
+      statusClass = 'bg-red-100 text-red-600';
+    } else if (now < start) {
+      status = 'Scheduled';
+      statusClass = 'bg-yellow-100 text-yellow-600';
+    } else if (now > end) {
+      status = 'Expired';
+      statusClass = 'bg-gray-100 text-gray-600';
+    } else {
+      status = 'Active';
+      statusClass = 'bg-green-100 text-green-600';
+    }
+
+    offerTableBody.innerHTML += `
+      <tr class="hover:bg-gray-50">
+        <td class="px-6 py-4">${offer.offerType ? (offer.offerType.charAt(0).toUpperCase() + offer.offerType.slice(1)) : 'N/A'}</td>
+        <td class="px-6 py-4 font-medium">${offer.offerName}</td>
+        <td class="px-6 py-4">${offer.discountPercentage}%</td>
+        <td class="px-6 py-4">${offer.startDate ? new Date(offer.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}</td>
+        <td class="px-6 py-4">${offer.endDate ? new Date(offer.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}</td>
+        <td class="px-6 py-4">
+          <span class="status-badge ${statusClass} text-xs font-semibold px-3 py-1 rounded-full">${status}</span>
+        </td>
+        <td class="px-6 py-4 flex items-center gap-4">
+          <button title="Edit"
+            data-offer-id="${offer._id}"
+            data-offer-name="${offer.offerName}"
+            data-offer-type="${offer.offerType}"
+            data-discount="${offer.discountPercentage}"
+            data-start="${offer.startDate ? offer.startDate.slice(0,10) : ''}"
+            data-end="${offer.endDate ? offer.endDate.slice(0,10) : ''}"
+            data-product="${offer.offerType === 'product' ? offer.items[0] : ''}"
+            data-category="${offer.offerType === 'category' ? offer.items[0] : ''}"
+            class="edit-offer-btn text-blue-600 hover:text-blue-800 transition-colors duration-200">
+            <i class="fas fa-pen"></i>
+          </button>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox"
+              class="sr-only peer offer-status-toggle"
+              data-offer-id="${offer._id}"
+              ${offer.isActive ? 'checked' : ''}>
+            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-400 rounded-full peer peer-checked:bg-green-500 transition-all duration-300"></div>
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform peer-checked:translate-x-5"></div>
+          </label>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// Fetch offers from backend
+async function fetchOffers(search = '') {
+  const res = await fetch(`/admin/offers/api?search=${encodeURIComponent(search)}`);
+  const data = await res.json();
+  renderOffers(data.offers);
+}
+
+// Handle search submit
+searchForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  fetchOffers(searchInput.value.trim());
+  clearBtn.style.display = searchInput.value ? 'block' : 'none';
+});
+
+// Handle clear button
+clearBtn.addEventListener('click', function () {
+  searchInput.value = '';
+  fetchOffers('');
+  clearBtn.style.display = 'none';
+});
+
+// Show/hide clear button as user types
+searchInput.addEventListener('input', function () {
+  clearBtn.style.display = this.value ? 'block' : 'none';
+});
+
+// Initial load (show all offers)
+fetchOffers('');
+
+  </script>
+
+
+rtrtdf
+dfgdfgdf
+DFGDFGDFG
+DFGDFGDFGFDGDFG
+DFGDFGDFGFDGDFGD
+DFGDFGDFFGDDFDFGDFG

@@ -1,19 +1,57 @@
 
 import Coupon from '../models/couponModel.js';
 
-export const getCouponPage = async(req,res)=>{
-    try{
+export const getCouponPage = async (req, res) => {
+  try {
+    const itemsPerPage = 5;
+    const currentPage = parseInt(req.query.page) || 1;
+    const searchQuery = req.query.search || '';
 
-        const coupons = await Coupon.find().sort({createdAt:-1}).lean();
+    // Optional: Add search filter (can remove if you don’t want search here)
+    const searchFilter = searchQuery
+      ? {
+          $or: [
+            { code: { $regex: searchQuery, $options: 'i' } },
+            { description: { $regex: searchQuery, $options: 'i' } }
+          ]
+        }
+      : {};
 
+    const totalItems = await Coupon.countDocuments(searchFilter);
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-        res.render('admin/coupons',{coupons})
+    const coupons = await Coupon.find(searchFilter)
+      .sort({ createdAt: -1 })
+      .skip((currentPage - 1) * itemsPerPage)
+      .limit(itemsPerPage)
+      .lean();
 
-    }catch(error){
-        console.error('Error fetching coupon page:', error);
-        res.status(500).render('error', { message: 'Server is down, please try again later' });
-    }
-}
+    res.render('admin/coupons', {
+      coupons,
+      currentPage,
+      totalPages,
+      searchQuery
+    });
+  } catch (error) {
+    console.error('Error fetching coupon page:', error);
+    res.status(500).render('error', { message: 'Server is down, please try again later' });
+  }
+};
+
+export const getCouponApi = async (req, res) => {
+  const searchQuery = req.query.search || '';
+  const searchFilter = searchQuery
+    ? {
+        $or: [
+          { code: { $regex: searchQuery, $options: 'i' } },
+          { description: { $regex: searchQuery, $options: 'i' } }
+        ]
+      }
+    : {};
+  const coupons = await Coupon.find(searchFilter).sort({ createdAt: -1 }).lean();
+  res.json({ coupons });
+};
+
 
 
 export const postCoupon = async(req,res)=>{
