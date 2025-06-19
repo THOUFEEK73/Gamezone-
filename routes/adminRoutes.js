@@ -50,6 +50,7 @@ import {
 
 import {
   getOrdersPage,
+  searchOrders,
   postOrderStatus,
   getOrderDetail,
   updateReturnStatus
@@ -110,6 +111,7 @@ adminRoutes.post("/category/:Id", updateCategoryStatus);
 
 // Order Management
 adminRoutes.get('/orders', getOrdersPage);
+adminRoutes.get('/orders/search', searchOrders);
 adminRoutes.get('/Userorderdetail/:id', getOrderDetail);
 adminRoutes.post('/orders/:orderId/item/:itemId/status', postOrderStatus);
 adminRoutes.post('/orders/:orderId/item/:itemId/return', updateReturnStatus);

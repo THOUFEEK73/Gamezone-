@@ -1,57 +1,149 @@
 import { response } from 'express';
 import Order from '../models/orderModel.js'
 import { getActiveOffers } from '../utils/offerUtils.js';
+import User from '../models/userModel.js';
 
 export const getOrdersPage = async(req,res)=>{
-    try{
+  try{
+ 
+    
 
-        const orders = await Order.find()
-        .populate('userId','name email')
-        .populate('items.productId')
-        .sort({createdAt:-1})
-        .lean()
-        const activeOffers = await getActiveOffers();
+    const page = parseInt(req.query.page) || 1;   
+    const limit = 5;                            
+    const skip = (page - 1) * limit;
 
 
-        orders.forEach(order=>{
-          order.items = order.items.map(item =>{
-           
-             const product = item.productId;
-             if (!product) return item;
 
-             // Find applicable offers
-             const productOffer = activeOffers.find(offer =>
-                 offer.offerType === 'product' &&
-                 offer.items.includes(product._id.toString())
-             );
-             const categoryOffer = activeOffers.find(offer =>
-                 offer.offerType === 'category' &&
-                 offer.items.includes(product.category?.toString())
-             );
+    const totalOrders = await Order.countDocuments();  // Total number of orders
+    const totalPages = Math.ceil(totalOrders / limit);
 
-           
-             const bestOffer = [productOffer, categoryOffer]
-                 .filter(Boolean)
-                 .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+    const orders = await Order.find()
+      .populate('userId', 'name email')
+      .populate('items.productId')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+      const activeOffers = await getActiveOffers();
 
-             if (bestOffer) {
-                 item.originalPrice = product.price;
-                 item.discountPercentage = bestOffer.discountPercentage;
-                 item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
-                 item.offerName = bestOffer.offerName;
-             } else {
-                 item.discountedPrice = product.price;
-             }
-             return item;
-          })
+
+      orders.forEach(order=>{
+        order.items = order.items.map(item =>{
+         
+           const product = item.productId;
+           if (!product) return item;
+
+           // Find applicable offers
+           const productOffer = activeOffers.find(offer =>
+               offer.offerType === 'product' &&
+               offer.items.includes(product._id.toString())
+           );
+           const categoryOffer = activeOffers.find(offer =>
+               offer.offerType === 'category' &&
+               offer.items.includes(product.category?.toString())
+           );
+
+         
+           const bestOffer = [productOffer, categoryOffer]
+               .filter(Boolean)
+               .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+           if (bestOffer) {
+               item.originalPrice = product.price;
+               item.discountPercentage = bestOffer.discountPercentage;
+               item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+               item.offerName = bestOffer.offerName;
+           } else {
+               item.discountedPrice = product.price;
+           }
+           return item;
         })
-        res.render('admin/orders',{order:orders});
+      })
+      res.render('admin/orders',{order:orders, 
+        currentPage: page,
+        totalPages: totalPages
+      });
 
-    }catch(error){
-       console.error(error);
-        res.status(500).render('error',{message:'server is down please try again later'});
-    }
+  }catch(error){
+     console.error(error);
+      res.status(500).render('error',{message:'server is down please try again later'});
+  }
 }
+
+export const searchOrders = async (req, res) => {
+  try {
+    const { q = '', page = 1 } = req.query;
+    console.log('Search query:', q, 'Page:', page);
+    const limit = 5;
+    const skip = (page - 1) * limit;
+
+    let filter = {};
+    if (q.trim()) {
+      // Find users whose email matches the query
+      const matchedUsers = await User.find({
+        email: { $regex: q, $options: 'i' }
+      }).select('_id');
+      const userIds = matchedUsers.map(user => user._id);
+
+      // Search by orderId or user email
+      filter = {
+        $or: [
+          { orderId: { $regex: q, $options: 'i' } },
+          { userId: { $in: userIds } }
+        ]
+      };
+    }
+
+    const [orders, total] = await Promise.all([
+      Order.find(filter)
+        .populate('userId', 'name email')
+        .populate('items.productId')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Order.countDocuments(filter)
+    ]);
+
+    const activeOffers = await getActiveOffers();
+
+    orders.forEach(order => {
+      order.items = order.items.map(item => {
+        const product = item.productId;
+        if (!product) return item;
+
+        const productOffer = activeOffers.find(offer =>
+          offer.offerType === 'product' &&
+          offer.items.includes(product._id.toString())
+        );
+        const categoryOffer = activeOffers.find(offer =>
+          offer.offerType === 'category' &&
+          offer.items.includes(product.category?.toString())
+        );
+
+        const bestOffer = [productOffer, categoryOffer]
+          .filter(Boolean)
+          .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+        if (bestOffer) {
+          item.originalPrice = product.price;
+          item.discountPercentage = bestOffer.discountPercentage;
+          item.discountedPrice = Math.round(product.price * (1 - bestOffer.discountPercentage / 100));
+          item.offerName = bestOffer.offerName;
+        } else {
+          item.discountedPrice = product.price;
+        }
+        return item;
+      });
+    });
+
+    res.json({ orders, total });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error, please try again later.' });
+  }
+};
+
 
 
 export const postOrderStatus = async(req,res)=>{
@@ -211,3 +303,5 @@ export const updateReturnStatus = async(req,res)=>{
          res.status(500).render('error',{ message:'server is down please try again later'});
       }
 }
+
+
