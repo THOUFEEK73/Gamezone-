@@ -59,7 +59,8 @@ import {
 import {
   getOfferPage,createOffer,
   toggleOfferStatus,postUpdateOffer,
-  getOffersApi,
+  getOfferApi,
+
 } from '../controllers/admiinOfferManagement.js';
 
 import {
@@ -179,7 +180,7 @@ adminRoutes.post('/company/toggle/:id', toggleCompanyStatus);
 
 // Offer Management
 adminRoutes.get('/offers',getOfferPage);
-adminRoutes.get('/offers/api',getOffersApi);
+adminRoutes.get('/offers/api', getOfferApi)
 adminRoutes.post('/offers/add',createOffer)
 adminRoutes.post('/offers/update',postUpdateOffer);
 adminRoutes.patch('/offers/toggle/:offerId',toggleOfferStatus)

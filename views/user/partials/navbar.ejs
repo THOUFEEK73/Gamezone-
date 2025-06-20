@@ -12,7 +12,7 @@
 
       <!-- Desktop Nav -->
       <div class="hidden md:flex items-center space-x-8">
-        <% if (page !== 'wishlist' && page !== 'cart' && page !== 'profile' && page !== 'orderDetails' && page !== 'viewOrder' && page !== 'gameDetail' && page !== 'orderSuccess' && page !== 'checkout' && page !== 'paymentFailed') { %>
+        <% if (page !== 'wishlist' && page !== 'cart' && page !== 'profile' && page !== 'orderDetails' && page !== 'viewOrder' && page!= 'address' &&  page !== 'gameDetail' && page !== 'orderSuccess' && page !== 'checkout' && page !== 'paymentFailed') { %>
         <!-- Search Input Field -->
         <div class="relative">
           <input type="text" placeholder="Search games..." id="searchInput"
@@ -26,7 +26,7 @@
         <!-- Navigation Links -->
         <div class="flex items-center space-x-6">
           <a href="/allgames" class="text-gray-600 hover:text-indigo-600 font-medium <%= page === 'allgames' ? 'underline underline-offset-4 text-indigo-600' : '' %>">Store</a>
-          <a href="/library" class="text-gray-600 hover:text-indigo-600 font-medium <%= page === 'library' ? 'underline underline-offset-4 text-indigo-600' : '' %>">Library</a>
+        
           <a href="/wishlist"
             class="inline-flex items-center justify-center w-9 h-9 bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 rounded-full transition duration-200 shadow <%= page === 'wishlist' ? 'ring-2 ring-red-400' : '' %>">
             <i class="fas fa-heart text-sm"></i>
@@ -98,7 +98,7 @@
       </div>
       <% } %>
       <a href="/allgames" class="block py-2 text-gray-600 hover:text-indigo-600 font-medium <%= page === 'allgames' ? 'font-bold text-indigo-600' : '' %>">Store</a>
-      <a href="/library" class="block py-2 text-gray-600 hover:text-indigo-600 font-medium <%= page === 'library' ? 'font-bold text-indigo-600' : '' %>">Library</a>
+     
       <a href="/wishlist" class="block py-2 text-gray-600 hover:text-indigo-600 font-medium <%= page === 'wishlist' ? 'font-bold text-indigo-600' : '' %>">Wishlist</a>
       <a href="/cart" class="block py-2 text-gray-600 hover:text-indigo-600 font-medium <%= page === 'cart' ? 'font-bold text-indigo-600' : '' %>">Cart</a>
       <a href="/profile" class="block py-2 text-gray-600 hover:text-indigo-600 font-medium <%= page === 'profile' ? 'font-bold text-indigo-600' : '' %>">Profile</a>

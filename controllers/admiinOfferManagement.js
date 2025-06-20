@@ -2,85 +2,58 @@ import Offer from '../models/offerModel.js'
 import Category from '../models/CategoryModel.js'
 import Game from '../models/gameModel.js'
 
-export const getOfferPage = async (req, res) => {
-  try {
-    const itemsPerPage = 5;
-    const currentPage = parseInt(req.query.page) || 1;
-    const searchQuery = req.query.search || '';
-    console.log('Search Query:', searchQuery);
+export const getOfferPage = async(req,res)=>{
+    try {
+        console.log('Fetching offer page');
 
-    // Create filter based on search query
-    const searchFilter = searchQuery
-      ? {
-          $or: [
-            { offerName: { $regex: searchQuery, $options: 'i' } },
-            { description: { $regex: searchQuery, $options: 'i' } }
-          ]
-        }
-      : {};
+        const games = await Game.find({status:'active'}).select('title _id');
+        const category = await Category.find({status:'active'}).select('categoryName _id');
+        const offers = await Offer.find().sort({createdAt: -1});
+        
+        console.log('testing offers ',offers)
+        
+        
+        res.render('admin/offers',{games,category,offers});
+    } catch(error) {
+        console.error('Error in getOfferPage:', error);
+        res.status(500).send('Internal Server Error');
+    }
+}
 
-    // Count filtered results
-    const totalItems = await Offer.countDocuments(searchFilter);
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
+export const getOfferApi = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 5;
+  const status = req.query.status || '';
+  const search = req.query.search || '';
 
-    // Get paginated + filtered offers
-    const offers = await Offer.find(searchFilter)
-      .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * itemsPerPage)
-      .limit(itemsPerPage);
-
-    const games = await Game.find({ status: 'active' }).select('title _id');
-    const category = await Category.find({ status: 'active' }).select('categoryName _id');
-
-    res.render('admin/offers', {
-      games,
-      category,
-      offers,
-      currentPage,
-      totalPages,
-      searchQuery
-    });
-  } catch (error) {
-    console.error('Error in getOfferPage:', error);
-    res.status(500).send('Internal Server Error');
+  const filter = {};
+   
+  if(search){
+    filter.$or = [
+      {offerName:{$regex: search, $options: 'i'}},
+      {offerType:{$regex: search, $options: 'i'}},
+    ]
   }
+   if(status === 'active'){
+    filter.isActive = true;
+
+   }else if(status === 'inactive'){
+    filter.isActive = false;
+   }
+  const total = await Offer.countDocuments(filter);
+  const offers = await Offer.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean();
+
+  res.json({
+    offers,
+    total,
+    currentPage: page,
+    totalPages: Math.ceil(total / limit)
+  });
 };
-
-
-export const getOffersApi = async (req, res) => {
-  try {
-    const itemsPerPage = parseInt(req.query.limit) || 5;
-    const currentPage = parseInt(req.query.page) || 1;
-    const searchQuery = req.query.search || '';
-
-    const searchFilter = searchQuery
-      ? {
-          $or: [
-            { offerName: { $regex: searchQuery, $options: 'i' } },
-            { description: { $regex: searchQuery, $options: 'i' } }
-          ]
-        }
-      : {};
-
-    const totalItems = await Offer.countDocuments(searchFilter);
-
-    const offers = await Offer.find(searchFilter)
-      .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * itemsPerPage)
-      .limit(itemsPerPage)
-      .lean();
-
-    res.json({
-      offers,
-      totalItems,
-      totalPages: Math.ceil(totalItems / itemsPerPage),
-      currentPage
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
 
 export const createOffer = async(req, res) => {
     try {

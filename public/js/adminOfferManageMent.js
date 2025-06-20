@@ -129,124 +129,64 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-
-    function attachOfferToggleListeners() {
-        document.querySelectorAll('.offer-status-toggle').forEach(toggle => {
-          // Remove previous listeners to avoid stacking
-          toggle.onchange = null;
-          toggle.addEventListener('change', async function() {
+    document.querySelectorAll('.offer-status-toggle').forEach(toggle => {
+        toggle.addEventListener('change', async function() {
             const offerId = this.dataset.offerId;
             const newState = this.checked;
-      
+    
             try {
-              const response = await fetch(`/admin/offers/toggle/${offerId}`, {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ isActive: newState })
-              });
-      
-              const data = await response.json();
-      
-              if (response.ok) {
-                // Update status badge in the same row
-                const row = this.closest('tr');
-                const statusBadge = row.querySelector('.status-badge');
-                const startDate = new Date(row.children[3].textContent);
-                const endDate = new Date(row.children[4].textContent);
-                const now = new Date();
-      
-                let status, statusClass;
-                if (!newState) {
-                  status = 'Inactive';
-                  statusClass = 'bg-red-100 text-red-600';
-                } else if (now < startDate) {
-                  status = 'Scheduled';
-                  statusClass = 'bg-yellow-100 text-yellow-600';
-                } else if (now > endDate) {
-                  status = 'Expired';
-                  statusClass = 'bg-gray-100 text-gray-600';
-                } else {
-                  status = 'Active';
-                  statusClass = 'bg-green-100 text-green-600';
-                }
-      
-                statusBadge.className = `status-badge ${statusClass} text-xs font-semibold px-3 py-1 rounded-full`;
-                statusBadge.textContent = status;
-                if (typeof showToast === 'function') showToast('Success', data.message, 'success');
-              } else {
-                this.checked = !newState;
-                if (typeof showToast === 'function') showToast('Error', data.message || 'Failed to update status', 'error');
-              }
-            } catch (error) {
-              this.checked = !newState;
-              if (typeof showToast === 'function') showToast('Error', 'Failed to update offer status', 'error');
-            }
-          });
-        });
-      }
-
-
-
-    // document.querySelectorAll('.offer-status-toggle').forEach(toggle => {
-    //     toggle.addEventListener('change', async function() {
-    //         const offerId = this.dataset.offerId;
-    //         const newState = this.checked;
+                const response = await fetch(`/admin/offers/toggle/${offerId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ isActive: newState })
+                });
     
-    //         try {
-    //             const response = await fetch(`/admin/offers/toggle/${offerId}`, {
-    //                 method: 'PATCH',
-    //                 headers: {
-    //                     'Content-Type': 'application/json'
-    //                 },
-    //                 body: JSON.stringify({ isActive: newState })
-    //             });
-    
-    //             const data = await response.json();
+                const data = await response.json();
                 
-    //             if (response.ok) {
-    //                 const row = this.closest('tr');
-    //                 const statusBadge = row.querySelector('.status-badge');
-    //                 const startDate = new Date(row.querySelector('td:nth-child(4)').textContent);
-    //                 const endDate = new Date(row.querySelector('td:nth-child(5)').textContent);
-    //                 const now = new Date();
+                if (response.ok) {
+                    const row = this.closest('tr');
+                    const statusBadge = row.querySelector('.status-badge');
+                    const startDate = new Date(row.querySelector('td:nth-child(4)').textContent);
+                    const endDate = new Date(row.querySelector('td:nth-child(5)').textContent);
+                    const now = new Date();
     
-    //                 let status;
-    //                 let statusClass;
+                    let status;
+                    let statusClass;
     
-    //                 if (!newState) {
-    //                     status = 'Inactive';
-    //                     statusClass = 'bg-red-100 text-red-600';
-    //                 } else {
-    //                     if (now < startDate) {
-    //                         status = 'Scheduled';
-    //                         statusClass = 'bg-yellow-100 text-yellow-600';
-    //                     } else if (now > endDate) {
-    //                         status = 'Expired';
-    //                         statusClass = 'bg-gray-100 text-gray-600';
-    //                     } else {
-    //                         status = 'Active';
-    //                         statusClass = 'bg-green-100 text-green-600';
-    //                     }
-    //                 }
+                    if (!newState) {
+                        status = 'Inactive';
+                        statusClass = 'bg-red-100 text-red-600';
+                    } else {
+                        if (now < startDate) {
+                            status = 'Scheduled';
+                            statusClass = 'bg-yellow-100 text-yellow-600';
+                        } else if (now > endDate) {
+                            status = 'Expired';
+                            statusClass = 'bg-gray-100 text-gray-600';
+                        } else {
+                            status = 'Active';
+                            statusClass = 'bg-green-100 text-green-600';
+                        }
+                    }
     
-    //                 statusBadge.className = `status-badge ${statusClass} text-xs font-semibold px-3 py-1 rounded-full`;
-    //                 statusBadge.textContent = status;
-    //                 showToast('Success', data.message, 'success');
-    //             } else {
-    //                 // Revert the toggle state
-    //                 this.checked = !newState;
-    //                 showToast('Error', data.message || 'Failed to update status', 'error');
-    //             }
-    //         } catch (error) {
-    //             console.error('Error:', error);
-    //             // Revert the toggle state
-    //             this.checked = !newState;
-    //             showToast('Error', 'Failed to update offer status', 'error');
-    //         }
-    //     });
-    // });
+                    statusBadge.className = `status-badge ${statusClass} text-xs font-semibold px-3 py-1 rounded-full`;
+                    statusBadge.textContent = status;
+                    showToast('Success', data.message, 'success');
+                } else {
+                    // Revert the toggle state
+                    this.checked = !newState;
+                    showToast('Error', data.message || 'Failed to update status', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Revert the toggle state
+                this.checked = !newState;
+                showToast('Error', 'Failed to update offer status', 'error');
+            }
+        });
+    });
 
 
     
