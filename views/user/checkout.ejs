@@ -499,14 +499,14 @@
       <!-- Subtotal -->
       <div class="flex justify-between border-b border-gray-200 pb-2">
         <span>Subtotal</span>
-        <span id="subTotal" class="font-medium text-gray-900">₹<%= subTotal %></span>
+        <span id="subTotal" class="font-medium text-gray-900">₹<%= subTotal.toLocaleString('en-IN') %></span>
       </div>
 
       <!-- Total Savings -->
       <% if (totalSavings > 0) { %>
         <div class="flex justify-between items-center border-b border-gray-200 pb-2">
           <span class="text-green-600">Total Savings</span>
-          <span id="totalSavings" class="font-semibold text-green-600">-₹<%= totalSavings %></span>
+          <span id="totalSavings" class="font-semibold text-green-600">-₹<%= totalSavings.toLocaleString('en-IN') %></span>
         </div>
       <% } %>
 
@@ -524,7 +524,7 @@
       <!-- Total (after offers and coupon, before delivery) -->
       <div class="flex justify-between text-base font-semibold pt-2">
         <span>Total</span>
-        <span id="orderTotal" class="text-gray-900">₹<%= total %></span>
+        <span id="orderTotal" class="text-gray-900">₹<%= total.toLocaleString('en-IN') %></span>
       </div>
     </div>
 
@@ -541,7 +541,7 @@
     <!-- Grand Total -->
     <div class="flex justify-between text-base font-bold pt-2">
       <span>Grand Total</span>
-      <span id="grandTotal" class="text-gray-900">₹<%= grandTotal %></span>
+      <span id="grandTotal" class="text-gray-900">₹<%= grandTotal.toLocaleString('en-IN') %></span>
     </div>
     <!-- Place Order Button -->
 <div class="mt-6 flex justify-end">

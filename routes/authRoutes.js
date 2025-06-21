@@ -41,6 +41,7 @@ import {
     createRazorpayOrder,
     verifyRazorpayPayment,
     retryRezorpayPayment,
+    clearCart,
     getPaymentFailedPage,
     getOrderDetailPage,
     getViewOrderPage,
@@ -127,7 +128,6 @@ router.post('/placeOrder', postPlaceCODOrder);
 router.post('/placeOrder/razorpay',createRazorpayOrder);
 router.post('/verify/razorpay', verifyRazorpayPayment);
 router.post('/razorpay/webhook', express.json(), async (req, res) => {
-    console.log('Webhook received:', req.body);
     const event = req.body;
     if (event.event === 'payment.failed') {
       const razorpayOrderId = event.payload.payment.entity.order_id;
@@ -140,6 +140,7 @@ router.post('/razorpay/webhook', express.json(), async (req, res) => {
     res.status(200).send('OK');
   });
 router.post('/retry-payment/:orderId',isAuthenticated,retryRezorpayPayment);
+router.delete('/cart/clear',clearCart);
 router.get('/payments-failed',getPaymentFailedPage);
 router.post('/placeOrder/wallet',postPlaceWalletOrder)
 router.get('/orderSuccess', getOrderSuccessPage);

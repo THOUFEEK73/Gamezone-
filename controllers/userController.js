@@ -23,7 +23,8 @@ import { compareSync } from "bcryptjs";
 
 // import { getSystemErrorMessage } from "util";
 import { calculateDiscountedPrice,getActiveOffers } from "../utils/offerUtils.js";
-import { Console } from "console";
+
+
 
 export const getHomePage = async (req, res) => {
   try {
@@ -614,7 +615,7 @@ export const removeWishlist = async (req,res)=>{
 
 export const getCartPage = async (req, res) => {
   try {
-    console.log('this is coupon code ',req.query.coupon)
+    
     const userId = req.session.userId;
     const cartItems = await Cart.findOne({ userId }).populate({
       path: "products.productId",
@@ -713,6 +714,7 @@ export const getCartPage = async (req, res) => {
 
 export const postAddCart = async (req, res) => {
   try {
+  
     const { productId } = req.body;
     const userId = req.session.userId;
 
@@ -741,20 +743,13 @@ export const postAddCart = async (req, res) => {
         (prd) => prd.productId.toString() === productId.toString()
       );
       if (existingProduct) {
-         console.log('triggering');
-         
         if(existingProduct.quantity >=game.stockQuantity){
           return res.status(400).json({
             success: false,
             message: `Cannot add more items. Maximum stock limit (${game.stockQuantity}) reached`
           });
         }
-        console.log('triggering check 2');
-        
         existingProduct.quantity += 1;
-         
-        console.log('triggering check 3');
-        
         
       } else {
         cart.products.push({
@@ -767,7 +762,8 @@ export const postAddCart = async (req, res) => {
     }
 
     await cart.save();
-    res.status(200).json({ message: "product added to cart" });
+    const cartCount = cart.products.reduce((sum, item) => sum + item.quantity, 0);
+    res.status(200).json({ message: "product added to cart",cartCount });
   } catch (error) {
     console.error("Error adding product to cart", error);
     res
@@ -791,44 +787,164 @@ export const removeCart = async (req, res) => {
   }
 };
 
+
 export const updateQuantity = async (req, res) => {
   try {
     const userId = req.session.userId;
-    const { itemId, action } = req.body;
+    const { itemId, action, coupon } = req.body; // Accept coupon if sent
 
-    console.log(itemId)
-
-    const cart = await Cart.findOne({ userId }).populate('products.productId') 
-
-
+    const cart = await Cart.findOne({ userId }).populate('products.productId');
     const product = cart.products.id(itemId);
-
     const game = product.productId;
+   
+    const maxAllowed = game.stockQuantity;
 
-    const maxAllowed  = game.stockQuantity;
-
-    
-
-
-    if (action === "increase") {
-      if(product.quantity < maxAllowed){
-        
-          product.quantity += 1;
-      }
-     
+    // Update quantity
+    if (action === "increase" && product.quantity < maxAllowed) {
+      product.quantity += 1;
     } else if (action === "decrease" && product.quantity > 1) {
       product.quantity -= 1;
     }
 
     await cart.save();
-    res.json({ success: true });
+    const cartCount = cart.products.reduce((sum, item) => sum + item.quantity, 0);
+    // Get all active offers
+    const activeOffers = await getActiveOffers();
+
+    // Recalculate all totals
+    let subTotal = 0;
+    let totalSavings = 0;
+    let itemTotal = 0;
+    let itemPrice = 0;
+
+    // Prepare products with offers for coupon logic
+    const productsWithOffers = cart.products.map(item => {
+      const gameObj = item.productId.toObject ? item.productId.toObject() : item.productId;
+      const itemObj = item.toObject();
+
+      // Find best offer for this item
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' && offer.items.includes(gameObj._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' && offer.items.includes(gameObj.category?.toString())
+      );
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+      if (bestOffer) {
+        itemObj.originalPrice = gameObj.price;
+        itemObj.discountPercentage = bestOffer.discountPercentage;
+        itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+        itemObj.offerName = bestOffer.offerName;
+        const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+        totalSavings += itemSavings;
+      } else {
+        itemObj.price = gameObj.price;
+      }
+
+      subTotal += gameObj.price * item.quantity;
+
+      // For the updated item, set itemTotal and itemPrice
+      if (item._id.toString() === itemId) {
+        itemTotal = itemObj.price * item.quantity;
+        itemPrice = itemObj.price;
+      }
+
+      return itemObj;
+    });
+
+    // Coupon logic (optional, if you want to support coupon in cart)
+    let couponDiscount = 0;
+    if (coupon) {
+      const couponDoc = await Coupon.findOne({ code: coupon, isActive: true, isExpired: false });
+      if (couponDoc && (subTotal - totalSavings) >= couponDoc.minOrderAmount) {
+        if (couponDoc.discountType === 'percentage') {
+          couponDiscount = Math.floor((subTotal - totalSavings) * (couponDoc.discountValue / 100));
+        } else {
+          couponDiscount = couponDoc.discountValue;
+        }
+      }
+    }
+
+    let total = Math.max(subTotal - totalSavings - couponDiscount, 0);
+
+    // Delivery charge logic (same as checkout)
+    const DELIVERY_CHARGE = 100;
+    let deliveryCharge = 0;
+    if (subTotal < 1000) {
+      deliveryCharge = DELIVERY_CHARGE;
+    }
+   
+    const grandTotal = total + deliveryCharge;
+   
+    res.json({
+      success: true,
+      updateQty: product.quantity,
+      itemId,
+      itemPrice,
+      itemTotal,
+      subTotal,
+      totalSavings,
+      couponDiscount,
+      cartCount,
+      deliveryCharge,
+      grandTotal,
+      stockQuantity:game.stockQuantity,
+    });
+
   } catch (error) {
     console.error("Error updating the product quantity", error);
-    res
-      .status(500)
-      .render("error", { message: "Server down please try after some times" });
+    res.status(500).render("error", {
+      message: "Server down, please try after some time.",
+    });
   }
 };
+
+// export const updateQuantity = async (req, res) => {
+//   try {
+//     const userId = req.session.userId;
+//     const { itemId, action } = req.body;
+
+//     const cart = await Cart.findOne({ userId }).populate('products.productId') 
+
+//     const product = cart.products.id(itemId);
+
+//     const game = product.productId;
+
+//     const maxAllowed  = game.stockQuantity;
+
+//     if (action === "increase") {
+//       if(product.quantity < maxAllowed){
+        
+//           product.quantity += 1;
+//       }
+     
+//     } else if (action === "decrease" && product.quantity > 1) {
+//       product.quantity -= 1;
+//     }
+
+//     const itemTotal = game.price * product.quantity
+
+//     console.log('total quantity of aproduct',product.quantity);
+//     console.log("cart total price", cart.totalPrice);
+//     console.log('game price is ',game.price)
+
+//     await cart.save();
+//     res.json({ success: true,
+//     updateQty:product.quantity,
+//     itemId,
+//     itemPrice:game.price,
+//     subTotal:cart.totalPrice,
+//    });
+//   } catch (error) {
+//     console.error("Error updating the product quantity", error);
+//     res
+//       .status(500)
+//       .render("error", { message: "Server down please try after some times" });
+//   }
+// };
 
 export const proceedToCheckout = (req, res) => {
   console.log("yes....");
@@ -921,7 +1037,6 @@ export const getCheckoutPage = async (req, res) => {
 
     if (appliedCoupon) {
       appliedCouponDoc = await Coupon.findOne({ code: appliedCoupon, isActive: true, isExpired: false });
-
       if (appliedCouponDoc && (subTotal - totalSavings) >= appliedCouponDoc.minOrderAmount) {
         if (appliedCouponDoc.discountType === 'percentage') {
           couponDiscount = Math.floor((subTotal - totalSavings) * (appliedCouponDoc.discountValue / 100));
@@ -1290,7 +1405,7 @@ export const createRazorpayOrder = async (req, res) => {
     });
     await order.save();
         
-    console.log('orderId ',order._id)
+   
     // 7. Respond with Razorpay order details
     const user = await User.findById(userId);
     res.json({
@@ -1325,7 +1440,7 @@ export const retryRezorpayPayment = async(req,res)=>{
       key_secret:process.env.RAZORPAY_KEY_SECRET
     })
     
-    console.log('tigger one')
+
     const newRazorpayOrder = await razorpay.orders.create({
       amount: order.grandTotal * 100,
       currency: 'INR',
@@ -1350,7 +1465,7 @@ export const retryRezorpayPayment = async(req,res)=>{
       userPhone: user?.phone || "9999999999"
     });
    
-    console.log('trigger three')
+
 
   }catch(error){
     console.error("Error retrying Razorpay payment", error);
@@ -1362,7 +1477,7 @@ export const retryRezorpayPayment = async(req,res)=>{
 export const getPaymentFailedPage = async(req,res)=>{
   try {
     const orderId = req.query.orderId;
-    console.log('this is the orderId',orderId)
+   
     let order = null;
     if (orderId) {
       order = await Order.findById(orderId); 
@@ -1389,6 +1504,7 @@ export const verifyRazorpayPayment = async (req, res) => {
     if (expectedSignature === razorpay_signature) {
       // Mark order as paid, reduce stock, clear cart
       const order = await Order.findOne({ razorpayOrderId: razorpay_order_id, userId });
+    
       if (!order) {
         return res.json({ success: false, message: "Order not found" });
       }
@@ -1412,13 +1528,24 @@ export const verifyRazorpayPayment = async (req, res) => {
 
       res.json({ success: true, redirectUrl: "/orderSuccess" });
     } else {
+      console.log('this function is triggered one ')
+      await Cart.findOneAndDelete({ userId }); 
+      console.log('this function is triggered two ')
       res.json({ success: false, message: "Payment verification failed" });
+    
     }
   } catch (error) {
     console.error("Error verifying Razorpay payment", error);
     res.json({ success: false, message: "Payment verification failed" });
   }
 };
+
+export const clearCart = async(req,res)=>{
+  console.log('clearing cart....')
+  const userId = req.session.userId;
+   await Cart.findOneAndDelete({userId});
+   res.json({success:true})
+}
 
 export const postPlaceWalletOrder = async (req, res) => {
   try {

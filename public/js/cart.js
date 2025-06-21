@@ -96,7 +96,7 @@ async function removeItem(itemId, button) {
 async function updateQuantity(itemId, action) {
 
   try {
-    console.log('testing...')
+   
 
     const response = await fetch('/cart/update-Quantity', {
       method: 'PUT',
@@ -107,12 +107,64 @@ async function updateQuantity(itemId, action) {
     })
 
     const result = await response.json();
+  
+    
+    if (response.ok && result.success) {
+      // Update quantity using backend value only
+      const qtyElem = document.getElementById(`qty-${result.itemId}`);
+      if (qtyElem) qtyElem.textContent = result.updateQty;
+    
+      const incBtn = document.getElementById(`increment-${result.itemId}`);
+      const decBtn = document.getElementById(`decrement-${result.itemId}`);
+      if (incBtn) incBtn.disabled = result.updateQty >= result.stockQuantity;
+      if (decBtn) decBtn.disabled = result.updateQty <= 1;
 
-    if (response.ok) {
-      location.reload();
+
+      // After updating the quantity in the DOM
+const warningElem = document.getElementById(`stock-warning-${result.itemId}`);
+if (warningElem) {
+  if (result.updateQty >= result.stockQuantity) {
+    warningElem.style.display = '';
+  } else {
+    warningElem.style.display = 'none';
+  }
+}
+      // Update item total
+      const totalElem = document.getElementById(`total-${result.itemId}`);
+      if (totalElem) totalElem.textContent = `₹${result.itemTotal.toLocaleString('en-IN')}`;
+
+    
+      // Update cart subtotal
+      const subTotalElem = document.getElementById('subTotal');
+      if (subTotalElem) subTotalElem.textContent = `₹ ${result.subTotal.toLocaleString('en-IN')}`;
+    
+      // Update cart grand total
+      const cartTotalElem = document.getElementById('cartTotal');
+      if (cartTotalElem) cartTotalElem.textContent = `₹ ${result.grandTotal.toLocaleString('en-IN')}`;
+    
+      // Optionally update total savings
+      const savingsElem = document.getElementById('totalSavings');
+      if (savingsElem) savingsElem.textContent = `-₹${result.totalSavings.toLocaleString('en-IN')}`;
+    
+      // Update cart counter
+      const cartCounter = document.getElementById('cartCounter');
+      if (cartCounter && typeof result.cartCount !== 'undefined') {
+        cartCounter.textContent = result.cartCount;
+        cartCounter.classList.add('scale-125', 'bg-green-500');
+        setTimeout(() => {
+          cartCounter.classList.remove('scale-125', 'bg-green-500');
+        }, 200);
+      }
+      // Update cart count in cart page header
+const cartCountHeader = document.getElementById('cartCountHeader');
+if (cartCountHeader && typeof result.cartCount !== 'undefined') {
+  cartCountHeader.textContent = `${result.cartCount} items`;
+}
+      
     }
 
   } catch (error) {
+    
     console.error('Error updating product quantity', error);
 
 
@@ -178,46 +230,50 @@ function showToast(message) {
 }
 
 
-function updateCartCount(increment = 1) {
+// function updateCartCount(increment = 1) {
+//   const cartCounter = document.getElementById('cartCounter');
+//   if (cartCounter) {
+//     let currentCount = parseInt(cartCounter.textContent || '0');
+//     currentCount += increment;
+    
+//     // Update the count
+//     cartCounter.textContent = currentCount;
+    
+//     // Add animation
+//     cartCounter.classList.add('scale-125', 'bg-green-500');
+    
+//     // Remove animation after transition
+//     setTimeout(() => {
+//       cartCounter.classList.remove('scale-125', 'bg-green-500');
+//     }, 200);
+//   }
+// }
+
+function updateCartCount(change = 1) {
   const cartCounter = document.getElementById('cartCounter');
   if (cartCounter) {
     let currentCount = parseInt(cartCounter.textContent || '0');
-    currentCount += increment;
-    
+    currentCount += change;
+
+    // Prevent negative count
+    currentCount = Math.max(0, currentCount);
+
     // Update the count
     cartCounter.textContent = currentCount;
-    
-    // Add animation
-    cartCounter.classList.add('scale-125', 'bg-green-500');
-    
-    // Remove animation after transition
+
+    // Add animation based on change
+    const animationClass = change > 0 ? 'bg-green-500' : 'bg-red-500';
+    cartCounter.classList.add('scale-125', animationClass);
+
+    // Remove animation after a short delay
     setTimeout(() => {
-      cartCounter.classList.remove('scale-125', 'bg-green-500');
+      cartCounter.classList.remove('scale-125', 'bg-green-500', 'bg-red-500');
     }, 200);
   }
 }
 
-async function addToCart(productId) {
-  try {
-    const response = await fetch("/cart/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productId }),
-    });
 
-    const data = await response.json();
 
-    if (response.ok) {
-      updateCartCount(); // Increment cart count
-      showCartFlash("success", "Product added to cart!");
-    } else {
-      showCartFlash('error', data.message || 'Failed to add to cart');
-    }
-  } catch (error) {
-    console.error("Error adding product to cart", error);
-    showCartFlash('error', 'You Exceeded The Stock Limit!');
-  }
-}
 
 async function addToCart(productId) {
   try {
@@ -230,7 +286,15 @@ async function addToCart(productId) {
     const data = await response.json();
 
     if (response.ok) {
-      updateCartCount(); // Increment cart count
+       // Use backend value for cart count
+       const cartCounter = document.getElementById('cartCounter');
+       if (cartCounter && typeof data.cartCount !== 'undefined') {
+         cartCounter.textContent = data.cartCount;
+         cartCounter.classList.add('scale-125', 'bg-green-500');
+         setTimeout(() => {
+           cartCounter.classList.remove('scale-125', 'bg-green-500');
+         }, 200);
+       }// Increment cart count
       showCartFlash("success", "Product added to cart!");
     } else {
       showCartFlash('error', data.message || 'Failed to add to cart');
@@ -240,3 +304,4 @@ async function addToCart(productId) {
     showCartFlash('error', 'You Exceeded The Stock Limit!');
   }
 }
+

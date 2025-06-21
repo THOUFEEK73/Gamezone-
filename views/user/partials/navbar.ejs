@@ -137,18 +137,18 @@
     });
 
     // Cart count animation
-    function updateCartCount(increment = 1) {
-      const cartCounter = document.getElementById('cartCounter');
-      if (cartCounter) {
-        let currentCount = parseInt(cartCounter.textContent || '0');
-        currentCount += increment;
-        cartCounter.textContent = currentCount;
-        cartCounter.classList.add('scale-125', 'bg-green-500');
-        setTimeout(() => {
-          cartCounter.classList.remove('scale-125', 'bg-green-500');
-        }, 200);
-      }
-    }
+    // function updateCartCount(increment = 1) {
+    //   const cartCounter = document.getElementById('cartCounter');
+    //   if (cartCounter) {
+    //     let currentCount = parseInt(cartCounter.textContent || '0');
+    //     currentCount += increment;
+    //     cartCounter.textContent = currentCount;
+    //     cartCounter.classList.add('scale-125', 'bg-green-500');
+    //     setTimeout(() => {
+    //       cartCounter.classList.remove('scale-125', 'bg-green-500');
+    //     }, 200);
+    //   }
+    // }
   </script>
 
   <!-- <script src="/js/filterFunc.js" defer></script> -->

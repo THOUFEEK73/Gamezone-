@@ -122,10 +122,12 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
             if (verifyData.success) {
               window.location.href = verifyData.redirectUrl || '/orders';
             } else {
+              await fetch('/cart/clear', { method: 'DELETE' });
               window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
               showFlash(verifyData.message || 'Payment verification failed', 'error');
             }
           } catch (err) {
+            await fetch('/cart/clear', { method: 'DELETE' });
             showFlash('Payment verification failed. Please try again.', 'error');
           }
         },
@@ -139,8 +141,10 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
         },
         modal: {
           ondismiss: function() {
-          
-            window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
+            fetch('/cart/clear', { method: 'DELETE' }).then(() => {
+              window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
+            });
+            // window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
           }
         }
 
@@ -148,6 +152,10 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
       };
  
       const rzp = new Razorpay(options);
+      rzp.on('payment.failed', async function (response) {
+        await fetch('/cart/clear', { method: 'DELETE' });
+        window.location.href = '/payments-failed?orderId=' + encodeURIComponent(orderData._id);
+      });
       rzp.open();
     } catch (error) {
       showFlash('Razorpay payment failed. Please try again.', 'error');

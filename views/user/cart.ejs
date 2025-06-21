@@ -42,7 +42,7 @@
               class="text-2xl font-bold text-gray-900 flex flex-wrap items-center gap-2"
             >
               🎮 GameZone Cart
-              <span
+              <span id="cartCountHeader"
                 class="text-sm sm:text-base font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-1.5 rounded-full shadow-md tracking-wide"
               >
                 <%= cartCount %> items
@@ -146,39 +146,44 @@
     <div class="inline-flex items-center bg-orange-50 rounded-full px-3 py-1 shadow-sm w-fit">
       <!-- Decrease Button -->
       <button
-        onclick="updateQuantity('<%= item._id %>', 'decrease')"
-        <%= item.quantity <= 1 ? 'disabled' : '' %>
-        class="text-orange-600 hover:text-red-500 disabled:text-orange-300 transition text-lg p-1"
-        title="Decrease"
-      >
-        <i class="fas fa-minus-circle"></i>
-      </button>
+  id="decrement-<%= item._id %>"
+  onclick="updateQuantity('<%= item._id %>', 'decrease')"
+  <%= item.quantity <= 1 ? 'disabled' : '' %>
+  class="text-orange-600 hover:text-red-500 disabled:text-orange-300 transition text-lg p-1"
+  title="Decrease"
+>
+  <i class="fas fa-minus-circle"></i>
+</button>
     
       <!-- Quantity Display -->
-      <span class="px-4 text-sm font-bold text-orange-800 select-none">
+      <span id="qty-<%= item._id %>" class="px-4 text-sm font-bold text-orange-800 select-none">
         <%= item.quantity %>
       </span>
+      
     
       <!-- Increase Button -->
       <button
-        onclick="updateQuantity('<%= item._id %>', 'increase')"
-        <%= item.quantity >= item.productId.stockQuantity ? 'disabled' : '' %>
-        class="text-orange-600 hover:text-green-500 disabled:text-orange-300 transition text-lg p-1"
-        title="Increase"
-      >
-        <i class="fas fa-plus-circle"></i>
-      </button>
+      id="increment-<%= item._id %>"
+      onclick="updateQuantity('<%= item._id %>', 'increase')"
+      <%= item.quantity >= item.productId.stockQuantity ? 'disabled' : '' %>
+      class="text-orange-600 hover:text-green-500 disabled:text-orange-300 transition text-lg p-1"
+      title="Increase"
+    >
+      <i class="fas fa-plus-circle"></i>
+    </button>
     </div>
     
-    <% if(item.quantity >= item.productId.stockQuantity){ %>
-      <div class="text-yellow-600 text-xs mt-1 font-semibold">Max available stock reached</div>
-    <% } %>
+    <div id="stock-warning-<%= item._id %>" class="text-yellow-600 text-xs mt-1 font-semibold"
+      style="display:<%= item.quantity >= item.productId.stockQuantity ? 'block' : 'none' %>;">
+      Max available stock reached
+    </div>
   <% } %>
 </td>
 <td data-label="Total">
   <div class="space-y-1">
-    <div class="font-semibold text-indigo-600">
-      ₹<%= item.quantity * item.price %>
+    <div id="total-<%= item._id %>" class="font-semibold text-indigo-600">
+      ₹<%= (item.quantity * item.price).toLocaleString('en-IN') %>
+
     </div>
     <% if (item.originalPrice && item.discountPercentage) { %>
       <div class="text-xs text-green-600 font-medium">
@@ -238,18 +243,18 @@
 
     <div class="summary-item">
       <span>Subtotal</span>
-      <span>₹ <%= subTotal %></span>
+      <span id="subTotal">₹ <%= subTotal.toLocaleString('en-IN') %></span>
     </div>
     <% if (totalSavings > 0) { %>
       <div class="summary-item">
         <span>Total Savings</span>
-        <span class="text-green-600">-₹<%= totalSavings %></span>
+        <span id="totalSavings" class="text-green-600">-₹<%= totalSavings.toLocaleString('en-IN') %></span>
       </div>
     <% } %>
 
     <div class="summary-total">
       <span>Total</span>
-      <span>₹ <%= total %></span>
+      <span id="cartTotal">₹ <%= total.toLocaleString('en-IN') %></span>
     </div>
       
     <% const hasOutOfStock = cart.products.some(item => item.productId.stockQuantity === 0); %>
