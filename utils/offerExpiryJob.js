@@ -10,9 +10,6 @@ cron.schedule('0 0 * * *', async () =>{
     
 
      try{
-
-      console.log('Running offer and coupon expiry job at midnight');
-     
         const now = new Date();
 
  
@@ -43,7 +40,6 @@ cron.schedule('0 0 * * *', async () =>{
     { startDate: { $gt: now } },
     { $set: { isActive: false, isExpired: false } }
   );
-
 
      }catch(error){
             console.error('Error updating :', error);

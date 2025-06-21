@@ -3,34 +3,13 @@ import Coupon from '../models/couponModel.js';
 
 export const getCouponPage = async (req, res) => {
   try {
-    const itemsPerPage = 5;
-    const currentPage = parseInt(req.query.page) || 1;
-    const searchQuery = req.query.search || '';
 
-    // Optional: Add search filter (can remove if you don’t want search here)
-    const searchFilter = searchQuery
-      ? {
-          $or: [
-            { code: { $regex: searchQuery, $options: 'i' } },
-            { description: { $regex: searchQuery, $options: 'i' } }
-          ]
-        }
-      : {};
-
-    const totalItems = await Coupon.countDocuments(searchFilter);
-    const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-    const coupons = await Coupon.find(searchFilter)
+ 
+    const coupons = await Coupon.find()
       .sort({ createdAt: -1 })
-      .skip((currentPage - 1) * itemsPerPage)
-      .limit(itemsPerPage)
-      .lean();
-
+      
     res.render('admin/coupons', {
       coupons,
-      currentPage,
-      totalPages,
-      searchQuery
     });
   } catch (error) {
     console.error('Error fetching coupon page:', error);
@@ -40,19 +19,40 @@ export const getCouponPage = async (req, res) => {
 
 export const getCouponApi = async (req, res) => {
   const searchQuery = req.query.search || '';
-  const searchFilter = searchQuery
-    ? {
-        $or: [
-          { code: { $regex: searchQuery, $options: 'i' } },
-          { description: { $regex: searchQuery, $options: 'i' } }
-        ]
-      }
-    : {};
-  const coupons = await Coupon.find(searchFilter).sort({ createdAt: -1 }).lean();
-  res.json({ coupons });
+  const status = req.query.status || '';
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
+  let filter = {};
+  if (searchQuery) {
+    filter.$or = [
+      { code: { $regex: searchQuery, $options: 'i' } },
+      { description: { $regex: searchQuery, $options: 'i' } }
+    ];
+  }
+  if (status === 'active') {
+    filter.isActive = true;
+    filter.isExpired = false;
+  } else if (status === 'inactive') {
+    filter.isActive = false;
+  } else if (status === 'expired') {
+    filter.isExpired = true;
+  }
+
+  const total = await Coupon.countDocuments(filter);
+  const coupons = await Coupon.find(filter)
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .lean();
+
+  res.json({
+    coupons,
+    total,
+    currentPage: page,
+    totalPages: Math.ceil(total / limit)
+  });
 };
-
-
 
 export const postCoupon = async(req,res)=>{
     try{
@@ -71,18 +71,13 @@ export const postCoupon = async(req,res)=>{
         if (!startDate) errors.startDate = 'Start date is required.';
         if (!endDate) errors.endDate = 'End date is required.';
           
-        console.log('Received data:', code)
+
       
         const parsedDiscountValue = Number(discountValue);
         const parsedMinOrderAmount = Number(minOrderAmount);
         const parsedMaxOrderAmount = Number(maxOrderAmount);
         const parsedStartDate = startDate ? new Date(startDate) : null;
         const parsedEndDate = endDate ? new Date(endDate) : null;
-
-
-        
-
-
         // Types and value checks 
 
         if(discountType && !['percentage','fixed'].includes(discountType)){
@@ -138,6 +133,19 @@ export const postCoupon = async(req,res)=>{
             return res.status(400).json({ success: false, errors });
         }
 
+        const now = new Date();
+
+        // const isActive = parsedStartDate <= now && parsedEndDate >= now;
+        // const isExpired = parsedEndDate < now;
+        
+
+        let isActive = false;
+        const isExpired = parsedEndDate < now;
+        
+        if (parsedStartDate <= now && parsedEndDate >= now) {
+          isActive = true;
+        }
+      
         await Coupon.create({
             code,
             discountType,
@@ -146,7 +154,9 @@ export const postCoupon = async(req,res)=>{
             maxOrderAmount: parsedMaxOrderAmount,
             description,
             startDate: parsedStartDate,
-            endDate: parsedEndDate
+            endDate: parsedEndDate,
+            isActive,
+            isExpired,
         });
         console.log('success fully')
         return res.json({ success: true, message: 'Coupon successfully created!' });
@@ -159,45 +169,55 @@ export const postCoupon = async(req,res)=>{
 }
 
 
-export const CouponStatus = async(req, res) => {
-    try {
-      const { isActive } = req.body;
-      const couponId = req.params.id;
-  
-      if (!couponId) {
-        return res.status(400).json({ success: false, message: "Coupon ID is required" });
-      }
-  
-     
-      const coupon = await Coupon.findById(couponId);
-      if (!coupon) {
-        return res.status(404).json({ success: false, message: "Coupon not found" });
-      }
-  
-      const now = new Date();
-      let isExpired = coupon.isExpired;
-  
+export const CouponStatus = async (req, res) => {
+  try {
+    const { isActive } = req.body;
+    const couponId = req.params.id;
 
-      if (!isActive) {
-        isExpired = now > coupon.endDate;
-      } else {
-
-        isExpired = now > coupon.endDate;
-      }
-  
- 
-      const updated = await Coupon.findByIdAndUpdate(
-        couponId,
-        { isActive, isExpired },
-        { new: true }
-      ).lean();
-  
-      res.json({ success: true, coupon: updated });
-  
-    } catch (error) {
-      res.status(500).json({ success: false, message: "Server error" });
+    if (!couponId) {
+      return res.status(400).json({ success: false, message: "Coupon ID is required" });
     }
+
+    const coupon = await Coupon.findById(couponId);
+    if (!coupon) {
+      return res.status(404).json({ success: false, message: "Coupon not found" });
+    }
+
+    const now = new Date();
+    const startDate = new Date(coupon.startDate);
+    const endDate = new Date(coupon.endDate);
+
+    let updatedIsActive = false;
+    let isExpired = now > endDate;
+
+    // ✅ Prevent activating future-scheduled coupons
+    if (isActive) {
+      if (startDate <= now && endDate >= now) {
+        updatedIsActive = true;
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Cannot activate coupon before its start date.",
+        });
+      }
+    }
+
+    const updated = await Coupon.findByIdAndUpdate(
+      couponId,
+      {
+        isActive: updatedIsActive,
+        isExpired,
+      },
+      { new: true }
+    ).lean();
+
+    res.json({ success: true, coupon: updated });
+
+  } catch (error) {
+    console.error("Error updating coupon status:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
+};
 
 
 
@@ -286,7 +306,16 @@ export const CouponStatus = async(req, res) => {
   
       // Check if expired
       const now = new Date();
+      // const isActive = parsedStartDate && parsedEndDate && now >= parsedStartDate && now <= parsedEndDate && !isExpired;
+      // const isExpired = parsedEndDate && now > parsedEndDate;
+
       const isExpired = parsedEndDate && now > parsedEndDate;
+
+let isActive = false;
+if (!isExpired && parsedStartDate <= now && parsedEndDate >= now) {
+  isActive = true;
+}
+
   
       // Update in DB
       const updated = await Coupon.findByIdAndUpdate(
@@ -300,7 +329,8 @@ export const CouponStatus = async(req, res) => {
           description,
           startDate: parsedStartDate,
           endDate: parsedEndDate,
-          isExpired
+          isActive,
+          isExpired,
         },
         { new: true }
       ).lean();

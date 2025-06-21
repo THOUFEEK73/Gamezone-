@@ -12,7 +12,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
   const defaultAddressDiv = document.querySelector('[data-is-default="true"]');
 
   if (!defaultAddressDiv) {
-    alert("Please set a default address first.");
+    showFlash('Please set a default address first.');
     return;
   }
 

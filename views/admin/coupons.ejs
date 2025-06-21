@@ -34,7 +34,7 @@
           id="couponSearchInput"
           type="text"
           name="search"
-          value="<%= searchQuery %>"
+       
           placeholder="Search coupon..."
           class="px-3 py-2 border rounded-lg w-full md:w-72 focus:outline-none focus:ring focus:border-blue-400"
           autocomplete="off"
@@ -76,7 +76,7 @@
             <th class="px-4 py-3">ACTIONS</th>
           </tr>
         </thead>
-        <tbody>
+        <!-- <tbody>
           <% if (coupons && coupons.length > 0) { %>
             <% coupons.forEach(function(coupon) { %>
               <tr class="hover:bg-gray-50" data-coupon-id="<%= coupon._id %>">
@@ -112,7 +112,7 @@
                   </span>
                 </td>
                 <td class="px-4 py-3 flex items-center gap-3">
-                  <!-- Edit Icon Button -->
+              
                   <button 
                   title="Edit" 
                   class="text-blue-600 hover:text-blue-800 focus:outline-none edit-coupon-btn"
@@ -123,7 +123,7 @@
                   </svg>
                 </button>
                 <input type="hidden" id="updateCouponId" name="couponId" />
-                  <!-- Toggle Switch -->
+           
                   <label class="relative inline-flex items-center cursor-pointer <%= coupon.isExpired ? 'opacity-50 cursor-not-allowed' : '' %>">
                     <input type="checkbox" class="sr-only peer"
                       <%= coupon.isActive ? 'checked' : '' %>
@@ -142,11 +142,12 @@
               <td colspan="7" class="text-center py-8 text-gray-500">No coupons are available</td>
             </tr>
           <% } %>
-        </tbody>
+        </tbody> -->
+        <tbody></tbody>
       </table>
     </div>
 
-    <%- include('partials/pagination', { currentPage, totalPages }) %>
+    <div id="couponPagination" class="flex justify-center mt-6"></div>
   </div>
 
 
@@ -257,22 +258,48 @@
   <div id="toast" class="fixed top-6 right-6 bg-green-600 text-white px-6 py-3 rounded shadow-lg z-50 hidden"></div>
   <script src="/js/Coupon.js"></script>
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       const couponTableBody = document.querySelector('tbody');
       const searchInput = document.getElementById('couponSearchInput');
       const clearBtn = document.getElementById('clearSearchBtn');
       const searchForm = document.getElementById('couponSearchForm');
+      const statusFilter = document.querySelector('select');
+      const paginationDiv = document.getElementById('couponPagination');
+      const limit = 5;
+    
+      let currentSearch = '';
+      let currentStatus = '';
+      let currentPage = 1;
     
       // Show/hide clear button as user types
       searchInput.addEventListener('input', function () {
         clearBtn.style.display = this.value ? 'block' : 'none';
       });
+      if (searchInput.value) clearBtn.style.display = 'block';
     
-      // On page load, show if input has value
-      if (searchInput.value) {
-        clearBtn.style.display = 'block';
-      }
+      // Status filter
+      statusFilter.addEventListener('change', function () {
+        currentStatus = this.value === 'All Status' ? '' : this.value.toLowerCase();
+        fetchCoupons(currentSearch, 1, currentStatus);
+      });
     
+      // Search submit
+      searchForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        currentSearch = searchInput.value.trim();
+        fetchCoupons(currentSearch, 1, currentStatus);
+        clearBtn.style.display = searchInput.value ? 'block' : 'none';
+      });
+    
+      // Clear button
+      clearBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        currentSearch = '';
+        fetchCoupons('', 1, currentStatus);
+        clearBtn.style.display = 'none';
+      });
+    
+      // Render coupons table
       function renderCoupons(coupons) {
         couponTableBody.innerHTML = '';
         if (!coupons.length) {
@@ -284,85 +311,125 @@
           return;
         }
         coupons.forEach(coupon => {
-          // Status logic
-          let status = '';
-          let statusClass = '';
-          if (coupon.isExpired) {
-            status = 'Expired';
-            statusClass = 'bg-gray-100 text-gray-700';
-          } else if (!coupon.isActive) {
-            status = 'Inactive';
-            statusClass = 'bg-red-100 text-red-700';
-          } else if (new Date() < new Date(coupon.startDate)) {
-            status = 'Scheduled';
-            statusClass = 'bg-yellow-100 text-yellow-700';
-          } else {
-            status = 'Active';
-            statusClass = 'bg-green-100 text-green-700';
-          }
+  let status = '';
+  let statusClass = '';
+  const now = new Date();
+  const startDate = new Date(coupon.startDate);
+  const endDate = new Date(coupon.endDate);
+
+  let disableToggle = false;
+
+  if (coupon.isExpired) {
+    status = 'Expired';
+    statusClass = 'bg-gray-100 text-gray-700';
+    disableToggle = true;
+  } else if (now < startDate) {
+    status = 'Scheduled';
+    statusClass = 'bg-blue-100 text-blue-700';
+    disableToggle = true;
+  } else if (coupon.isActive) {
+    status = 'Active';
+    statusClass = 'bg-green-100 text-green-700';
+  } else {
+    status = 'Inactive';
+    statusClass = 'bg-red-100 text-red-700';
+  }
+
+  couponTableBody.innerHTML += `
+    <tr class="hover:bg-gray-50" data-coupon-id="${coupon._id}">
+      <td class="px-4 py-3">${coupon.code}</td>
+      <td class="px-4 py-3">${coupon.discountType === 'percentage' ? 'Percentage' : 'Fixed'}</td>
+      <td class="px-4 py-3">${coupon.discountValue}</td>
+      <td class="px-4 py-3">₹${coupon.minOrderAmount}</td>
+      <td class="px-4 py-3">
+        ${coupon.startDate ? new Date(coupon.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+        -
+        ${coupon.endDate ? new Date(coupon.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
+      </td>
+      <td class="px-4 py-3 coupon-status">
+        <span class="${statusClass} px-2 py-1 rounded text-xs font-semibold">${status}</span>
+      </td>
+      <td class="px-4 py-3 flex items-center gap-3">
+        <button 
+          title="Edit" 
+          class="text-blue-600 hover:text-blue-800 focus:outline-none edit-coupon-btn"
+          data-coupon='${JSON.stringify(coupon).replace(/'/g, "&apos;")}'
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+        </button>
+        <input type="hidden" id="updateCouponId" name="couponId" />
+        <label class="relative inline-flex items-center cursor-pointer ${disableToggle ? 'opacity-50 cursor-not-allowed' : ''}">
+          <input type="checkbox" class="sr-only peer"
+            ${coupon.isActive ? 'checked' : ''}
+            ${disableToggle ? 'disabled' : ''}
+            onchange="toggleCouponStatus('${coupon._id}', this.checked)">
+          <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all duration-200"></div>
+          <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
+        </label>
+      </td>
+    </tr>
+  `;
+});
+
+        attachEditCouponListeners();
+      }
     
-          couponTableBody.innerHTML += `
-            <tr class="hover:bg-gray-50" data-coupon-id="${coupon._id}">
-              <td class="px-4 py-3">${coupon.code}</td>
-              <td class="px-4 py-3">${coupon.discountType === 'percentage' ? 'Percentage' : 'Fixed'}</td>
-              <td class="px-4 py-3">${coupon.discountValue}</td>
-              <td class="px-4 py-3">₹${coupon.minOrderAmount}</td>
-              <td class="px-4 py-3">
-                ${coupon.startDate ? new Date(coupon.startDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
-                -
-                ${coupon.endDate ? new Date(coupon.endDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : '-'}
-              </td>
-              <td class="px-4 py-3 coupon-status">
-                <span class="${statusClass} px-2 py-1 rounded text-xs font-semibold">${status}</span>
-              </td>
-              <td class="px-4 py-3 flex items-center gap-3">
-                <button 
-                  title="Edit" 
-                  class="text-blue-600 hover:text-blue-800 focus:outline-none edit-coupon-btn"
-                  data-coupon='${JSON.stringify(coupon).replace(/'/g, "&apos;")}'
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
-                  </svg>
-                </button>
-                <input type="hidden" id="updateCouponId" name="couponId" />
-                <label class="relative inline-flex items-center cursor-pointer ${coupon.isExpired ? 'opacity-50 cursor-not-allowed' : ''}">
-                  <input type="checkbox" class="sr-only peer"
-                    ${coupon.isActive ? 'checked' : ''}
-                    ${coupon.isExpired ? 'disabled' : ''}
-                    onchange="toggleCouponStatus('${coupon._id}', this.checked)">
-                  <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-green-500 transition-all duration-200"></div>
-                  <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 peer-checked:translate-x-5"></div>
-                </label>
-              </td>
-            </tr>
-          `;
+      // Render pagination
+      function renderPagination(totalPages, currentPage) {
+        let html = '';
+        if (totalPages <= 1) {
+          paginationDiv.innerHTML = '';
+          return;
+        }
+        if (currentPage > 1) {
+          html += `<button class="px-3 py-1 border rounded bg-white hover:bg-gray-100 text-gray-700" data-page="${currentPage - 1}">Previous</button>`;
+        }
+        for (let i = 1; i <= totalPages; i++) {
+          html += `<button class="px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'bg-white hover:bg-gray-100 text-gray-700'}" data-page="${i}">${i}</button>`;
+        }
+        if (currentPage < totalPages) {
+          html += `<button class="px-3 py-1 border rounded bg-white hover:bg-gray-100 text-gray-700" data-page="${currentPage + 1}">Next</button>`;
+        }
+        paginationDiv.innerHTML = html;
+        paginationDiv.querySelectorAll('button[data-page]').forEach(btn => {
+          btn.onclick = () => {
+            fetchCoupons(currentSearch, parseInt(btn.getAttribute('data-page')), currentStatus);
+          };
+        });
+      }
+    
+      // Attach edit-coupon listeners
+      function attachEditCouponListeners() {
+        document.querySelectorAll('.edit-coupon-btn').forEach(btn => {
+          btn.onclick = function () {
+            const coupon = JSON.parse(this.dataset.coupon.replace(/&apos;/g, "'"));
+            document.getElementById('updateCouponId').value = coupon._id || '';
+            document.getElementById('updateCouponCode').value = coupon.code || '';
+            document.getElementById('updateDiscountType').value = coupon.discountType || '';
+            document.getElementById('updateDiscountValue').value = coupon.discountValue || '';
+            document.getElementById('updateMinOrderAmount').value = coupon.minOrderAmount || '';
+            document.getElementById('updateMaxOrderAmount').value = coupon.maxOrderAmount || '';
+            document.getElementById('updateDescription').value = coupon.description || '';
+            document.getElementById('updateStartDate').value = coupon.startDate ? coupon.startDate.slice(0,10) : '';
+            document.getElementById('updateEndDate').value = coupon.endDate ? coupon.endDate.slice(0,10) : '';
+            document.getElementById('updateCouponModal').classList.remove('hidden');
+          };
         });
       }
     
       // Fetch coupons from backend
-      async function fetchCoupons(search = '') {
-        const res = await fetch(`/admin/coupons/api?search=${encodeURIComponent(search)}`);
+      async function fetchCoupons(search = '', page = 1, status = '') {
+        const res = await fetch(`/admin/coupons/api?search=${encodeURIComponent(search)}&page=${page}&limit=${limit}&status=${encodeURIComponent(status)}`);
         const data = await res.json();
         renderCoupons(data.coupons);
+        renderPagination(data.totalPages, data.currentPage);
+        currentPage = data.currentPage;
       }
     
-      // Handle search submit
-      searchForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        fetchCoupons(searchInput.value.trim());
-        clearBtn.style.display = searchInput.value ? 'block' : 'none';
-      });
-    
-      // Handle clear button
-      clearBtn.addEventListener('click', function () {
-        searchInput.value = '';
-        fetchCoupons('');
-        clearBtn.style.display = 'none';
-      });
-    
       // Initial load (show all coupons)
-      fetchCoupons('');
+      fetchCoupons('', 1, '');
     });
     </script>
 </body>

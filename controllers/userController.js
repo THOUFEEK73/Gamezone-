@@ -921,6 +921,7 @@ export const getCheckoutPage = async (req, res) => {
 
     if (appliedCoupon) {
       appliedCouponDoc = await Coupon.findOne({ code: appliedCoupon, isActive: true, isExpired: false });
+
       if (appliedCouponDoc && (subTotal - totalSavings) >= appliedCouponDoc.minOrderAmount) {
         if (appliedCouponDoc.discountType === 'percentage') {
           couponDiscount = Math.floor((subTotal - totalSavings) * (appliedCouponDoc.discountValue / 100));
@@ -930,13 +931,6 @@ export const getCheckoutPage = async (req, res) => {
       }
     }
 
-    console.log('this is the amount of coupon discount' ,couponDiscount)
-
-
-
-
-
-console.log("this is the coupon value",coupons.discountValue)
      total = Math.max(subTotal - totalSavings - couponDiscount,0);
 // total = Math.max(subTotal - totalSavings, 0);
     // cartItems.products.forEach((prd) => {

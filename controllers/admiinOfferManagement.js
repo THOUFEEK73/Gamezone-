@@ -4,15 +4,9 @@ import Game from '../models/gameModel.js'
 
 export const getOfferPage = async(req,res)=>{
     try {
-        console.log('Fetching offer page');
-
         const games = await Game.find({status:'active'}).select('title _id');
         const category = await Category.find({status:'active'}).select('categoryName _id');
         const offers = await Offer.find().sort({createdAt: -1});
-        
-        console.log('testing offers ',offers)
-        
-        
         res.render('admin/offers',{games,category,offers});
     } catch(error) {
         console.error('Error in getOfferPage:', error);
