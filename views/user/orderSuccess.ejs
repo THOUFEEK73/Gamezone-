@@ -2,87 +2,86 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Order Success</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Success | GameZone</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
   <style>
-    body {
-      background: #f9fafb;
+    @keyframes draw {
+      to {
+        stroke-dashoffset: 0;
+      }
     }
 
-    .fade-in {
-      opacity: 0;
-      transform: scale(0.9);
-      transition: all 0.8s ease-in-out;
+    .tick {
+      stroke-dasharray: 16;
+      stroke-dashoffset: 16;
+      animation: draw 0.7s ease forwards;
     }
 
-    .fade-in.show {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    @keyframes bounce {
-      0%, 100% {
+    @keyframes slide-in {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
         transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
+        opacity: 1;
       }
     }
 
-    .bounce {
-      animation: bounce 0.6s ease;
+    .animate-slide-in {
+      animation: slide-in 0.8s ease-in-out;
     }
-    
   </style>
-      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body class="flex items-center justify-center min-h-screen px-4">
-   <%- include("partials/navbar", { page: page }) %>
-  <div id="orderCard" class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center fade-in">
 
-    <!-- Check Icon -->
-    <div id="checkIcon" class="mx-auto w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mb-6 scale-0">
-      ✓
-    </div>
+<body class="bg-gray-100 text-gray-800 font-sans">
 
-    <!-- Message -->
-    <h1 class="text-2xl font-bold text-gray-800 mb-2">Thank You for Your Order!</h1>
-    <p class="text-gray-600 mb-1">Your order has been successfully placed.</p>
-    <p class="text-sm text-gray-500 mb-6">Order ID: <span class="font-semibold">#ORD-00033</span></p>
+  <!-- Navbar -->
+  <%- include("partials/navbar", { page: page }) %>
 
-    <!-- Illustration -->
-    <div class="flex justify-center mb-6">
-      <img src="https://cdn-icons-png.flaticon.com/512/11571/11571315.png" alt="Order Done" class="w-24 h-24 object-contain opacity-0 transition-opacity duration-700" id="orderImage" />
-    </div>
+  <!-- Main Container -->
+  <div class="min-h-screen flex items-center justify-center px-4 py-12 relative z-10">
+    <div class="bg-white rounded-3xl shadow-xl p-10 max-w-md w-full text-center border border-gray-200">
 
-    <!-- Buttons -->
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="/orderDetails" class="border border-gray-400 px-4 py-2 rounded-md hover:bg-gray-100 transition-all">View Order Details</a>
-      <a href="#" class="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-all">Continue Shopping</a>
+      <!-- Animated Tick Icon -->
+      <div class="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+        <svg class="w-14 h-14 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-opacity="0.3"/>
+          <path d="M9 12l2 2l4 -4" class="tick"/>
+        </svg>
+      </div>
+
+      <!-- Text -->
+      <h1 class="text-2xl sm:text-3xl font-bold text-green-600 mb-2">Order Confirmed!</h1>
+      <p class="text-gray-600">Thanks for shopping with GameZone.</p>
+      <p class="text-sm text-gray-400 mt-2">Order ID: <span class="font-semibold text-gray-700">#ORD-00033</span></p>
+
+      <!-- Image -->
+      <div class="w-28 h-28 mx-auto mt-6 animate-slide-in">
+        <img src="https://cdn-icons-png.flaticon.com/512/4086/4086679.png" alt="Order Box" class="w-full h-full object-contain"/>
+      </div>
+
+      <!-- Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="/orderDetails" class="bg-white border border-gray-300 text-gray-800 px-5 py-2.5 rounded-md hover:bg-gray-100 transition font-medium">View Order</a>
+        <a href="/" class="bg-green-500 text-white px-5 py-2.5 rounded-md hover:bg-green-600 transition font-medium">Continue Shopping</a>
+      </div>
     </div>
   </div>
 
-  <!-- Confetti canvas -->
-  <canvas id="confettiCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-50"></canvas>
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
 
+  <!-- Confetti Script -->
   <script>
-    // Fade + bounce
     window.addEventListener('DOMContentLoaded', () => {
-      const card = document.getElementById('orderCard');
-      const checkIcon = document.getElementById('checkIcon');
-      const image = document.getElementById('orderImage');
-
-      setTimeout(() => {
-        card.classList.add('show');
-        checkIcon.classList.add('scale-100', 'bounce');
-        image.classList.add('opacity-100');
-        fireConfetti();
-      }, 400);
+      fireConfetti();
     });
 
-    // Confetti Effect
     function fireConfetti() {
       const canvas = document.getElementById('confettiCanvas');
       const ctx = canvas.getContext('2d');
@@ -91,7 +90,7 @@
 
       const confetti = Array.from({ length: 100 }, () => ({
         x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height - canvas.height,
+        y: Math.random() * -canvas.height,
         r: Math.random() * 6 + 4,
         d: Math.random() * 40 + 10,
         color: `hsl(${Math.random() * 360}, 70%, 60%)`,
@@ -128,6 +127,9 @@
       loop();
     }
   </script>
-   <script src="/js/cart.js"></script>
+
+  <!-- Footer -->
+  <%- include("partials/footer") %>
+
 </body>
 </html>

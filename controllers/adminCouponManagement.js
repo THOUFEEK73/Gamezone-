@@ -92,7 +92,10 @@ export const postCoupon = async(req,res)=>{
         if(discountType === 'fixed' && (discountValue <=0 )){
             errors.discountValue = 'Fixed discount must be greater than 0';
         }
-
+       
+         if(parsedDiscountValue >= minOrderAmount){
+          errors.minOrderAmount = 'Minimum order amount cannot be less than discount value.';
+         }
          
 
         if(parsedMinOrderAmount < 0){
