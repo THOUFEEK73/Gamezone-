@@ -64,16 +64,17 @@
     <div class="container mx-auto px-6">
       <h3 class="text-2xl font-bold mb-8 text-center">Popular Categories</h3>
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-        <a href="/category/action" class="bg-white p-6 rounded shadow hover:shadow-md transition">Action</a>
-        <a href="/category/rpg" class="bg-white p-6 rounded shadow hover:shadow-md transition">RPG</a>
-        <a href="/category/shooter" class="bg-white p-6 rounded shadow hover:shadow-md transition">Shooter</a>
-        <a href="/category/adventure" class="bg-white p-6 rounded shadow hover:shadow-md transition">Adventure</a>
+        <a href="/allgames?genre=Action" class="bg-white p-6 rounded shadow hover:shadow-md transition">Action</a>
+        <a href="/allgames?genre=Shooting" class="bg-white p-6 rounded shadow hover:shadow-md transition">Shooting</a>
+        <a href="/allgames?genre=Sports" class="bg-white p-6 rounded shadow hover:shadow-md transition">Sports</a>
+        <a href="/category/Adventure" class="bg-white p-6 rounded shadow hover:shadow-md transition">Adventure</a>
       </div>
     </div>
   </section>
 
   <!-- Games Section -->
-  <section class="py-12">
+
+  <section id="games" class="py-12">
     <div class="container mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center mb-8">
         <h2 class="text-3xl font-bold text-gray-900">Games</h2>
@@ -135,6 +136,7 @@
       </div>
     </div>
   </section>
+
 
   <!-- Footer -->
   <%- include('partials/footer') %>

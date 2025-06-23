@@ -14,7 +14,10 @@ import Coupon from '../models/couponModel.js'
 import Wallet from '../models/walletModel.js';
 import Razorpay from 'razorpay';
 import * as crypto from "crypto";
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
+import Subscriber from '../models/subscriberModel.js';
+import sendEmail from '../utils/mailer.js';
+
 
 
 import _ from "lodash";
@@ -23,6 +26,7 @@ import { compareSync } from "bcryptjs";
 
 // import { getSystemErrorMessage } from "util";
 import { calculateDiscountedPrice,getActiveOffers } from "../utils/offerUtils.js";
+import { unsubscribe } from "diagnostics_channel";
 
 
 
@@ -2079,3 +2083,49 @@ export const postApplyCoupon = async (req, res) => {
     res.json({ success: false, message: "Server error." });
   }
 };
+
+
+
+// User Subscriber
+
+
+
+export const postSubscribeEmail = async (req, res) => {
+  try {
+    console.log('triggered')
+    const { email } = req.body;
+    if (!email) {
+      return res.json({ success: false, message: 'Email is required.' });
+    }
+
+    await Subscriber.updateOne(
+      { email },
+      { $setOnInsert: { email } },
+      { upsert: true }
+    );
+
+    // Send welcome email
+    const subject = 'Welcome to GameZone Newsletter!';
+    const text = `Thank you for subscribing!
+You will now receive updates, releases, special offers, and coupons from GameZone.`;
+
+    await sendEmail(email, subject, text, `<h2>Thank you for subscribing!</h2>
+      <p>You will now receive updates, releases, special offers, and coupons from GameZone.</p>`);
+
+    res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false, message: 'Already subscribed or error.' });
+  }
+};
+
+
+export const postUnsubscribe = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.json({ success: false, message: 'Email required.' });
+  try {
+    await Subscriber.deleteOne({ email });
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, message: 'Unsubscribe failed.' });
+  }
+}

@@ -1,6 +1,7 @@
 import Offer from '../models/offerModel.js'
 import Category from '../models/CategoryModel.js'
 import Game from '../models/gameModel.js'
+import { offerNotification } from '../utils/NotifySubscriber.js';
 
 export const getOfferPage = async(req,res)=>{
     try {
@@ -152,6 +153,8 @@ export const createOffer = async(req, res) => {
       
         await newOffer.save();
         console.log('offer created successfully');
+
+        offerNotification(newOffer);
 
 
        

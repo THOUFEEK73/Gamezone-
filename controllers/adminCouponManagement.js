@@ -1,5 +1,6 @@
 
 import Coupon from '../models/couponModel.js';
+import { couponNotification } from '../utils/NotifySubscriber.js';
 
 export const getCouponPage = async (req, res) => {
   try {
@@ -149,19 +150,33 @@ export const postCoupon = async(req,res)=>{
           isActive = true;
         }
       
-        await Coupon.create({
-            code,
-            discountType,
-            discountValue: parsedDiscountValue,
-            minOrderAmount: parsedMinOrderAmount,
-            maxOrderAmount: parsedMaxOrderAmount,
-            description,
-            startDate: parsedStartDate,
-            endDate: parsedEndDate,
-            isActive,
-            isExpired,
-        });
+        // await Coupon.create({
+        //     code,
+        //     discountType,
+        //     discountValue: parsedDiscountValue,
+        //     minOrderAmount: parsedMinOrderAmount,
+        //     maxOrderAmount: parsedMaxOrderAmount,
+        //     description,
+        //     startDate: parsedStartDate,
+        //     endDate: parsedEndDate,
+        //     isActive,
+        //     isExpired,
+        // });
+        const newCoupon = new Coupon({
+          code,
+          discountType,
+          discountValue: parsedDiscountValue,
+          minOrderAmount: parsedMinOrderAmount,
+          maxOrderAmount: parsedMaxOrderAmount,
+          description,
+          startDate: parsedStartDate,
+          endDate: parsedEndDate,
+          isActive,
+          isExpired,
+        })
+          await newCoupon.save()
         console.log('success fully')
+        couponNotification(newCoupon);
         return res.json({ success: true, message: 'Coupon successfully created!' });
     }catch(error){
 

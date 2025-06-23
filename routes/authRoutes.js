@@ -46,6 +46,8 @@ import {
     getOrderDetailPage,
     getViewOrderPage,
     postCancelStatus,
+    postSubscribeEmail,
+    postUnsubscribe,
     postReturnStatus,
     toggleWishlist,
     removeWishlist,
@@ -167,5 +169,9 @@ router.post('/apply-coupon',postApplyCoupon);
 // User Wallet
 
 router.get('/wallet', noCache, isAuthenticated,getWalletPage);
+
+// User Subscribe
+router.post('/subscribe',postSubscribeEmail)
+router.post('/unsubscribe',postUnsubscribe)
 
 export default router;

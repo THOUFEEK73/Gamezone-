@@ -154,6 +154,7 @@
                   id="genre-<%= category._id %>"
                   class="genre-checkbox form-checkbox h-4 w-4 text-indigo-600 transition duration-150 ease-in-out"
                   value="<%= category._id %>"
+                  <% if (selectedGenre && selectedGenre.toLowerCase() === category.categoryName.toLowerCase()) { %>checked<% } %>
                 >
                 <label for="genre-<%= category._id %>" class="ml-2 text-gray-700"><%= category.categoryName %></label>
               </div>
