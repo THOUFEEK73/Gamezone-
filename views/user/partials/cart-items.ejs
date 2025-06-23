@@ -1,0 +1,90 @@
+
+<% if (cart && cart.products.length > 0) { %>
+    <% cart.products.forEach((item) => { %>
+      <tr>
+        <td data-label="Product">
+          <div class="product-info">
+            <a href="/gamedetail/<%= item.productId._id %>">
+              <img src="<%= item.productId.media.coverImage %>" alt="<%= item.productId.title %>" class="product-image" />
+              <div class="product-details">
+                <h3 class="font-semibold text-gray-900"><%= item.productId.title %></h3>
+                <p class="text-sm text-gray-500"><%= item.productId.company.name || 'Unknown' %></p>
+                <span class="inline-block mt-1 px-2 py-0.5 <%= item.productId.stockQuantity > 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %> text-xs font-medium rounded-full">
+                  <%= item.productId.stockQuantity > 0 ? 'In Stock' : 'Out of Stock' %>
+                </span>
+              </div>
+            </a>
+          </div>
+        </td>
+        <td data-label="Price">
+          <div class="space-y-1">
+            <% if (item.originalPrice && item.discountPercentage) { %>
+              <div class="flex items-center gap-2">
+                <span class="text-base text-gray-900 font-semibold">₹<%= item.price %></span>
+                <span class="text-sm text-gray-400 line-through">₹<%= item.originalPrice %></span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full w-fit">
+                  <%= item.discountPercentage %>% OFF
+                </span>
+                <% if (item.offerName) { %>
+                  <div class="text-xs text-green-600 font-medium flex items-center gap-1">
+                    <i class="fas fa-tag"></i>
+                    <%= item.offerName %>
+                  </div>
+                <% } %>
+              </div>
+            <% } else { %>
+              <div class="text-gray-900 font-medium">
+                ₹<%= item.price %>
+              </div>
+            <% } %>
+          </div>
+        </td>
+        <td data-label="Quantity">
+          <% if(item.productId.stockQuantity === 0){ %>
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-red-500 to-red-700 text-white text-sm font-bold shadow-lg ring-1 ring-white/20 backdrop-blur-sm animate-pulse">
+              <svg class="w-4 h-4 text-white animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span class="tracking-wide uppercase">Out of Stock</span>
+            </div>
+          <% } else { %>
+            <div class="inline-flex items-center bg-orange-50 rounded-full px-3 py-1 shadow-sm w-fit">
+              <button id="decrement-<%= item._id %>" onclick="updateQuantity('<%= item._id %>', 'decrease')" <%= item.quantity <= 1 ? 'disabled' : '' %> class="text-orange-600 hover:text-red-500 disabled:text-orange-300 transition text-lg p-1" title="Decrease">
+                <i class="fas fa-minus-circle"></i>
+              </button>
+              <span id="qty-<%= item._id %>" class="px-4 text-sm font-bold text-orange-800 select-none"><%= item.quantity %></span>
+              <button id="increment-<%= item._id %>" onclick="updateQuantity('<%= item._id %>', 'increase')" <%= item.quantity >= item.productId.stockQuantity ? 'disabled' : '' %> class="text-orange-600 hover:text-green-500 disabled:text-orange-300 transition text-lg p-1" title="Increase">
+                <i class="fas fa-plus-circle"></i>
+              </button>
+            </div>
+            <div id="stock-warning-<%= item._id %>" class="text-yellow-600 text-xs mt-1 font-semibold" style="display:<%= item.quantity >= item.productId.stockQuantity ? 'block' : 'none' %>;">
+              Max available stock reached
+            </div>
+          <% } %>
+        </td>
+        <td data-label="Total">
+          <div class="space-y-1">
+            <div id="total-<%= item._id %>" class="font-semibold text-indigo-600">
+              ₹<%= (item.quantity * item.price).toLocaleString('en-IN') %>
+            </div>
+            <% if (item.originalPrice && item.discountPercentage) { %>
+              <div class="text-xs text-green-600 font-medium">
+                Save ₹<%= item.quantity * (item.originalPrice - item.price) %>
+              </div>
+            <% } %>
+          </div>
+        </td>
+        <td data-label="Action">
+          <button onclick="removeItem('<%= item._id %>',this)" class="text-red-500 hover:text-red-700 transition-colors duration-200">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    <% }) %>
+  <% } else { %>
+    <tr>
+      <td colspan="6" class="text-center text-gray-500">Your cart is empty.</td>
+    </tr>
+  <% } %>

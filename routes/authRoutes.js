@@ -35,6 +35,7 @@ import {
     postAddCart,
     removeCart,
     updateQuantity,
+    // getCartPartial,
     getCheckoutPage,
     postPlaceCODOrder,
     getOrderSuccessPage,
@@ -122,6 +123,7 @@ router.get('/cart', noCache, isAuthenticated, getCartPage);
 router.post('/cart/add', postAddCart);
 router.delete('/cart/remove/:id', removeCart);
 router.put('/cart/update-Quantity', updateQuantity);
+// router.get('/cart/partial',getCartPartial)
 
 // Order Routes
 router.get('/orderDetails', noCache, isAuthenticated, getOrderDetailPage);

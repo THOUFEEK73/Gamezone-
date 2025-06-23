@@ -1,51 +1,59 @@
 import Order from "../models/orderModel.js";
 import User from "../models/userModel.js";
-
-export const getDashBoardPage = async(req,res)=>{
-
- try{
-
-  const totalRevenue = await Order.aggregate([
-    {
-      $match: {
-        // paymentStatus: 'paid',
-        items: {
-          $elemMatch: { status: 'Delivered' }
-        },
-        'items.status':{$nin: ['Cancelled','Returned']}
+export const getDashBoardPage = async (req, res) => {
+  try {
+    // Total Revenue: Only delivered items, using discountedPrice if available, else originalPrice
+    const totalRevenueAgg = await Order.aggregate([
+      { $unwind: "$items" },
+      { $match: { "items.status": "Delivered" } },
+      {
+        $group: {
+          _id: null,
+          sum: {
+            $sum: {
+              $multiply: [
+                { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                { $ifNull: ["$items.quantity", 0] }
+              ]
+            }
+          }
+        }
       }
-    },
-    {
-      $group: {
-        _id: null,
-        sum: { $sum: "$grandTotal" }
-      }
-    }
-  ]);
-  
+    ]);
+    const totalRevenue = totalRevenueAgg[0]?.sum || 0;
 
-  const totalOrders = await Order.countDocuments({
-    items: { $elemMatch: { status: 'Delivered' } }
-  });
-      const totalCustomers = await User.countDocuments();
-      const pendingDelivery = await Order.countDocuments();
+    // Total Orders: Orders with at least one delivered item
+    const totalOrdersAgg = await Order.aggregate([
+      { $unwind: "$items" },
+      { $match: { "items.status": "Delivered" } },
+      { $group: { _id: "$_id" } }
+    ]);
+    const totalOrders = totalOrdersAgg.length;
 
-      res.render('admin/dashboard', {
-        totalRevenue: totalRevenue[0]?.sum || 0,
-        totalOrders,
-        totalCustomers,
-        pendingDelivery,
-     
-      });
- }catch(error){
-    console.error('Error while fetching admin Dashboard',error);
-    res.status(500).render('error',{message: 'server is down please try again later'});
- }
+    // Total Customers
+    const totalCustomers = await User.countDocuments();
 
-  
-}
+    // Pending Delivery: Orders with at least one pending item
+    const pendingDeliveryAgg = await Order.aggregate([
+      { $unwind: "$items" },
+      { $match: { "items.status": "Pending" } },
+      { $group: { _id: "$_id" } }
+    ]);
+    const pendingDelivery = pendingDeliveryAgg.length;
 
+    console.log({ totalRevenue, totalOrders, totalCustomers, pendingDelivery });
 
+    res.render('admin/dashboard', {
+      totalRevenue,
+      totalOrders,
+      totalCustomers,
+      pendingDelivery,
+    });
+  } catch (error) {
+    console.error('Error while fetching admin Dashboard', error);
+    res.status(500).render('error', { message: 'server is down please try again later' });
+  }
+};
 
 
 export const getDashBoardFilter = async (req, res) => {
@@ -55,7 +63,7 @@ export const getDashBoardFilter = async (req, res) => {
     let match = {};
     let start, end;
 
-    // Only set date range if a filter is provided
+    // Set date range for filtering
     if (filter === 'custom' && from && to) {
       start = new Date(from);
       end = new Date(to);
@@ -70,43 +78,49 @@ export const getDashBoardFilter = async (req, res) => {
       end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
       match.createdAt = { $gte: start, $lt: end };
     }
-    // else: no filter, do not set match.createdAt (show all data)
 
-    // Total Revenue (exclude Cancelled/Returned)
-    const totalRevenue = await Order.aggregate([
+    // --- Revenue, Orders, Customers, Pending ---
+    const totalRevenueAgg = await Order.aggregate([
+      { $match: { ...match } },
+      { $unwind: "$items" },
+      { $match: { "items.status": "Delivered" } },
       {
-        $match: {
-          ...match,
-          paymentStatus: 'paid',
-          $nor: [
-            { items: { $elemMatch: { status: 'Cancelled' } } },
-            { items: { $elemMatch: { status: 'Returned' } } }
-          ]
+        $group: {
+          _id: null,
+          sum: {
+            $sum: {
+              $multiply: [
+                { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                { $ifNull: ["$items.quantity", 0] }
+              ]
+            }
+          }
         }
-      },
-      { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
+      }
     ]);
+    const revenue = totalRevenueAgg[0]?.sum || 0;
 
-    // Total Orders (only Delivered)
-    const totalOrders = await Order.countDocuments({
-      ...match,
-      items: { $elemMatch: { status: 'Delivered' } }
-    });
+    const totalOrdersAgg = await Order.aggregate([
+      { $match: { ...match } },
+      { $unwind: "$items" },
+      { $match: { "items.status": "Delivered" } },
+      { $group: { _id: "$_id" } }
+    ]);
+    const totalOrders = totalOrdersAgg.length;
 
-    // Total Customers
     const totalCustomers = await User.countDocuments();
 
-    // Pending Delivery (only Pending)
-    const pendingDelivery = await Order.countDocuments({
-      ...match,
-      items: { $elemMatch: { status: 'Pending' } }
-    });
+    const pendingDeliveryAgg = await Order.aggregate([
+      { $match: { ...match } },
+      { $unwind: "$items" },
+      { $match: { "items.status": "Pending" } },
+      { $group: { _id: "$_id" } }
+    ]);
+    const pendingDelivery = pendingDeliveryAgg.length;
 
     // --- Dynamic Sales Target Calculation ---
-    const revenue = totalRevenue[0]?.sum || 0;
     let monthlyTarget = 0;
     let dailyTarget = 0;
-
     if (filter === 'custom' && from && to) {
       const startDate = new Date(from);
       const endDate = new Date(to);
@@ -150,17 +164,22 @@ export const getDashBoardFilter = async (req, res) => {
         const hourEnd = new Date(start);
         hourEnd.setHours(h + 1, 0, 0, 0);
         const orders = await Order.aggregate([
+          { $match: { createdAt: { $gte: hourStart, $lt: hourEnd } } },
+          { $unwind: "$items" },
+          { $match: { "items.status": "Delivered" } },
           {
-            $match: {
-              paymentStatus: 'paid',
-              createdAt: { $gte: hourStart, $lt: hourEnd },
-              $nor: [
-                { items: { $elemMatch: { status: 'Cancelled' } } },
-                { items: { $elemMatch: { status: 'Returned' } } }
-              ]
+            $group: {
+              _id: null,
+              sum: {
+                $sum: {
+                  $multiply: [
+                    { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                    { $ifNull: ["$items.quantity", 0] }
+                  ]
+                }
+              }
             }
-          },
-          { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
+          }
         ]);
         salesChart.labels.push(`${h}:00`);
         salesChart.data.push(orders[0]?.sum || 0);
@@ -172,31 +191,31 @@ export const getDashBoardFilter = async (req, res) => {
         startDate.getFullYear() === endDate.getFullYear() &&
         startDate.getMonth() === endDate.getMonth()
       ) {
-        // Daily sales for custom range within one month
-        for (
-          let d = new Date(startDate);
-          d <= endDate;
-          d.setDate(d.getDate() + 1)
-        ) {
-          const dayStart = new Date(d);
-          const dayEnd = new Date(d);
-          dayEnd.setDate(dayEnd.getDate() + 1);
+        // Daily sales for custom range within one month (hourly)
+        for (let h = 0; h < 24; h++) {
+          const hourStart = new Date(start);
+          hourStart.setHours(h, 0, 0, 0);
+          const hourEnd = new Date(start);
+          hourEnd.setHours(h + 1, 0, 0, 0);
           const orders = await Order.aggregate([
+            { $match: { createdAt: { $gte: hourStart, $lt: hourEnd } } },
+            { $unwind: "$items" },
+            { $match: { "items.status": "Delivered" } },
             {
-              $match: {
-                paymentStatus: 'paid',
-                createdAt: { $gte: dayStart, $lt: dayEnd },
-                $nor: [
-                  { items: { $elemMatch: { status: 'Cancelled' } } },
-                  { items: { $elemMatch: { status: 'Returned' } } }
-                ]
+              $group: {
+                _id: null,
+                sum: {
+                  $sum: {
+                    $multiply: [
+                      { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                      { $ifNull: ["$items.quantity", 0] }
+                    ]
+                  }
+                }
               }
-            },
-            { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
+            }
           ]);
-          salesChart.labels.push(
-            `${dayStart.getDate()} ${dayStart.toLocaleString('default', { month: 'short' })}`
-          );
+          salesChart.labels.push(`${h}:00`);
           salesChart.data.push(orders[0]?.sum || 0);
         }
       } else {
@@ -207,17 +226,22 @@ export const getDashBoardFilter = async (req, res) => {
           const monthStart = new Date(current);
           const monthEnd = new Date(current.getFullYear(), current.getMonth() + 1, 1);
           const orders = await Order.aggregate([
+            { $match: { createdAt: { $gte: monthStart, $lt: monthEnd } } },
+            { $unwind: "$items" },
+            { $match: { "items.status": "Delivered" } },
             {
-              $match: {
-                paymentStatus: 'paid',
-                createdAt: { $gte: monthStart, $lt: monthEnd },
-                $nor: [
-                  { items: { $elemMatch: { status: 'Cancelled' } } },
-                  { items: { $elemMatch: { status: 'Returned' } } }
-                ]
+              $group: {
+                _id: null,
+                sum: {
+                  $sum: {
+                    $multiply: [
+                      { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                      { $ifNull: ["$items.quantity", 0] }
+                    ]
+                  }
+                }
               }
-            },
-            { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
+            }
           ]);
           salesChart.labels.push(
             monthStart.toLocaleString('default', { month: 'short', year: 'numeric' })
@@ -226,80 +250,57 @@ export const getDashBoardFilter = async (req, res) => {
           current.setMonth(current.getMonth() + 1);
         }
       }
-    }  else if (filter === 'monthly') {
+    } else if (filter === 'monthly') {
       // Month-wise sales for current year
-      // for (let m = 0; m < 12; m++) {
-      //   const monthStart = new Date(now.getFullYear(), m, 1);
-      //   const monthEnd = new Date(now.getFullYear(), m + 1, 1);
-      //   const orders = await Order.aggregate([
-      //     {
-      //       $match: {
-      //         paymentStatus: 'paid',
-      //         createdAt: { $gte: monthStart, $lt: monthEnd },
-      //         $nor: [
-      //           { items: { $elemMatch: { status: 'Cancelled' } } },
-      //           { items: { $elemMatch: { status: 'Returned' } } }
-      //         ]
-      //       }
-      //     },
-      //     { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
-      //   ]);
-      //   salesChart.labels.push(
-      //     monthStart.toLocaleString('default', { month: 'short' })
-      //   );
-      //   salesChart.data.push(orders[0]?.sum || 0);
-      // }
-      if (filter === 'monthly') {
-        const yearStart = new Date(now.getFullYear(), 0, 1);
-        const yearEnd = new Date(now.getFullYear() + 1, 0, 1);
-      
-        const monthlySales = await Order.aggregate([
-          {
-            $match: {
-              paymentStatus: 'paid',
-              createdAt: { $gte: yearStart, $lt: yearEnd },
-              $nor: [
-                { items: { $elemMatch: { status: 'Cancelled' } } },
-                { items: { $elemMatch: { status: 'Returned' } } }
-              ]
-            }
-          },
+      for (let m = 0; m < 12; m++) {
+        const monthStart = new Date(now.getFullYear(), m, 1);
+        const monthEnd = new Date(now.getFullYear(), m + 1, 1);
+        const orders = await Order.aggregate([
+          { $match: { createdAt: { $gte: monthStart, $lt: monthEnd } } },
+          { $unwind: "$items" },
+          { $match: { "items.status": "Delivered" } },
           {
             $group: {
-              _id: { $month: "$createdAt" },
-              sum: { $sum: "$grandTotal" }
+              _id: null,
+              sum: {
+                $sum: {
+                  $multiply: [
+                    { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                    { $ifNull: ["$items.quantity", 0] }
+                  ]
+                }
+              }
             }
-          },
-          { $sort: { "_id": 1 } }
+          }
         ]);
-      
-        // Prepare labels and data for all 12 months
-        salesChart.labels = [];
-        salesChart.data = [];
-        for (let m = 1; m <= 12; m++) {
-          const found = monthlySales.find(ms => ms._id === m);
-          salesChart.labels.push(new Date(now.getFullYear(), m - 1, 1).toLocaleString('default', { month: 'short' }));
-          salesChart.data.push(found ? found.sum : 0);
-        }
+        salesChart.labels.push(
+          new Date(now.getFullYear(), m, 1).toLocaleString('default', { month: 'short' })
+        );
+        salesChart.data.push(orders[0]?.sum || 0);
       }
     } else {
-      // Default: all time, show year-wise sales for last 5 years
+      // Year-wise sales for last 5 years
       const currentYear = now.getFullYear();
       for (let y = currentYear - 4; y <= currentYear; y++) {
         const yearStart = new Date(y, 0, 1);
         const yearEnd = new Date(y + 1, 0, 1);
         const orders = await Order.aggregate([
+          { $match: { createdAt: { $gte: yearStart, $lt: yearEnd } } },
+          { $unwind: "$items" },
+          { $match: { "items.status": "Delivered" } },
           {
-            $match: {
-              paymentStatus: 'paid',
-              createdAt: { $gte: yearStart, $lt: yearEnd },
-              $nor: [
-                { items: { $elemMatch: { status: 'Cancelled' } } },
-                { items: { $elemMatch: { status: 'Returned' } } }
-              ]
+            $group: {
+              _id: null,
+              sum: {
+                $sum: {
+                  $multiply: [
+                    { $ifNull: ["$items.discountedPrice", "$items.originalPrice"] },
+                    { $ifNull: ["$items.quantity", 0] }
+                  ]
+                }
+              }
             }
-          },
-          { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
+          }
         ]);
         salesChart.labels.push(`${y}`);
         salesChart.data.push(orders[0]?.sum || 0);
@@ -432,352 +433,3 @@ export const getDashBoardFilter = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
-
-
-
-
-
-
-
-
-
-
-// export const getDashBoardFilter = async (req, res) => {
-//   try {
-//     const { filter, from, to } = req.query;
-//     let match = {};
-//     const now = new Date();
-
-//     // Default: current year
-//     let start = new Date(now.getFullYear(), 0, 1);
-//     let end = new Date(now.getFullYear() + 1, 0, 1);
-
-//     // Custom date range
-//     if (filter === 'custom' && from && to) {
-//       start = new Date(from);
-//       end = new Date(to);
-//       end.setHours(23, 59, 59, 999);
-//     }
-
-//     match.createdAt = { $gte: start, $lt: end };
-
-//     const totalRevenue = await Order.aggregate([
-//       { $match: { ...match, paymentStatus: 'paid',
-//         $nor: [
-//           { items: { $elemMatch: { status: 'Cancelled' } } },
-//           { items: { $elemMatch: { status: 'Returned' } } }
-//         ]
-//       }},
-//       { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
-//     ]);
-//     const totalOrders = await Order.countDocuments({
-//       items: { $elemMatch: { status: 'Delivered' } }
-//     });
-//     const totalCustomers = await User.countDocuments();
-//     const pendingDelivery = await Order.countDocuments({ ...match, 'items.status': { $in: ['Pending'] } });
-
-//     // --- Dynamic Sales Target Calculation ---
-//     let monthlyTarget = 0;
-//     let dailyTarget = 0;
-//     const revenue = totalRevenue[0]?.sum || 0;
-
-//     if (filter === 'custom' && from && to) {
-//       const startDate = new Date(from);
-//       const endDate = new Date(to);
-//       // Calculate number of days and months in range
-//       const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-//       const months =
-//         (endDate.getFullYear() - startDate.getFullYear()) * 12 +
-//         (endDate.getMonth() - startDate.getMonth()) + 1;
-
-//       if (
-//         startDate.getFullYear() === endDate.getFullYear() &&
-//         startDate.getMonth() === endDate.getMonth()
-//       ) {
-//         // If within one month, show daily target
-//         dailyTarget = Math.round(revenue / days) || 0;
-//         monthlyTarget = revenue;
-//       } else {
-//         // If multi-month, show monthly target
-//         monthlyTarget = Math.round(revenue / months) || 0;
-//         dailyTarget = Math.round(revenue / days) || 0;
-//       }
-//     } else if (filter === 'daily') {
-//       // Current month
-//       const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-//       dailyTarget = Math.round(revenue / daysInMonth) || 0;
-//       monthlyTarget = revenue;
-//     } else {
-//       // Default: current year
-//       monthlyTarget = Math.round(revenue / 12) || 0;
-//       const daysInYear = (new Date(now.getFullYear(), 11, 31) - new Date(now.getFullYear(), 0, 1)) / (1000 * 60 * 60 * 24) + 1;
-//       dailyTarget = Math.round(revenue / daysInYear) || 0;
-//     }
-
-//     // ... salesChart logic remains unchanged ...
-
-//     let salesChart = { labels: [], data: [] };
-
-//     if (filter === 'daily') {
-//       // Daily sales for current month
-//       const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-//       for (let d = 1; d <= daysInMonth; d++) {
-//         const dayStart = new Date(now.getFullYear(), now.getMonth(), d);
-//         const dayEnd = new Date(now.getFullYear(), now.getMonth(), d + 1);
-//         const orders = await Order.aggregate([
-//           { $match: { paymentStatus: 'paid', createdAt: { $gte: dayStart, $lt: dayEnd },
-//             $nor: [
-//               { items: { $elemMatch: { status: 'Cancelled' } } },
-//               { items: { $elemMatch: { status: 'Returned' } } }
-//             ]
-//           } },
-//           { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
-//         ]);
-//         salesChart.labels.push(`${d} ${now.toLocaleString('default', { month: 'short' })}`);
-//         salesChart.data.push(orders[0]?.sum || 0);
-//       }
-//     } else if (filter === 'custom' && from && to) {
-//       const startDate = new Date(from);
-//       const endDate = new Date(to);
-//       if (
-//         startDate.getFullYear() === endDate.getFullYear() &&
-//         startDate.getMonth() === endDate.getMonth()
-//       ) {
-//         // Daily sales for custom range within one month
-//         for (
-//           let d = new Date(startDate);
-//           d <= endDate;
-//           d.setDate(d.getDate() + 1)
-//         ) {
-//           const dayStart = new Date(d);
-//           const dayEnd = new Date(d);
-//           dayEnd.setDate(dayEnd.getDate() + 1);
-//           const orders = await Order.aggregate([
-//             { $match: { paymentStatus: 'paid', createdAt: { $gte: dayStart, $lt: dayEnd },
-//               $nor: [
-//                 { items: { $elemMatch: { status: 'Cancelled' } } },
-//                 { items: { $elemMatch: { status: 'Returned' } } }
-//               ]
-//             } },
-//             { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
-//           ]);
-//           salesChart.labels.push(
-//             `${dayStart.getDate()} ${dayStart.toLocaleString('default', { month: 'short' })}`
-//           );
-//           salesChart.data.push(orders[0]?.sum || 0);
-//         }
-//       } else {
-//         // Month-wise sales for custom range spanning multiple months
-//         let current = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
-//         const last = new Date(endDate.getFullYear(), endDate.getMonth() + 1, 1);
-//         while (current < last) {
-//           const monthStart = new Date(current);
-//           const monthEnd = new Date(current.getFullYear(), current.getMonth() + 1, 1);
-//           const orders = await Order.aggregate([
-//             { $match: { paymentStatus: 'paid', createdAt: { $gte: monthStart, $lt: monthEnd },
-//               $nor: [
-//                 { items: { $elemMatch: { status: 'Cancelled' } } },
-//                 { items: { $elemMatch: { status: 'Returned' } } }
-//               ]
-//             } },
-//             { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
-//           ]);
-//           salesChart.labels.push(
-//             monthStart.toLocaleString('default', { month: 'short', year: 'numeric' })
-//           );
-//           salesChart.data.push(orders[0]?.sum || 0);
-//           current.setMonth(current.getMonth() + 1);
-//         }
-//       }
-//     } else {
-//       // Month-wise sales for current year (default)
-//       for (let m = 0; m < 12; m++) {
-//         const monthStart = new Date(now.getFullYear(), m, 1);
-//         const monthEnd = new Date(now.getFullYear(), m + 1, 1);
-//         const orders = await Order.aggregate([
-//           { $match: { paymentStatus: 'paid', createdAt: { $gte: monthStart, $lt: monthEnd },
-//             $nor: [
-//               { items: { $elemMatch: { status: 'Cancelled' } } },
-//               { items: { $elemMatch: { status: 'Returned' } } }
-//             ]
-//           } },
-//           { $group: { _id: null, sum: { $sum: "$grandTotal" } } }
-//         ]);
-//         salesChart.labels.push(
-//           new Date(now.getFullYear(), m, 1).toLocaleString('default', { month: 'short' })
-//         );
-//         salesChart.data.push(orders[0]?.sum || 0);
-//       }
-//     }
-
-
-
-
-//     const topProducts = await Order.aggregate([
-
-//       { $match: { paymentStatus: 'paid' } },
-
-    
-//       { $unwind: '$items' },
-
-
-//       {
-//         $match: {
-//           'items.status': { $nin: ['Cancelled', 'Returned'] }
-//         }
-//       },
-
-
-//       {
-//         $group: {
-//           _id: '$items.productId',
-//           totalSold: { $sum: '$items.quantity' }
-//         }
-//       },
-
-//       // Join with Game collection
-//       {
-//         $lookup: {
-//           from: 'games',
-//           localField: '_id',
-//           foreignField: '_id',
-//           as: 'product'
-//         }
-//       },
-//       { $unwind: '$product' },
-
-//       {
-//         $project: {
-//           title: '$product.title',
-//           coverImage: '$product.media.coverImage',
-//           totalSold: 1
-//         }
-//       },
-
-
-//       { $sort: { totalSold: -1 } },
-//       { $limit: 10 }
-//     ]);
-
-
-//     const topCategories = await Order.aggregate([
-//       { $match: { paymentStatus: 'paid' } },
-//       { $unwind: '$items' },
-//       { $match: { 'items.status': { $nin: ['Cancelled', 'Returned'] } } },
-//       {
-//         $lookup: {
-//           from: 'games',
-//           localField: 'items.productId',
-//           foreignField: '_id',
-//           as: 'game'
-//         }
-//       },
-//       { $unwind: '$game' },
-//       {
-//         $group: {
-//           _id: '$game.category', // This is likely a string (category name)
-//           totalSold: { $sum: '$items.quantity' }
-//         }
-//       },
-//       {
-//         $lookup: {
-//           from: 'categories',
-//           localField: '_id',      // category name
-//           foreignField: '_id',   // categories.name
-//           as: 'category'
-//         }
-//       },
-//       { $unwind: '$category' },
-//       {
-//         $project: {
-//           name: '$category.categoryName',
-//           totalSold: 1
-//         }
-//       },
-//       { $sort: { totalSold: -1 } },
-//       { $limit: 10 }
-//     ]);
-
-
-//     const topBrands = await Order.aggregate([
-//       // 1. Only paid orders
-//       { $match: { paymentStatus: 'paid' } },
-    
-//       // 2. Unwind items array
-//       { $unwind: '$items' },
-    
-//       // 3. Exclude cancelled and returned items
-//       {
-//         $match: {
-//           'items.status': { $nin: ['Cancelled', 'Returned'] }
-//         }
-//       },
-    
-//       // 4. Lookup Game to get company (brand) info
-//       {
-//         $lookup: {
-//           from: 'games',
-//           localField: 'items.productId',
-//           foreignField: '_id',
-//           as: 'game'
-//         }
-//       },
-//       { $unwind: '$game' },
-    
-//       // 5. Group by company (brand) ID and sum quantities
-//       {
-//         $group: {
-//           _id: '$game.company',
-//           totalSold: { $sum: '$items.quantity' }
-//         }
-//       },
-    
-//       // 6. Lookup company (brand) details
-//       {
-//         $lookup: {
-//           from: 'gamecompanies', // Make sure your GameCompany collection is named this
-//           localField: '_id',
-//           foreignField: '_id',
-//           as: 'brand'
-//         }
-//       },
-//       { $unwind: '$brand' },
-    
-//       // 7. Project brand name and totalSold
-//       {
-//         $project: {
-//           name: '$brand.name',
-//           totalSold: 1
-//         }
-//       },
-    
-//       // 8. Sort and limit
-//       { $sort: { totalSold: -1 } },
-//       { $limit: 10 }
-//     ]);
-    
-
- 
-    
-
-   
-
-//     res.json({
-//       totalRevenue: revenue,
-//       totalOrders,
-//       totalCustomers,
-//       pendingDelivery,
-//       salesChart,
-//       monthlyTarget,
-//       topProducts,
-//       topCategories,
-//       topBrands,
-//       dailyTarget
-//     });
-//   } catch (error) {
-//     console.error('Error while fetching dashboard summary', error);
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// };
-
-

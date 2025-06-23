@@ -286,19 +286,45 @@ async function addToCart(productId) {
     const data = await response.json();
 
     if (response.ok) {
-       // Use backend value for cart count
-       const cartCounter = document.getElementById('cartCounter');
-       if (cartCounter && typeof data.cartCount !== 'undefined') {
-         cartCounter.textContent = data.cartCount;
-         cartCounter.classList.add('scale-125', 'bg-green-500');
-         setTimeout(() => {
-           cartCounter.classList.remove('scale-125', 'bg-green-500');
-         }, 200);
-       }// Increment cart count
+      // Update cart counter
+      const cartCounter = document.getElementById('cartCounter');
+      if (cartCounter && typeof data.cartCount !== 'undefined') {
+        cartCounter.textContent = data.cartCount;
+        cartCounter.classList.add('scale-125', 'bg-green-500');
+        setTimeout(() => {
+          cartCounter.classList.remove('scale-125', 'bg-green-500');
+        }, 200);
+      }
+      // Remove the added recommendation from the DOM
+      const recBtn = document.querySelector(`button[onclick="addToCart('${productId}')"]`);
+      if (recBtn) {
+        const recItem = recBtn.closest('.recommendation-item');
+        if (recItem) recItem.remove();
+      }
       showCartFlash("success", "Product added to cart!");
+      fetch('/cart/partial')
+      .then(res => res.text())
+      .then(html => {
+        document.getElementById('cart-items-section').innerHTML = html;
+      });
     } else {
       showCartFlash('error', data.message || 'Failed to add to cart');
     }
+
+    // if (response.ok) {
+    //    // Use backend value for cart count
+    //    const cartCounter = document.getElementById('cartCounter');
+    //    if (cartCounter && typeof data.cartCount !== 'undefined') {
+    //      cartCounter.textContent = data.cartCount;
+    //      cartCounter.classList.add('scale-125', 'bg-green-500');
+    //      setTimeout(() => {
+    //        cartCounter.classList.remove('scale-125', 'bg-green-500');
+    //      }, 200);
+    //    }// Increment cart count
+    //   showCartFlash("success", "Product added to cart!");
+    // } else {
+    //   showCartFlash('error', data.message || 'Failed to add to cart');
+    // }
   } catch (error) {
     console.error("Error adding product to cart", error);
     showCartFlash('error', 'You Exceeded The Stock Limit!');

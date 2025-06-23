@@ -619,7 +619,6 @@ export const removeWishlist = async (req,res)=>{
 
 export const getCartPage = async (req, res) => {
   try {
-    
     const userId = req.session.userId;
     const cartItems = await Cart.findOne({ userId }).populate({
       path: "products.productId",
@@ -632,33 +631,33 @@ export const getCartPage = async (req, res) => {
         cart: null,
         cartCount: 0,
         subTotal: 0,
+        total: 0,
+        totalSavings: 0,
+        recommendations: [],
+        user: userId,
       });
     }
 
     const activeOffers = await getActiveOffers();
 
-
     let cartCount = 0;
     let subTotal = 0;
     let totalSavings = 0;
-    let offerDiscount = 0;
-    let total = 0;
 
+    // Attach offer info to each cart item
     const productsWithOffers = cartItems.products.map(item => {
       const gameObj = item.productId.toObject();
       const itemObj = item.toObject();
 
       subTotal += gameObj.price * item.quantity;
       cartCount += item.quantity;
+
       // Find applicable offers
       const productOffer = activeOffers.find(offer =>
-        offer.offerType === 'product' && 
-        offer.items.includes(gameObj._id.toString())
+        offer.offerType === 'product' && offer.items.includes(gameObj._id.toString())
       );
-
       const categoryOffer = activeOffers.find(offer =>
-        offer.offerType === 'category' && 
-        offer.items.includes(gameObj.category.toString())
+        offer.offerType === 'category' && offer.items.includes(gameObj.category?.toString())
       );
 
       // Get best offer
@@ -671,35 +670,72 @@ export const getCartPage = async (req, res) => {
         itemObj.discountPercentage = bestOffer.discountPercentage;
         itemObj.price = Math.round(gameObj.price * (1 - bestOffer.discountPercentage / 100));
         itemObj.offerName = bestOffer.offerName;
-        
         totalSavings += (gameObj.price - itemObj.price) * item.quantity;
       } else {
         itemObj.price = gameObj.price;
       }
 
-  
-
       return itemObj;
     });
-    // if (cartItems && cartItems.products.length > 0) {
-    //   cartCount = cartItems.products.reduce(
-    //     (total, item) => total + item.quantity,
-    //     0
-    //   );
-    // }
-
-
-
-    // cartItems.products.forEach((prd) => {
-    //   const price = Number(prd.price);
-    //   const quantity = Number(prd.quantity);
-
-    //   subTotal += price * quantity;
-    // });
 
     cartItems.products = productsWithOffers;
-    
-    total = Math.max(subTotal - totalSavings);
+
+    // Calculate total after savings
+    const total = Math.max(subTotal - totalSavings, 0);
+
+    // Recommendations logic
+    const categories = cartItems.products
+      .map(item => item.productId.category)
+      .filter(Boolean);
+    const cartProductIds = cartItems.products.map(item => item.productId._id);
+
+    let recommendations = [];
+    if (categories.length > 0) {
+      recommendations = await Game.find({
+        category: { $in: categories },
+        _id: { $nin: cartProductIds },
+        status: 'active',
+      }).limit(4);
+    } else {
+      recommendations = await Game.find({
+        _id: { $nin: cartProductIds },
+        status: 'active',
+      }).limit(4);
+    }
+
+    // Attach offer info to each recommended product
+    const recommendationsWithOffers = recommendations.map(game => {
+      let originalPrice = game.price;
+      let discountPercentage = 0;
+      let offerName = null;
+      let discountedPrice = originalPrice;
+
+      // Find best offer for this game
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' && offer.items.includes(game._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' && offer.items.includes(game.category?.toString())
+      );
+      const bestOffer = [productOffer, categoryOffer]
+        .filter(Boolean)
+        .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+      if (bestOffer) {
+        discountPercentage = bestOffer.discountPercentage;
+        offerName = bestOffer.offerName;
+        discountedPrice = Math.round(originalPrice * (1 - discountPercentage / 100));
+      }
+
+      return {
+        ...game.toObject(),
+        originalPrice,
+        discountPercentage,
+        offerName,
+        price: discountedPrice,
+      };
+    });
+
     res.render("user/cart", {
       page: "cart",
       cart: cartItems,
@@ -707,6 +743,8 @@ export const getCartPage = async (req, res) => {
       subTotal,
       total,
       totalSavings,
+      recommendations: recommendationsWithOffers,
+      user: userId,
     });
   } catch (error) {
     console.error("Error while rendering cart", error);
@@ -715,6 +753,162 @@ export const getCartPage = async (req, res) => {
       .render("error", { message: "server down please Try after Some times" });
   }
 };
+
+// export const getCartPage = async (req, res) => {
+//   try {
+    
+//     const userId = req.session.userId;
+//     const cartItems = await Cart.findOne({ userId }).populate({
+//       path: "products.productId",
+//       populate: { path: "company", model: "GameCompany" },
+//     });
+
+//     if (!cartItems) {
+//       return res.render("user/cart", {
+//         page: "cart",
+//         cart: null,
+//         cartCount: 0,
+//         subTotal: 0,
+//         recommendedGames:[],
+//       });
+//     }
+
+//     const activeOffers = await getActiveOffers();
+
+
+//     let cartCount = 0;
+//     let subTotal = 0;
+//     let totalSavings = 0;
+//     let offerDiscount = 0;
+//     let total = 0;
+
+//     const productsWithOffers = cartItems.products.map(item => {
+//       const gameObj = item.productId.toObject();
+//       const itemObj = item.toObject();
+
+//       subTotal += gameObj.price * item.quantity;
+//       cartCount += item.quantity;
+//       // Find applicable offers
+//       const productOffer = activeOffers.find(offer =>
+//         offer.offerType === 'product' && 
+//         offer.items.includes(gameObj._id.toString())
+//       );
+
+//       const categoryOffer = activeOffers.find(offer =>
+//         offer.offerType === 'category' && 
+//         offer.items.includes(gameObj.category.toString())
+//       );
+
+//       // Get best offer
+//       const bestOffer = [productOffer, categoryOffer]
+//         .filter(Boolean)
+//         .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+//       if (bestOffer) {
+//         itemObj.originalPrice = gameObj.price;
+//         itemObj.discountPercentage = bestOffer.discountPercentage;
+//         itemObj.price = Math.round(gameObj.price * (1 - bestOffer.discountPercentage / 100));
+//         itemObj.offerName = bestOffer.offerName;
+        
+//         totalSavings += (gameObj.price - itemObj.price) * item.quantity;
+//       } else {
+//         itemObj.price = gameObj.price;
+//       }
+
+  
+
+//       return itemObj;
+//     });
+//     // if (cartItems && cartItems.products.length > 0) {
+//     //   cartCount = cartItems.products.reduce(
+//     //     (total, item) => total + item.quantity,
+//     //     0
+//     //   );
+//     // }
+
+
+
+//     // cartItems.products.forEach((prd) => {
+//     //   const price = Number(prd.price);
+//     //   const quantity = Number(prd.quantity);
+
+//     //   subTotal += price * quantity;
+//     // });
+
+//     cartItems.products = productsWithOffers;
+
+//     total = Math.max(subTotal - totalSavings);
+
+//     const categories = cartItems.products
+//   .map(item => item.productId.category)
+//   .filter(Boolean);
+//     const cartProductIds = cartItems.products.map(item => item.productId._id);
+  
+//     let recommendations = [];
+//     if (categories.length > 0) {
+//       recommendations = await Game.find({
+//         category: { $in: categories },
+//         _id: { $nin: cartProductIds },
+//         status: 'active',
+//       }).limit(4);
+//     } else {
+//       recommendations = await Game.find({
+//         _id: { $nin: cartProductIds },
+//         status: 'active',
+//       }).limit(4);
+//     }
+
+//    // Use your existing offer fetching logic
+
+// const recommendationsWithOffers = recommendations.map(game => {
+//   let originalPrice = game.price;
+//   let discountPercentage = 0;
+//   let offerName = null;
+//   let discountedPrice = originalPrice;
+
+//   // Find best offer for this game
+//   const productOffer = activeOffers.find(offer =>
+//     offer.offerType === 'product' && offer.items.includes(game._id.toString())
+//   );
+//   const categoryOffer = activeOffers.find(offer =>
+//     offer.offerType === 'category' && offer.items.includes(game.category.toString())
+//   );
+//   const bestOffer = [productOffer, categoryOffer]
+//     .filter(Boolean)
+//     .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+//   if (bestOffer) {
+//     discountPercentage = bestOffer.discountPercentage;
+//     offerName = bestOffer.offerName;
+//     discountedPrice = Math.round(originalPrice * (1 - discountPercentage / 100));
+//   }
+
+//   return {
+//     ...game.toObject(),
+//     originalPrice,
+//     discountPercentage,
+//     offerName,
+//     price: discountedPrice,
+//   };
+// });
+
+//     res.render("user/cart", {
+//       page: "cart",
+//       cart: cartItems,
+//       cartCount,
+//       subTotal,
+//       total,
+//       user:userId,
+//       totalSavings,
+//       recommendations:recommendationsWithOffers,
+//     });
+//   } catch (error) {
+//     console.error("Error while rendering cart", error);
+//     res
+//       .status(500)
+//       .render("error", { message: "server down please Try after Some times" });
+//   }
+// };
 
 export const postAddCart = async (req, res) => {
   try {
@@ -905,6 +1099,23 @@ export const updateQuantity = async (req, res) => {
     });
   }
 };
+
+
+// export const getCartPartial = async (req, res) => {
+//   try {
+//     const userId = req.session.userId;
+//     const cart = await Cart.findOne({ userId }).populate({
+//       path: "products.productId",
+//       populate: { path: "company", model: "GameCompany" },
+//     });
+//     res.render('user/partials/cart-items', { cart }, (err, html) => {
+//       if (err) return res.status(500).send('Error loading cart items');
+//       res.send(html);
+//     });
+//   } catch (error) {
+//     res.status(500).send('Error loading cart items');
+//   }
+// };
 
 // export const updateQuantity = async (req, res) => {
 //   try {
