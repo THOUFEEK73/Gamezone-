@@ -2105,12 +2105,62 @@ export const postSubscribeEmail = async (req, res) => {
     );
 
     // Send welcome email
-    const subject = 'Welcome to GameZone Newsletter!';
-    const text = `Thank you for subscribing!
-You will now receive updates, releases, special offers, and coupons from GameZone.`;
+    const subject = '🎉 Welcome to GameZone – Let the Games Begin!';
 
-    await sendEmail(email, subject, text, `<h2>Thank you for subscribing!</h2>
-      <p>You will now receive updates, releases, special offers, and coupons from GameZone.</p>`);
+    const text = `Hey Gamer!
+
+    Welcome to GameZone! 🎮
+    Thanks for subscribing to our newsletter.
+    
+    You’re now on the VIP list for:
+    - Game updates
+    - Exclusive releases
+    - Special coupons
+    - Limited-time offers
+    
+    Stay tuned and get ready to level up your gaming experience.
+    
+    Happy gaming!
+    – Team GameZone`;
+    
+    const html = `
+  <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto;">
+    <h2 style="color: #6366f1;">🎉 Welcome to GameZone!</h2>
+
+    <p style="font-size: 16px;">
+      Hey Gamer, we're thrilled to have you on board! 🎮
+    </p>
+
+    <p style="font-size: 15px;">
+      You’re now officially part of the GameZone community. As a subscriber, you'll get:
+    </p>
+
+    <ul style="font-size: 15px; line-height: 1.6; padding-left: 20px;">
+      <li>✔️ Exclusive Game Releases</li>
+      <li>✔️ Early Access to Deals</li>
+      <li>✔️ VIP-Only Coupons</li>
+      <li>✔️ Surprise Giveaways</li>
+    </ul>
+
+    <p style="font-size: 15px; margin-top: 20px;">
+      Be sure to check your inbox regularly so you don't miss out!
+    </p>
+
+    <a href="http://localhost:3001/home" style="display: inline-block; margin-top: 25px; padding: 12px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px;">
+      🚀 Visit GameZone Now
+    </a>
+
+    <p style="font-size: 13px; color: #888; margin-top: 30px;">
+      You’re receiving this email because you subscribed to GameZone updates. If this was a mistake, click here to unsubscribe.
+    </p>
+
+    <p style="font-size: 14px; font-weight: bold; margin-top: 20px;">
+      – Team GameZone
+    </p>
+  </div>
+`;
+
+    await sendEmail(email, subject, text,html);
 
     res.json({ success: true });
   } catch (error) {
