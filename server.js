@@ -7,6 +7,9 @@ import sessionMiddleware from "./middleware/sessionMiddleWare.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import passport from './config/passport.js'; 
 import flash from 'connect-flash';
+import http from 'http';
+import ChatMessage from './models/chatMessageModel.js';
+import {Server } from 'socket.io';
 import './utils/offerExpiryJob.js'
 
 
@@ -61,20 +64,59 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-
-
-
-
 // Routes
 app.use('/admin', adminRoutes);
 app.use("/", authRoutes);
 
+const server = http.createServer(app);
+const io = new Server(server);
+
+// ✅ FIXED: Global object
+const onlineUsers = {};
+
+io.on('connection', (socket) => {
+
+  // User online
+  socket.on('userOnline', ({ userId }) => {
+    onlineUsers[userId] = true;
+    io.to('admin').emit('userStatus', { userId, status: 'online' });
+  });
+
+  // User offline
+  socket.on('userOffline', ({ userId }) => {
+    onlineUsers[userId] = false;
+    io.to('admin').emit('userStatus', { userId, status: 'offline' });
+  });
+
+  // Typing
+  socket.on('userTyping', ({ userId }) => {
+    io.to('admin').emit('userTyping', { userId });
+  });
+
+  // Join user room
+  socket.on('join', (userId) => {
+    socket.join(userId);
+  });
 
 
+  // Admin joins admin room
+  socket.on('joinAdmin', () => {
+    socket.join('admin');
+  });
 
+  // User message → Admin
+  socket.on('userMessage', async (msg) => {
+    await ChatMessage.create(msg);
+    io.to('admin').emit('newMessage', msg);
+  });
 
+  // Admin message → specific user
+  socket.on('adminMessage', async (msg) => {
+    await ChatMessage.create(msg);
+    io.to(msg.userId).emit('newMessage', msg);
+  });
 
-
+});
 
 
 // Connect to MongoDB
@@ -83,7 +125,7 @@ const startServer = async () => {
     await connectDB();
 
     const PORT = process.env.PORT || 3001;
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   } catch (error) {
@@ -93,6 +135,8 @@ const startServer = async () => {
 };
 
 startServer();
+
+
 
 // Handle process termination
 process.on("SIGINT", async () => {

@@ -99,7 +99,7 @@ export const getHomePage = async (req, res) => {
     }
 
     // Render the home page
-    res.render("user/home", { games: gamesWithOffers, page: "home", cartCount });
+    res.render("user/home", { games: gamesWithOffers, page: "home", cartCount, user: req.user})
   } catch (error) {
     console.error("Error fetching games:", error);
     res.status(500).send("Internal Server Error");

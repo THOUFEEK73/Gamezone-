@@ -26,7 +26,12 @@
         <!-- Navigation Links -->
         <div class="flex items-center space-x-6">
           <a href="/allgames" class="text-gray-600 hover:text-indigo-600 font-medium <%= page === 'allgames' ? 'underline underline-offset-4 text-indigo-600' : '' %>">Store</a>
-        
+          <a href="javascript:void(0)" onclick="toggleChat()" class="flex items-center gap-2 text-black hover:text-indigo-400 transition duration-200">
+            <i class="fas fa-headset"></i>
+            <span>Support</span>
+          </a>
+          
+          
           <a href="/wishlist"
             class="inline-flex items-center justify-center w-9 h-9 bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 rounded-full transition duration-200 shadow <%= page === 'wishlist' ? 'ring-2 ring-red-400' : '' %>">
             <i class="fas fa-heart text-sm"></i>
@@ -109,6 +114,48 @@
     </div>
   </div>
 
+
+<!-- Chat Support Popup -->
+<div id="chatPopup" class="fixed bottom-5 right-5 w-[90%] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 hidden transition-all duration-300">
+  <!-- Header -->
+  <div class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-5 py-3 flex justify-between items-center rounded-t-2xl">
+    <h4 class="font-semibold text-base flex items-center gap-2">
+      <i class="fas fa-comment-dots text-white"></i>
+      Chat Support
+    </h4>
+    <button onclick="toggleChat()" class="text-white text-xl hover:scale-110 transition">&times;</button>
+  </div>
+
+  <!-- Chat Body -->
+  <div id="chatMessages" class="p-4 h-72 overflow-y-auto flex flex-col gap-3 text-sm bg-gray-50">
+    <div class="self-start bg-gray-200 text-gray-800 px-4 py-2 rounded-lg shadow-sm max-w-[80%]">
+      👋 Hi there! How can we help you today?
+    </div>
+  </div>
+
+  <!-- Chat Input -->
+  <form onsubmit="sendMessage(event)" class="flex border-t border-gray-200 bg-white p-3 gap-2">
+    <input
+      type="text"
+      id="chatInput"
+      placeholder="Type your message..."
+      autocomplete="off"
+      class="flex-1 px-3 py-2 rounded-lg bg-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+      required
+    />
+    <button
+      type="submit"
+      class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm transition"
+    >
+      Send
+    </button>
+  </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+
+
   <script>
     // Mobile menu toggle
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -136,19 +183,87 @@
       }
     });
 
-    // Cart count animation
-    // function updateCartCount(increment = 1) {
-    //   const cartCounter = document.getElementById('cartCounter');
-    //   if (cartCounter) {
-    //     let currentCount = parseInt(cartCounter.textContent || '0');
-    //     currentCount += increment;
-    //     cartCounter.textContent = currentCount;
-    //     cartCounter.classList.add('scale-125', 'bg-green-500');
-    //     setTimeout(() => {
-    //       cartCounter.classList.remove('scale-125', 'bg-green-500');
-    //     }, 200);
-    //   }
-    // }
+ 
+
+  // Get user info from EJS
+  const userId = "<%= user ? user._id : '' %>" || localStorage.getItem('guestId') || (() => {
+  const id = 'guest-' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem('guestId', id);
+  return id;
+})();
+  const userName = "<%= user ? user.name : 'Guest' %>";
+  console.log("User ID from session:", userId);
+  console.log("✅ From navbar: Guest");
+  const socket = io();
+
+  // Join user room as guest
+  socket.emit('join', userId);
+
+  // Notify server when user is online as guest
+  socket.emit('userOnline', { userId, userName });
+
+  // Notify server when user disconnects or refreshes as guest
+  window.addEventListener('beforeunload', () => {
+    socket.emit('userOffline', { userId, userName });
+  });
+
+  // Typing status
+  const chatInput = document.getElementById('chatInput');
+  if (chatInput) {
+    chatInput.addEventListener('input', () => {
+      socket.emit('userTyping', { userId, userName });
+    });
+  }
+
+  // Send user message
+  function sendMessage(event) {
+    event.preventDefault();
+    const input = document.getElementById('chatInput');
+    const messages = document.getElementById('chatMessages');
+
+    if (!input || !messages) return;
+
+    const text = input.value.trim();
+    if (text !== '') {
+      // Show user message
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'self-end bg-indigo-100 text-gray-800 px-3 py-2 rounded-lg shadow';
+      msgDiv.textContent = text;
+      messages.appendChild(msgDiv);
+      messages.scrollTop = messages.scrollHeight;
+
+      // Emit message to server as guest
+      socket.emit('userMessage', {
+        userId,
+        userName,
+        message: text,
+        sender: 'user',
+        timestamp: new Date()
+      });
+
+      input.value = '';
+    }
+  }
+
+  // Listen for admin reply
+  socket.on('newMessage', (msg) => {
+    if (msg.sender === 'admin') {
+      const messages = document.getElementById('chatMessages');
+  const replyDiv = document.createElement('div');
+  replyDiv.className = 'self-start bg-gray-100 text-gray-700 px-3 py-2 rounded-lg shadow';
+  replyDiv.textContent = msg.message;
+  messages.appendChild(replyDiv);
+  messages.scrollTop = messages.scrollHeight;
+    }
+  });
+
+  // Toggle chat popup visibility
+  function toggleChat() {
+    const popup = document.getElementById('chatPopup');
+    if (popup) popup.classList.toggle('hidden');
+  }
+
+
   </script>
 
   <!-- <script src="/js/filterFunc.js" defer></script> -->

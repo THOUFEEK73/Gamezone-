@@ -82,6 +82,14 @@ import{
   getDashBoardPage,getDashBoardFilter,
 
 } from '../controllers/adminDashboardMangement.js';
+
+import{
+  getChatSupportPage,getChats,
+  postChat
+} 
+
+ from '../controllers/chatSupportController.js';
+
 const adminRoutes = express.Router();
 
 // Middleware
@@ -200,6 +208,12 @@ adminRoutes.get('/salesReport',getSalesReportPage);
 adminRoutes.get('/salesReport/excel', downloadSalesReportExcel);
 adminRoutes.get('/salesReport/pdf', downloadSalesReportPDF);
 
+
+// chatSupport
+
+adminRoutes.get('/chatSupport',getChatSupportPage);
+adminRoutes.get('/chats',getChats);
+adminRoutes.post('/chats',postChat)
 // Logout
 adminRoutes.get("/logout", adminLogout);
 
