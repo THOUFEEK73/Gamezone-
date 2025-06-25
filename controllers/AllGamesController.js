@@ -22,10 +22,15 @@ export const showAllGames = async (req, res) => {
     }
 
 
-    const games = await Game.find(gameFilter)
-      .populate({ path: 'category', match: { status: 'active' } })
-      .then(games => games.filter(game => game.category));
-
+    // const games = await Game.find(gameFilter)
+    //   .populate({ path: 'category', match: { status: 'active' } })
+    //   .then(games => games.filter(game => game.category));
+    const activeCategories = await Category.find({ status: 'active' }).select('_id');
+    const activeCategoryIds = activeCategories.map(cat => cat._id);
+    
+    gameFilter.category = { $in: activeCategoryIds };
+    
+    const games = await Game.find(gameFilter).populate('category');
     const category = await Category.find({ status: 'active' });
 
     const cart = await Cart.findOne({ userId });

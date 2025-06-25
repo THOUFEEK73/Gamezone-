@@ -5,17 +5,19 @@ import { calculateDiscountedPrice, getActiveOffers } from "../utils/offerUtils.j
 
 const filterGames = async(req, res) => {
     try {
-      
+        const activeCategories = await Category.find({status:'active'}).select('_id');
+        const activeCategoryIds = activeCategories.map(cat=>cat._id.toString());
         const {genres, maxPrice, companies, sort} = req.body;
         
         const category = await Category.find();
         const query = {
             // price: {$lte: maxPrice},
-            status: 'active'
+            status: 'active',
+            category: {$in: activeCategoryIds}
         };
 
         if(genres && genres.length > 0) {
-            query.category = {$in: genres};
+            query.category = { $in: genres.filter(id => activeCategoryIds.includes(id)) };
         }
         if(companies && companies.length > 0) {
             query.company = {$in: companies};

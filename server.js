@@ -106,7 +106,9 @@ io.on('connection', (socket) => {
 
   // User message → Admin
   socket.on('userMessage', async (msg) => {
+    console.log(msg)
     await ChatMessage.create(msg);
+  
     io.to('admin').emit('newMessage', msg);
   });
 

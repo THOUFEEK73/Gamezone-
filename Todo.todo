@@ -116,8 +116,20 @@ Pending Tasks
 ✔ OrderManagement pagination @done (19/06/2025, 10:58:20)
 ✔ orderManagement search @done (19/06/2025, 10:58:23)
 ✔ Game Company add pagination and search @done (20/06/2025, 19:43:58)
-☐ add pagination in offer and search functionality
-☐ add pagination in coupon and search functionality
+✔ add pagination in offer and search functionality @done (25/06/2025, 10:01:54)
+✔ add pagination in coupon and search functionality @done (25/06/2025, 10:01:57)
+
+☐ fix add cateogory
+☐ after entering valid input dont show the error
+☐ on product show recent added item on top
+☐ ask confirmation before deleting the product
+☐ sale report can show the order count and amount on the base of filter
+☐ add total amount in sales report pdf 
+
+User Side 
+☐ user side
+
+☐ remove the table heading if there is no product in wishlist
 
 
 

@@ -122,10 +122,9 @@ export const allGameSearch = async (req, res) => {
     const query = req.query.query || "";
 
     const games = await searchGames(query);
-    console.log("triggererd");
+  
     return res.json(games);
   } catch (error) {
-    console.error("Error handling search request:", error);
     console.error("Error handling search request:", error);
     res.status(500).render({ error: "Internal Server Error" });
   }

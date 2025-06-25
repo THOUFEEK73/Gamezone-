@@ -26,6 +26,7 @@ export const getAllCategories = async (req, res) => {
 
 export const postAllCategories = async (req, res) => {
   try {
+    console.log('Triggerd');
     const categoryName = req.body.categoryName;
     console.log('testing')
     if (!categoryName || categoryName.trim() === "") {

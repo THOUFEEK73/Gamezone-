@@ -46,6 +46,8 @@ document.getElementById('placeOrderBtn').addEventListener('click', async () => {
     }
   }
 
+  
+
    if(selectPayment === 'wallet'){
     try{
       const response = await fetch('/placeOrder/wallet',{
@@ -201,6 +203,16 @@ document.addEventListener('DOMContentLoaded', function () {
       window.location.href = url.toString();
     });
   });
+
+  const codRadio = document.querySelector('input[type="radio"][name="paymentMethod"][value="cod"]');
+  const grandTotal = parseFloat(document.getElementById('grandTotal').textContent.replace(/[^\d.]/g, ''));
+  if (codRadio && grandTotal > 1000) {
+    codRadio.disabled = true;
+    codRadio.parentElement.classList.add('opacity-50', 'pointer-events-none');
+    // Optionally, select another payment method if COD was default
+    const otherRadio = document.querySelector('input[type="radio"][name="paymentMethod"]:not([value="cod"])');
+    if (otherRadio) otherRadio.checked = true;
+  }
 
   // Remove coupon: remove coupon param and reload
   const removeCouponBtn = document.getElementById('removeCouponBtn');

@@ -85,7 +85,7 @@ import{
 
 import{
   getChatSupportPage,getChats,
-  postChat
+  postChat,api,
 } 
 
  from '../controllers/chatSupportController.js';
@@ -214,6 +214,7 @@ adminRoutes.get('/salesReport/pdf', downloadSalesReportPDF);
 adminRoutes.get('/chatSupport',getChatSupportPage);
 adminRoutes.get('/chats',getChats);
 adminRoutes.post('/chats',postChat)
+adminRoutes.post('/ai-chat',api);
 // Logout
 adminRoutes.get("/logout", adminLogout);
 
