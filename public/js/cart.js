@@ -67,6 +67,31 @@ function showCartFlash(type, message) {
 
 // remove cart
 
+// async function removeItem(itemId, button) {
+//   try {
+//     const response = await fetch(`/cart/remove/${itemId}`, {
+//       method: "DELETE",
+//     });
+
+//     const result = await response.json();
+
+//     if (response.ok) {
+//       const row = button.closest("tr");
+//       row.remove();
+
+//       showToast("✅Item removed successfully !");
+//       setTimeout(() => {
+//         window.location.reload();
+//       }, 800);
+//     } else {
+//       showToast("❌Failed To Remove Item !");
+//     }
+//   } catch (error) {
+//     console.error('Error updating product quantity', error);
+//   }
+// }
+
+
 async function removeItem(itemId, button) {
   try {
     const response = await fetch(`/cart/remove/${itemId}`, {
@@ -79,15 +104,57 @@ async function removeItem(itemId, button) {
       const row = button.closest("tr");
       row.remove();
 
-      showToast("✅Item removed successfully !");
-      setTimeout(() => {
-        window.location.reload();
-      }, 800);
+      // Update cart counter if backend returns new count
+      if (typeof result.cartCount !== 'undefined') {
+        updateCartCount(result.cartCount - parseInt(document.getElementById('cartCounter').textContent || '0'));
+        // Or just set it directly:
+        // document.getElementById('cartCounter').textContent = result.cartCount;
+      } else {
+        updateCartCount(-1); // fallback: decrement by 1
+      }
+
+      // Update cart count in cart page header
+      const cartCountHeader = document.getElementById('cartCountHeader');
+      if (cartCountHeader && typeof result.cartCount !== 'undefined') {
+        cartCountHeader.textContent = `${result.cartCount} items`;
+      }
+
+      // Update subtotal, grand total, savings, etc.
+      if (result.subTotal !== undefined) {
+        const subTotalElem = document.getElementById('subTotal');
+        if (subTotalElem) subTotalElem.textContent = `₹ ${result.subTotal.toLocaleString('en-IN')}`;
+      }
+      if (result.total !== undefined) {
+        const cartTotalElem = document.getElementById('cartTotal');
+        if (cartTotalElem) cartTotalElem.textContent = `₹ ${result.total.toLocaleString('en-IN')}`;
+      }
+      if (result.totalSavings !== undefined) {
+        const savingsElem = document.getElementById('totalSavings');
+        if (savingsElem) savingsElem.textContent = `-₹${result.totalSavings.toLocaleString('en-IN')}`;
+      }
+
+      // If cart is empty, show empty cart message
+      const cartItemsSection = document.getElementById('cart-items-section');
+      if (cartItemsSection && cartItemsSection.querySelectorAll('tr').length === 0) {
+        cartItemsSection.innerHTML = `
+          <div class="empty-cart text-center py-16">
+            <i class="fas fa-shopping-cart text-5xl text-gray-300 mb-4"></i>
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h2>
+            <p class="text-gray-500 mb-6">Looks like you haven't added any games to your cart yet.</p>
+            <a href="/allgames" class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+              Browse Games <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+          </div>
+        `;
+      }
+
+      showToast("✅ Item removed successfully!");
     } else {
-      showToast("❌Failed To Remove Item !");
+      showToast("❌ Failed To Remove Item!");
     }
   } catch (error) {
-    console.error('Error updating product quantity', error);
+    console.error('Error removing product from cart', error);
+    showToast('❌ Error removing item!');
   }
 }
 

@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (game.originalPrice && game.discountPercentage) {
           return `
               <div class="flex items-center justify-center gap-2">
-                  <span class="text-base text-red-600 font-semibold">₹${game.price}</span>
-                  <span class="text-sm text-gray-400 line-through">₹${game.originalPrice}</span>
+                  <span class="text-base text-red-600 font-semibold">₹${game.price.toLocaleString('en-IN')}</span>
+                  <span class="text-sm text-gray-400 line-through">₹${game.originalPrice.toLocaleString('en-IN')}</span>
                   <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full">
                       ${game.discountPercentage}% OFF
                   </span>
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       return game.price === 0
           ? `<span class="text-base text-green-600 font-semibold">Free</span>`
-          : `<span class="text-base text-gray-800 font-semibold">₹${game.price}</span>`;
+          : `<span class="text-base text-gray-800 font-semibold">₹${game.price.toLocaleString('en-IN')}</span>`;
   }
 
   // Filter Games Function

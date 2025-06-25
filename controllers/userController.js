@@ -167,7 +167,7 @@ export const getAddressPage = async (req, res) => {
 export const postEditProfile = async (req, res) => {
   try {
 
-    console.log("function triggered");
+
     
     const userId = req.session.userId;
     const { name, phone } = req.body;
@@ -189,7 +189,7 @@ export const postEditProfile = async (req, res) => {
     }
 
        await User.findByIdAndUpdate(userId, { name, phone });
-       console.log('function triggered 2');
+     
        
              res.status(200).json({ message: "Profile updated successfully" });
     // await User.findByIdAndUpdate(userId, { name, phone }, { new: true });
@@ -241,9 +241,9 @@ export const postVerifyEmail = async (req, res) => {
 
 export const sendVerificationCode = async (req, res) => {
   try {
-    console.log("function triggered");
+ 
     const { email } = req.body;
-    console.log(email);
+
     
     const userId = req.session.userId;
 
@@ -287,7 +287,7 @@ export const postAddress = async (req, res) => {
     if (!userId) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-   console.log('triggere');
+ 
    
     const {
       type,
@@ -436,7 +436,7 @@ export const postEditAddress = async (req, res) => {
 
     await Address.updateMany({ user: userId }, { $set: { isDefault: false } });
   }
-  console.log("testing 2");
+
 
   await Address.findByIdAndUpdate(addressId, {
     type,
@@ -604,7 +604,7 @@ export const removeWishlist = async (req,res)=>{
      try{
       const productId = req.params.id;
       const userId = req.session.userId;
-      console.log(userId);
+     
 
       await Wishlist.findOneAndUpdate({ userId },{$pull:{products:productId}},{new:true});
 
@@ -970,17 +970,39 @@ export const postAddCart = async (req, res) => {
 };
 
 export const removeCart = async (req, res) => {
+  console.log('Removing item from cart');
   const itemId = req.params.id;
   const userId = req.session.userId;
   try {
     await Cart.updateOne({ userId }, { $pull: { products: { _id: itemId } } });
 
-    res.json({ success: true });
+    // Fetch updated cart
+    const cart = await Cart.findOne({ userId }).populate('products.productId');
+    let cartCount = 0, subTotal = 0, totalSavings = 0, total = 0;
+
+    if (cart && cart.products.length > 0) {
+      // If you have offers, recalculate here as in getCartPage
+      cart.products.forEach(item => {
+        const price = item.productId.price || item.price;
+        cartCount += item.quantity;
+        subTotal += price * item.quantity;
+        // Optionally: add offer logic for totalSavings
+      });
+      total = Math.max(subTotal - totalSavings, 0);
+    }
+
+    res.json({
+      success: true,
+      cartCount,
+      subTotal,
+      total,
+      // Optionally: add total, totalSavings, etc.
+    });
   } catch (error) {
     console.error("Error while removing Cart", error);
     res
       .status(500)
-      .render("error", { message: "Server down please try after some times" });
+      .json({ success: false, message: "Server down please try after some times" });
   }
 };
 
@@ -1100,65 +1122,6 @@ export const updateQuantity = async (req, res) => {
 };
 
 
-// export const getCartPartial = async (req, res) => {
-//   try {
-//     const userId = req.session.userId;
-//     const cart = await Cart.findOne({ userId }).populate({
-//       path: "products.productId",
-//       populate: { path: "company", model: "GameCompany" },
-//     });
-//     res.render('user/partials/cart-items', { cart }, (err, html) => {
-//       if (err) return res.status(500).send('Error loading cart items');
-//       res.send(html);
-//     });
-//   } catch (error) {
-//     res.status(500).send('Error loading cart items');
-//   }
-// };
-
-// export const updateQuantity = async (req, res) => {
-//   try {
-//     const userId = req.session.userId;
-//     const { itemId, action } = req.body;
-
-//     const cart = await Cart.findOne({ userId }).populate('products.productId') 
-
-//     const product = cart.products.id(itemId);
-
-//     const game = product.productId;
-
-//     const maxAllowed  = game.stockQuantity;
-
-//     if (action === "increase") {
-//       if(product.quantity < maxAllowed){
-        
-//           product.quantity += 1;
-//       }
-     
-//     } else if (action === "decrease" && product.quantity > 1) {
-//       product.quantity -= 1;
-//     }
-
-//     const itemTotal = game.price * product.quantity
-
-//     console.log('total quantity of aproduct',product.quantity);
-//     console.log("cart total price", cart.totalPrice);
-//     console.log('game price is ',game.price)
-
-//     await cart.save();
-//     res.json({ success: true,
-//     updateQty:product.quantity,
-//     itemId,
-//     itemPrice:game.price,
-//     subTotal:cart.totalPrice,
-//    });
-//   } catch (error) {
-//     console.error("Error updating the product quantity", error);
-//     res
-//       .status(500)
-//       .render("error", { message: "Server down please try after some times" });
-//   }
-// };
 
 export const proceedToCheckout = (req, res) => {
   console.log("yes....");
@@ -1175,7 +1138,7 @@ export const getCheckoutPage = async (req, res) => {
 
     const appliedCoupon = req.query.coupon || null;
 
-    console.log("applied coupon is ", appliedCoupon);
+   
 
     req.session.canAccessCheckout = false;
 
@@ -1309,7 +1272,7 @@ export const postPlaceCODOrder = async (req, res) => {
     const userId = req.session.userId;
     const { shippingAddress, coupon } = req.body;
 
-    console.log('placed cod order with coupon code',coupon);
+ 
 
     const cartItems = await Cart.findOne({ userId }).populate("products.productId");
     if (!cartItems || cartItems.products.length === 0) {
@@ -2302,7 +2265,7 @@ export const postApplyCoupon = async (req, res) => {
 
 export const postSubscribeEmail = async (req, res) => {
   try {
-    console.log('triggered')
+    
     const { email } = req.body;
     if (!email) {
       return res.json({ success: false, message: 'Email is required.' });
