@@ -5,17 +5,34 @@ import gamecompany from '../models/gamecompany.js';
 
 export const getAllGames = async (req, res) => {
     try {
-        // const category = await Category.find();
-        // console.log(category)
         const page = parseInt(req.query.page) || 1;
         const limit = 5;
-        const skip   = (page - 1) * limit;
-        const totalGames = await Game.countDocuments();
-        const totalPages = Math.ceil(totalGames / limit);
-        const companies = await gamecompany.find()
+        const skip = (page - 1) * limit;
+        const search = req.query.search || '';
 
-        const games = await Game.find().skip(skip).limit(limit).populate('category','categoryName');
-        res.render('admin/games', {games:games,totalPages,currentPage:page,company:companies});
+        // Build filter
+        let filter = {};
+        if (search) {
+            filter.title = { $regex: search, $options: 'i' };
+        }
+
+        const totalGames = await Game.countDocuments(filter);
+        const totalPages = Math.ceil(totalGames / limit);
+        const companies = await gamecompany.find();
+
+        const games = await Game.find(filter)
+            .skip(skip)
+            .limit(limit)
+            .populate('category', 'categoryName')
+            .sort({ createdAt: -1 });
+
+        res.render('admin/games', {
+            games,
+            totalPages,
+            currentPage: page,
+            company: companies,
+            search // Pass search to EJS for input value
+        });
     } catch (error) {
         console.error('Error fetching games:', error);
         res.status(500).json({ error: 'Failed to fetch games' });

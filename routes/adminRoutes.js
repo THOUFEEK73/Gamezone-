@@ -33,7 +33,6 @@ import {
   postEditGame 
 } from "../controllers/editGameController.js";
 
-import { getPlatFormPage } from "../controllers/platformController.js";
 
 import { 
   getAllUsersPage, 
@@ -175,9 +174,6 @@ adminRoutes.post("/games/:id/toggle-status", async (req, res) => {
 // Game Upload Routes with Multer
 adminRoutes.post("/addgame", upload, postGameDetails);
 adminRoutes.post("/editgame/:id", upload, postEditGame);
-
-// Platform Management
-adminRoutes.get("/platform", getPlatFormPage);
 
 // Company Management
 adminRoutes.get('/company', getCompanyPage);

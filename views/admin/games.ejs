@@ -8,21 +8,21 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
   <style>
     body {
-      background-color: #1f1f1f;
+      background-color: #f9fafb;
       font-family: 'Inter', sans-serif;
-      color: #fff;
+      color: #222;
     }
   </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex min-h-screen bg-gray-50 text-gray-900">
   <%- include('partials/sidebar') %>
 
-  <div class="flex-1 ml-72 p-8">
+  <div class="flex-1 ml-72 p-4 sm:p-8 bg-white min-h-screen">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
       <div>
-        <h1 class="text-3xl font-bold">Manage Games</h1>
-        <p class="text-gray-400 text-sm">View and manage all uploaded games</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Manage Games</h1>
+        <p class="text-gray-500 mt-1">View and manage all uploaded games</p>
       </div>
       <a href="/admin/addgame" class="bg-purple-600 hover:bg-purple-700 px-5 py-2 rounded-lg text-white flex items-center transition">
         <i class="fas fa-plus mr-2"></i> Add Game
@@ -30,14 +30,35 @@
     </div>
 
     <!-- Search Filter -->
-    <div class="flex justify-between items-center mb-4">
-      <input id="searchInput" type="text" placeholder="Search games..." class="bg-[#2a2a2a] px-4 py-2 rounded-lg w-full max-w-md text-white focus:outline-none" />
-    </div>
+    <form method="GET" action="/admin/games" class="flex flex-col sm:flex-row gap-2 mb-6">
+      <div class="relative flex-1">
+        <input
+          id="searchInput"
+          type="text"
+          name="search"
+          value="<%= search || '' %>"
+          placeholder="Search games..."
+          class="search-input w-full pr-10 border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          id="clearSearchBtn"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+          style="<%= search ? '' : 'display:none;' %>"
+          tabindex="-1"
+          aria-label="Clear search"
+        >
+          <i class="fas fa-times-circle text-lg"></i>
+        </button>
+      </div>
+      <!-- You can add more filters here if needed -->
+    </form>
 
     <!-- Games Table -->
-    <div class="overflow-x-auto rounded-lg shadow">
-      <table class="min-w-full text-left text-sm bg-[#2a2a2a] rounded-lg">
-        <thead class="text-white bg-[#1a1a1a]">
+    <div class="overflow-x-auto rounded-lg shadow bg-white">
+      <table class="min-w-full text-left text-sm">
+        <thead class="text-gray-700 bg-gray-100">
           <tr>
             <th class="px-6 py-4">S.No</th>
             <th class="px-6 py-4">Cover</th>
@@ -51,16 +72,16 @@
         <tbody>
           <% if (games && games.length > 0) { %>
             <% games.forEach((game, index) => { %>
-              <tr class="border-t border-gray-700 hover:bg-[#323232] transition">
+              <tr class="border-t border-gray-200 hover:bg-gray-50 transition">
                 <td class="px-6 py-4"><%= index + 1 %></td>
                 <td class="px-6 py-4">
                   <img id="coverPreviewImage" src="<%= game.media.coverImage %>" class="w-10 h-10 rounded-full object-cover"/>
                 </td>
-                <td class="px-6 py-4 font-medium text-white"><%= game.title %></td>
-                <td class="px-6 py-4 text-gray-300"><%= game.category? game.category.categoryName:'No Category Found' %></td>
-                <td class="px-6 py-4 text-purple-400">&#8377; <%= game.price %></td>
+                <td class="px-6 py-4 font-medium text-gray-900"><%= game.title %></td>
+                <td class="px-6 py-4 text-gray-700"><%= game.category ? game.category.categoryName : 'No Category Found' %></td>
+                <td class="px-6 py-4 text-purple-600 font-semibold">&#8377; <%= game.price %></td>
                 <td class="px-6 py-4">
-                  <button class="status-toggle relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none <%= game.status === 'active' ? 'bg-green-600' : 'bg-gray-600' %>"
+                  <button class="status-toggle relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none <%= game.status === 'active' ? 'bg-green-500' : 'bg-gray-300' %>"
                           role="switch"
                           aria-checked="<%= game.status === 'active' %>"
                           data-game-id="<%= game._id %>" 
@@ -68,12 +89,12 @@
                     <span class="sr-only">Toggle status</span>
                     <span class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full translate-x-1 <%= game.status === 'active' ? 'translate-x-6' : '' %>"></span>
                   </button>
-                  <span class="ml-2 text-sm <%= game.status === 'active' ? 'text-green-400' : 'text-red-400' %>">
+                  <span class="ml-2 text-sm <%= game.status === 'active' ? 'text-green-600' : 'text-red-500' %>">
                     <%= game.status === 'active' ? 'Active' : 'Inactive' %>
                   </span>
                 </td>
                 <td class="px-6 py-4 flex gap-4 items-center">
-                  <button onclick="editGame('<%= game._id %>')" class="text-gray-400 hover:text-purple-500 transition">
+                  <button onclick="editGame('<%= game._id %>')" class="text-gray-400 hover:text-purple-600 transition">
                     <i class="fas fa-edit"></i>
                   </button>
                 </td>
@@ -89,40 +110,123 @@
     </div>
 
 
-    <div class="flex justify-center mt-6">
-      <div class="flex space-x-1">
-          <% if (currentPage > 1) { %>
-              <a href="/admin/games?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
-                  <i class="fas fa-chevron-left"></i>
-              </a>
-          <% } else { %>
-              <button class="px-3 py-1 bg-[#2a2a2a] text-gray-500 rounded cursor-not-allowed">
-                  <i class="fas fa-chevron-left"></i>
-              </button>
-          <% } %>
-  
-          <% for (let i = 1; i <= totalPages; i++) { %>
-              <a href="/admin/games?page=<%= i %>" class="px-3 py-1 <%= currentPage === i ? 'bg-purple-600 text-white' : 'bg-[#2a2a2a] text-gray-300 hover:bg-[#333333]' %> rounded transition-colors">
-                  <%= i %>
-              </a>
-          <% } %>
-  
-          <% if (currentPage < totalPages) { %>
-              <a href="/admin/games?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
-                  <i class="fas fa-chevron-right"></i>
-              </a>
-          <% } else { %>
-              <button class="px-3 py-1 bg-[#2a2a2a] text-gray-500 rounded cursor-not-allowed">
-                  <i class="fas fa-chevron-right"></i>
-              </button>
-          <% } %>
-      </div>
-  </div>
+    <div class="flex justify-center mt-10">
+      <nav class="flex space-x-2">
+        <% if (currentPage > 1) { %>
+          <a href="/admin/games?page=<%= currentPage - 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+            class="page-item px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-purple-50 transition">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        <% } else { %>
+          <span class="page-item px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+            <i class="fas fa-chevron-left"></i>
+          </span>
+        <% } %>
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <a href="/admin/games?page=<%= i %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+            class="page-item px-3 py-1 <%= currentPage === i ? 'bg-purple-600 text-white' : 'bg-white border border-gray-300 text-gray-700 hover:bg-purple-50' %> rounded transition">
+            <%= i %>
+          </a>
+        <% } %>
+        <% if (currentPage < totalPages) { %>
+          <a href="/admin/games?page=<%= currentPage + 1 %><%= search ? '&search=' + encodeURIComponent(search) : '' %>"
+            class="page-item px-3 py-1 bg-white border border-gray-300 text-gray-700 rounded hover:bg-purple-50 transition">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        <% } else { %>
+          <span class="page-item px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+            <i class="fas fa-chevron-right"></i>
+          </span>
+        <% } %>
+      </nav>
+    </div>
 
   </div>
 
-  <!-- Script -->
   <script>
+    function editGame(id) {
+      window.location.href = `/admin/editgame/${id}`;
+    }
+
+    document.querySelectorAll('.status-toggle').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const gameId = btn.dataset.gameId;
+        const currentStatus = btn.dataset.status;
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        const statusSpan = btn.nextElementSibling;
+        const toggleCircle = btn.querySelector('span:not(.sr-only)');
+        
+        try {
+          btn.disabled = true;
+          btn.style.opacity = '0.7';
+          
+          const res = await fetch(`/admin/games/${gameId}/toggle-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+          });
+          
+          const result = await res.json();
+          
+          if (result.success) {
+            btn.dataset.status = newStatus;
+            btn.setAttribute('aria-checked', newStatus === 'active');
+            if (newStatus === 'active') {
+              btn.classList.remove('bg-gray-300');
+              btn.classList.add('bg-green-500');
+              toggleCircle.classList.add('translate-x-6');
+              statusSpan.textContent = 'Active';
+              statusSpan.classList.remove('text-red-500');
+              statusSpan.classList.add('text-green-600');
+            } else {
+              btn.classList.remove('bg-green-500');
+              btn.classList.add('bg-gray-300');
+              toggleCircle.classList.remove('translate-x-6');
+              statusSpan.textContent = 'Inactive';
+              statusSpan.classList.remove('text-green-600');
+              statusSpan.classList.add('text-red-500');
+            }
+            // Toast
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300';
+            toast.textContent = `Game status updated to ${newStatus}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+              toast.style.opacity = '0';
+              setTimeout(() => toast.remove(), 300);
+            }, 3000);
+          }
+        } catch (err) {
+          const toast = document.createElement('div');
+          toast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg';
+          toast.textContent = 'Failed to update game status';
+          document.body.appendChild(toast);
+          setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+          }, 3000);
+        } finally {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        }
+      });
+    });
+
+    // Search clear button logic
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (searchInput && clearSearchBtn) {
+      searchInput.addEventListener('input', () => {
+        clearSearchBtn.style.display = searchInput.value ? '' : 'none';
+      });
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearSearchBtn.style.display = 'none';
+        searchInput.form.submit();
+      });
+    }
+  </script>
+  <!-- <script>
     function editGame(id) {
       window.location.href = `/admin/games/edit/${id}`;
     }
@@ -216,6 +320,6 @@
     function editGame(id){
       window.location.href =`/admin/editgame/${id}`;
     }
-  </script>
+  </script> -->
 </body>
 </html>
