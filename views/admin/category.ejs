@@ -222,7 +222,7 @@ body {
             </div>
           
             <!-- Search & Filter -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <!-- <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div class="col-span-3">
                 <input type="text" id="searchInput"
                   class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -236,7 +236,36 @@ body {
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
-            </div>
+            </div> -->
+            <form method="GET" action="/admin/category" class="flex flex-col sm:flex-row gap-2 mb-6">
+                <div class="relative flex-1">
+                    <input
+                      id="searchInput"
+                      type="text"
+                      name="search"
+                      value="<%= search || '' %>"
+                      placeholder="Search categories..."
+                      class="search-input w-full pr-10"
+                      autocomplete="off"
+                    />
+                    <button
+                      type="button"
+                      id="clearSearchBtn"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none"
+                      style="<%= search ? '' : 'display:none;' %>"
+                      tabindex="-1"
+                      aria-label="Clear search"
+                    >
+                      <i class="fas fa-times-circle text-lg"></i>
+                    </button>
+                  </div>
+                <select name="status" class="search-input w-48">
+                  <option value="all" <%= status === 'all' ? 'selected' : '' %>>All Status</option>
+                  <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
+                  <option value="inactive" <%= status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                </select>
+                <button type="submit" class="btn-submit">Search</button>
+              </form>
           
             <!-- Categories List -->
           <!-- Categories List -->
@@ -643,7 +672,7 @@ editCategoryModal.addEventListener('click', (e) => {
 
 
 const searchInput = document.getElementById('searchInput');
-const categoryItems = document.querySelectorAll('.category-item');
+const clearSearchBtn = document.getElementById('clearSearchBtn');
 
 const handleSearch = debounce((searchTerm) => {
     const normalizedSearchTerm = searchTerm.toLowerCase().trim();
@@ -660,30 +689,35 @@ const handleSearch = debounce((searchTerm) => {
 }, 300);
 
 // Add event listener for search input
-if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-        handleSearch(e.target.value);
-    });
+if (searchInput && clearSearchBtn) {
+  searchInput.addEventListener('input', () => {
+    clearSearchBtn.style.display = searchInput.value ? '' : 'none';
+  });
+
+  clearSearchBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    clearSearchBtn.style.display = 'none';
+    searchInput.form.submit(); // Submit the form to reset search
+  });
 }
 
-
-const statusFilter = document.getElementById('statusFilter');
-if (statusFilter) {
-    statusFilter.addEventListener('change', () => {
-        const selectedStatus = statusFilter.value;
+// const statusFilter = document.getElementById('statusFilter');
+// if (statusFilter) {
+//     statusFilter.addEventListener('change', () => {
+//         const selectedStatus = statusFilter.value;
         
-        document.querySelectorAll('.category-item').forEach(item => {
-            const statusBadge = item.querySelector('.status-badge');
-            const itemStatus = statusBadge.classList.contains('status-active') ? 'active' : 'inactive';
+//         document.querySelectorAll('.category-item').forEach(item => {
+//             const statusBadge = item.querySelector('.status-badge');
+//             const itemStatus = statusBadge.classList.contains('status-active') ? 'active' : 'inactive';
             
-            if (selectedStatus === 'all' || selectedStatus === itemStatus) {
-                item.style.display = '';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    });
-}
+//             if (selectedStatus === 'all' || selectedStatus === itemStatus) {
+//                 item.style.display = '';
+//             } else {
+//                 item.style.display = 'none';
+//             }
+//         });
+//     });
+// }
  
 
     </script>

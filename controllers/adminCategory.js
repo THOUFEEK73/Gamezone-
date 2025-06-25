@@ -5,19 +5,36 @@ export const getAllCategories = async (req, res) => {
 
     const page = parseInt(req.query.page) || 1;
     const limit = 5;
-    const skip = (page -1) * limit;
+    const skip = (page - 1) * limit;
+ 
+
+    const search = req.query.search || '';
+    const status = req.query.status || 'all';
+    
+    let filter = {};
+
+    if(search){
+     
+      filter.categoryName = {$regex:search,$options:'i'};
+    }
+
+    if(status !=='all'){
+      filter.status = status;
+    }
 
    
-    const category = await Category.find().skip(skip).limit(limit).sort({createdAt:-1});
-    const totalCategories = await Category.countDocuments();
+    const category = await Category.find(filter).skip(skip).limit(limit).sort({createdAt:-1});
+    const totalCategories = await Category.countDocuments(filter);
     const totalPages = Math.ceil(totalCategories / limit);
 
     res.render('admin/category', { 
       category: category, 
       currentPage: page, 
-      totalPages 
+      totalPages,
+      search,
+      status,
   });
-    // res.render("admin/category", { category });
+
   } catch (error) {
     console.error("Error fetching Categories:", error);
     res.status(500).render("error", { message: "Internal Server Error" });
@@ -26,9 +43,11 @@ export const getAllCategories = async (req, res) => {
 
 export const postAllCategories = async (req, res) => {
   try {
-    console.log('Triggerd');
+
+
+
     const categoryName = req.body.categoryName;
-    console.log('testing')
+
     if (!categoryName || categoryName.trim() === "") {
       return res
         .status(400)
