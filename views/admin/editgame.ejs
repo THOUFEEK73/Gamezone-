@@ -307,16 +307,7 @@
     </style>
 </head>
 <body class="flex h-screen bg-gray-50 text-gray-900">
-    <aside class="sidebar">
-        <div class="p-5">
-            <div class="flex items-center space-x-3 mb-8">
-                <span class="text-xl font-bold text-purple-700">GameZone Admin</span>
-            </div>
-            <nav class="space-y-4">
-                <!-- Sidebar content would be included here by the server -->
-            </nav>
-        </div>
-    </aside>
+    <%- include('partials/sidebar') %>
     <button class="sidebar-toggle lg:hidden">
         <i class="fas fa-bars text-gray-600"></i>
     </button>
