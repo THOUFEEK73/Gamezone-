@@ -68,21 +68,38 @@ export const blockUser = async (req, res) => {
   },300);
   
   
-  export const searchUsers = async(req,res)=>{
-    try{
-      if(!req.session.admin){
-        return res.status(401).json({success:false,message:'Unauthorized'});
-      }
-      const {query} = req.query;
-      if (!query || query.length < 2) {
-        return res.json({ success: true, users: [] });
-      }
+  // export const searchUsers = async(req,res)=>{
+  //   try{
+  //     if(!req.session.admin){
+  //       return res.status(401).json({success:false,message:'Unauthorized'});
+  //     }
+  //     const {query} = req.query;
+  //     if (!query || query.length < 2) {
+  //       return res.json({ success: true, users: [] });
+  //     }
       
-      debouncedSearch(query, res);
-    } catch (err) {
-      console.error('Error in searching users:', err);
-      return res.status(500).json({ success: false, message: 'Something went wrong' });
+  //     debouncedSearch(query, res);
+  //   } catch (err) {
+  //     console.error('Error in searching users:', err);
+  //     return res.status(500).json({ success: false, message: 'Something went wrong' });
+  //   }
+  // }
+  
+  export const searchUsers = async (req, res) => {
+    try {
+      if (!req.session.admin) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
-  }
-  
-  
+        const query = req.query.query || '';
+        console.log('Searching users with query:', req.query.query);
+        const users = await User.find({
+            $or: [
+                { name: { $regex: query, $options: 'i' } },
+                { email: { $regex: query, $options: 'i' } }
+            ]
+        });
+        res.json({ success: true, users });
+    } catch (error) {
+        res.json({ success: false, users: [] });
+    }
+};

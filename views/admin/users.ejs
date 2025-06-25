@@ -11,14 +11,15 @@
         rel="stylesheet" />
     <style>
         body {
-            background-color: #1f1f1f;
-            color: #ffffff;
+            background-color: #f9fafb;
+            color: #222;
+            font-family: 'Inter', sans-serif;
         }
         .table-row {
             transition: all 0.2s ease;
         }
         .table-row:hover {
-            background-color: #2a2a2a;
+            background-color: #f3f4f6;
         }
         .btn-action {
             transition: all 0.2s ease;
@@ -26,10 +27,71 @@
         .btn-action:hover {
             transform: translateY(-1px);
         }
+        .search-bar {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1.5rem;
+            box-shadow: 0 1px 2px 0 rgba(129, 140, 248, 0.04);
+        }
+        .search-bar input {
+            background: transparent;
+            color: #222;
+        }
+        .search-bar input::placeholder {
+            color: #9ca3af;
+        }
+        .search-bar svg {
+            color: #a1a1aa;
+        }
+        .bg-white {
+            background-color: #fff;
+        }
+        .text-gray-800 {
+            color: #222;
+        }
+        .text-gray-600 {
+            color: #6b7280;
+        }
+        .shadow-lg {
+            box-shadow: 0 4px 6px -1px rgba(129, 140, 248, 0.08);
+        }
+        .rounded-lg {
+            border-radius: 1rem;
+        }
+        .rounded-full {
+            border-radius: 9999px;
+        }
+        .bg-gray-100 {
+            background-color: #f3f4f6;
+        }
+        .bg-gray-200 {
+            background-color: #e5e7eb;
+        }
+        .bg-gray-300 {
+            background-color: #d1d5db;
+        }
+        .bg-gray-50 {
+            background-color: #f9fafb;
+        }
+        .border-gray-200 {
+            border-color: #e5e7eb;
+        }
+        .border-gray-300 {
+            border-color: #d1d5db;
+        }
+        .text-gray-400 {
+            color: #9ca3af;
+        }
+        .text-gray-500 {
+            color: #6b7280;
+        }
+        .text-gray-900 {
+            color: #111827;
+        }
     </style>
 </head>
 
-<body class="flex h-screen">
+<body class="flex h-screen bg-gray-50 text-gray-900">
     <%- include('partials/sidebar') %>
 
     <!-- Mobile Sidebar Toggle -->
@@ -38,27 +100,25 @@
     </button>
 
     <!-- Main Content -->
-    <div class="flex-1 ml-72 p-8 main-content">
+    <div class="flex-1 ml-0 lg:ml-72 p-8 main-content bg-gray-50">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-gray-800">Manage Users</h1>
+                <h1 class="text-3xl font-bold text-gray-900">Manage Users</h1>
                 <p class="text-gray-600 mt-2">View and manage all user accounts</p>
             </div>
             <div class="flex items-center space-x-4">
                 <div class="relative">
-                    <button class="p-3 rounded-xl bg-#2a2a2a shadow-lg hover:shadow-xl transition-all duration-300">
-                        <i class="fas fa-bell text-white-600 text-lg"></i>
+                    <button class="p-3 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200">
+                        <i class="fas fa-bell text-gray-600 text-lg"></i>
                     </button>
                     <span
                         class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">3</span>
                 </div>
                 <div class="relative">
                     <button
-                        class="flex items-center space-x-3 p-3 rounded-xl bg-#2a2a2a shadow-lg hover:shadow-xl transition-all duration-300">
-                
-                        <span class="text-sm font-medium text-white">Admin</span>
-                        
+                        class="flex items-center space-x-3 p-3 rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200">
+                        <span class="text-sm font-medium text-gray-900">Admin</span>
                     </button>
                 </div>
             </div>
@@ -70,49 +130,40 @@
                 <button class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors">
                     All Users
                 </button>
-               
-                <!-- <button class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors">
-                    Blocked Users
-                </button> -->
             </div>
             <div class="relative w-full max-w-xl mx-auto">
-                <div class="flex items-center bg-[#2a2a2a] rounded-2xl px-5 py-4">
-                  
-                  <!-- Search Icon -->
-                  <svg class="text-gray-400 mr-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-                       viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
-                       stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-              
-                  <!-- Input Box -->
-                  <input type="text" id="searchInput"
-                         placeholder="Search users by name or email..."
-                         class="bg-transparent w-full text-white text-lg placeholder-gray-400 focus:outline-none" />
-              
-                  <!-- Clear Button -->
-                  <button id="clearSearchBtn"
-                          class="text-gray-400 hover:text-white transition duration-200 ml-3"
-                          style="display: none;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
-                         viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <line x1="18" y1="6" x2="6" y2="18"></line>
-                      <line x1="6" y1="6" x2="18" y2="18"></line>
+                <div class="flex items-center search-bar px-5 py-4">
+                    <!-- Search Icon -->
+                    <svg class="mr-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" 
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                  </button>
-              
+                    <!-- Input Box -->
+                    <input type="text" id="searchInput"
+                        placeholder="Search users by name or email..."
+                        class="bg-transparent w-full text-gray-900 text-lg placeholder-gray-400 focus:outline-none" />
+                    <!-- Clear Button -->
+                    <button id="clearSearchBtn"
+                        class="text-gray-400 hover:text-gray-700 transition duration-200 ml-3"
+                        style="display: none;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" 
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
-              </div>
-              
+            </div>
         </div>
 
         <!-- Users Table -->
-        <div class="bg-[#2a2a2a] rounded-lg overflow-hidden">
+        <div class="bg-white rounded-lg overflow-hidden border border-gray-200 shadow">
             <table class="w-full">
                 <thead>
-                    <tr class="bg-[#333333] text-gray-300">
+                    <tr class="bg-gray-100 text-gray-700">
                         <th class="px-6 py-3 text-left">S.No</th>
                         <th class="px-6 py-3 text-left">User Name</th>
                         <th class="px-6 py-3 text-left">Email</th>
@@ -123,29 +174,29 @@
                 </thead>
                 <tbody>
                     <% users.forEach((user, index) => { %>
-                        <tr class="table-row border-b border-gray-700">
+                        <tr class="table-row border-b border-gray-200">
                             <td class="px-6 py-4"><%= index + 1 %></td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
-                                    <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center mr-3">
-                                        <span class="text-sm"><%= user.name.charAt(0).toUpperCase() %></span>
+                                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                        <span class="text-sm text-gray-700"><%= user.name.charAt(0).toUpperCase() %></span>
                                     </div>
-                                    <%= user.name %>
+                                    <span class="text-gray-900"><%= user.name %></span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4"><%= user.email %></td>
+                            <td class="px-6 py-4 text-gray-700"><%= user.email %></td>
                             <td class="px-6 py-4">
                                 <% if (user.isVerified) { %>
-                                    <span class="px-2 py-1 bg-green-900/20 text-green-500 rounded-full text-sm">
+                                    <span class="px-2 py-1 bg-green-100 text-green-600 rounded-full text-sm">
                                         Active
                                     </span>
                                 <% } else { %>
-                                    <span class="px-2 py-1 bg-red-900/20 text-red-500 rounded-full text-sm">
+                                    <span class="px-2 py-1 bg-red-100 text-red-600 rounded-full text-sm">
                                         Blocked
                                     </span>
                                 <% } %>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 text-gray-500">
                                 <%= new Date(user.createdAt).toLocaleDateString() %>
                             </td>
                             <td class="px-6 py-4">
@@ -173,27 +224,27 @@
         <div class="flex justify-center mt-6">
             <div class="flex space-x-1">
                 <% if (currentPage > 1) { %>
-                    <a href="/admin/users?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
+                    <a href="/admin/users?page=<%= currentPage - 1 %>" class="px-3 py-1 bg-white border border-gray-200 text-gray-700 rounded hover:bg-gray-100 transition-colors">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 <% } else { %>
-                    <button class="px-3 py-1 bg-[#2a2a2a] text-gray-500 rounded cursor-not-allowed">
+                    <button class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                 <% } %>
         
                 <% for (let i = 1; i <= totalPages; i++) { %>
-                    <a href="/admin/users?page=<%= i %>" class="px-3 py-1 <%= currentPage === i ? 'bg-purple-600 text-white' : 'bg-[#2a2a2a] text-gray-300 hover:bg-[#333333]' %> rounded transition-colors">
+                    <a href="/admin/users?page=<%= i %>" class="px-3 py-1 <%= currentPage === i ? 'bg-purple-600 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100' %> rounded transition-colors">
                         <%= i %>
                     </a>
                 <% } %>
         
                 <% if (currentPage < totalPages) { %>
-                    <a href="/admin/users?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-[#2a2a2a] text-gray-300 rounded hover:bg-[#333333] transition-colors">
+                    <a href="/admin/users?page=<%= currentPage + 1 %>" class="px-3 py-1 bg-white border border-gray-200 text-gray-700 rounded hover:bg-gray-100 transition-colors">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 <% } else { %>
-                    <button class="px-3 py-1 bg-[#2a2a2a] text-gray-500 rounded cursor-not-allowed">
+                    <button class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
                         <i class="fas fa-chevron-right"></i>
                     </button>
                 <% } %>
@@ -201,56 +252,158 @@
         </div>
     </div>
 
+   
+
     <script>
-        // Toggle user block/unblock status
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+    
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        const tableBody = document.querySelector('tbody');
+    
+        // Debounced search function
+        const performSearch = debounce(async (query) => {
+            try {
+                if (!query || query.trim() === '') {
+                    window.location.reload();
+                    return;
+                }
+                const response = await fetch(`/admin/users/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                tableBody.innerHTML = '';
+    
+                if (data.success && Array.isArray(data.users)) {
+                    if (data.users.length > 0) {
+                        data.users.forEach((user, index) => {
+                            const row = document.createElement('tr');
+                            row.className = 'table-row border-b border-gray-200';
+    
+                            row.innerHTML = `
+                                <td class="px-6 py-4">${index + 1}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                                            <span class="text-sm text-gray-700">${user.name.charAt(0).toUpperCase()}</span>
+                                        </div>
+                                        <span class="text-gray-900">${user.name}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-700">${user.email}</td>
+                                <td class="px-6 py-4">
+                                    ${user.isVerified
+                                        ? `<span class="px-2 py-1 bg-green-100 text-green-600 rounded-full text-sm">Active</span>`
+                                        : `<span class="px-2 py-1 bg-red-100 text-red-600 rounded-full text-sm">Blocked</span>`
+                                    }
+                                </td>
+                                <td class="px-6 py-4 text-gray-500">${new Date(user.createdAt).toLocaleDateString()}</td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-2">
+                                        ${user.isVerified
+                                            ? `<button onclick="toggleUserBlock('${user._id}', false)" class="btn-action bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">Block</button>`
+                                            : `<button onclick="toggleUserBlock('${user._id}', true)" class="btn-action bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">Unblock</button>`
+                                        }
+                                    </div>
+                                </td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                    } else {
+                        tableBody.innerHTML = `
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-400">
+                                    No users found matching your search criteria
+                                </td>
+                            </tr>
+                        `;
+                    }
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Error searching users:', error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-red-400">
+                            Error searching users. Please try again.
+                        </td>
+                    </tr>
+                `;
+            }
+        }, 500);
+    
+        // Search input event
+        searchInput.addEventListener('input', function () {
+            console.log('Search input changed:', this.value);
+            clearSearchBtn.style.display = searchInput.value ? 'block' : 'none';
+            const query = this.value.trim();
+            performSearch(query);
+        });
+    
+        // Clear search button event
+        clearSearchBtn.addEventListener('click', function () {
+            searchInput.value = '';
+            clearSearchBtn.style.display = 'none';
+            window.location.reload();
+        });
+    
+        // Block/Unblock user
         function toggleUserBlock(userId, isVerified) {
             fetch('/admin/users/toggle-status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, isVerified })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Failed to update user status.');
-                }
-            })
-            .catch(err => console.error(err));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Failed to update user status.');
+                    }
+                })
+                .catch(err => console.error(err));
         }
-
+    
         // Sidebar Navigation Groups
         document.querySelectorAll(".nav-group-header").forEach((header) => {
             header.addEventListener("click", () => {
                 const content = header.nextElementSibling;
                 const toggle = header.querySelector(".nav-group-toggle");
-
                 content.classList.toggle("show");
                 toggle.classList.toggle("rotated");
             });
         });
-
+    
         // Mobile Sidebar Toggle
         const sidebarToggle = document.querySelector(".sidebar-toggle");
-        const sidebar = document.querySelector(".sidebar");
-
-        sidebarToggle.addEventListener("click", () => {
-            sidebar.classList.toggle("show");
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener("click", (e) => {
-            if (window.innerWidth <= 768) {
-                if (
-                    !sidebar.contains(e.target) &&
-                    !sidebarToggle.contains(e.target)
-                ) {
-                    sidebar.classList.remove("show");
+       
+        if (sidebarToggle && sidebar) {
+            sidebarToggle.addEventListener("click", () => {
+                sidebar.classList.toggle("show");
+            });
+    
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener("click", (e) => {
+                if (window.innerWidth <= 768) {
+                    if (
+                        !sidebar.contains(e.target) &&
+                        !sidebarToggle.contains(e.target)
+                    ) {
+                        sidebar.classList.remove("show");
+                    }
                 }
-            }
-        });
-
+            });
+        }
+    
         // Add active state to current navigation item
         const currentPath = window.location.pathname;
         const navLinks = document.querySelectorAll('nav a');
@@ -259,143 +412,11 @@
                 link.classList.add('bg-[#2a2a2a]');
             }
         });
-
-       
-         
-    // function debounce
-
-    // Search functionality
-    function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        const context = this;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(context, args), wait);
-    };
-}
-
-const searchInput = document.getElementById('searchInput');
-const clearSearchBtn = document.getElementById('clearSearchBtn');
-const tableBody = document.querySelector('tbody'); // Target the table body instead of a non-existent results container
-
-// Show/hide clear button based on input
-searchInput.addEventListener('input', function() {
-    clearSearchBtn.style.display = searchInput.value ? 'block' : 'none';
-});
-
-// Clear search when clicking the clear button
-clearSearchBtn.addEventListener('click', async function() {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    // Trigger search with empty query to fetch all users
-    await performSearch('');
-});
-
-const performSearch = debounce(async (query) => {
-    try {
-        let response;
-        // If query is empty, use window.location.reload() to refresh the page
-        if (!query || query.trim() === '') {
-            window.location.reload();
-            return;
-        }
-        
-        // Otherwise, fetch based on the search query
-        response = await fetch(`/admin/users/search?query=${encodeURIComponent(query)}`);
-        
-        const data = await response.json();
-        
-        // Clear existing table content
-        tableBody.innerHTML = '';
-
-        if (data.success && Array.isArray(data.users)) {
-            if (data.users.length > 0) {
-                data.users.forEach((user, index) => {
-                    const row = document.createElement('tr');
-                    row.className = 'table-row border-b border-gray-700';
-                    
-                    row.innerHTML = `
-                        <td class="px-6 py-4">${index + 1}</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center mr-3">
-                                    <span class="text-sm">${user.name.charAt(0).toUpperCase()}</span>
-                                </div>
-                                ${user.name}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">${user.email}</td>
-                        <td class="px-6 py-4">
-                            ${user.isVerified ? 
-                                `<span class="px-2 py-1 bg-green-900/20 text-green-500 rounded-full text-sm">Active</span>` : 
-                                `<span class="px-2 py-1 bg-red-900/20 text-red-500 rounded-full text-sm">Blocked</span>`
-                            }
-                        </td>
-                        <td class="px-6 py-4">
-                            ${new Date(user.createdAt).toLocaleDateString()}
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="flex space-x-2">
-                                ${user.isVerified ? 
-                                    `<button onclick="toggleUserBlock('${user._id}', false)" 
-                                        class="btn-action bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700">
-                                        Block
-                                    </button>` : 
-                                    `<button onclick="toggleUserBlock('${user._id}', true)"
-                                        class="btn-action bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700">
-                                        Unblock
-                                    </button>`
-                                }
-                            </div>
-                        </td>
-                    `;
-                    
-                    tableBody.appendChild(row);
-                });
-            } else {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-400">
-                            No users found matching your search criteria
-                        </td>
-                    </tr>
-                `;
-            }
-        } else {
-            throw new Error('Invalid response format');
-        }
-    } catch (error) {
-        console.error('Error searching users:', error);
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="px-6 py-4 text-center text-red-400">
-                    Error searching users. Please try again.
-                </td>
-            </tr>
-        `;
-    }
-}, 500);
-
-// Update clear search button handler
-clearSearchBtn.addEventListener('click', function() {
-    searchInput.value = '';
-    clearSearchBtn.style.display = 'none';
-    // Reload the page to show all users
-    window.location.reload();
-});
-
-function triggerSearch() {
-    const query = searchInput.value.trim();
-    performSearch(query);
-}
-
-// Use regular function instead of arrow function to preserve 'this' context
-searchInput.addEventListener('input', function() {
-    const query = this.value.trim();
-    performSearch(query);
-});
-
     </script>
 </body>
-
 </html>
+
+
+
+
+

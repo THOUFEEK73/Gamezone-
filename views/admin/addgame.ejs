@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GameZone Admin - Add Game</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -12,158 +11,234 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     <style>
         body {
-            background-color: #1f1f1f;
-            color: #ffffff;
+            background-color: #f9fafb;
+            color: #222;
             font-family: 'Inter', sans-serif;
         }
-
         .card {
-            background-color: #2a2a2a;
-            border: 1px solid #333333;
-            transition: all 0.2s ease;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 1rem;
+            transition: box-shadow 0.2s;
         }
-
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 15px -3px rgba(129, 140, 248, 0.08);
         }
-
         .form-input {
-            background-color: #333333;
-            border: 1px solid #404040;
-            color: #ffffff;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            color: #222;
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
-            transition: all 0.2s ease;
+            transition: border-color 0.2s, box-shadow 0.2s;
             width: 100%;
         }
-
         .form-input:focus {
             outline: none;
-            border-color: #818cf8;
-            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.1);
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.15);
         }
-
         .form-label {
-            color: #e2e8f0;
-            font-size: 0.875rem;
+            color: #374151;
+            font-size: 0.95rem;
             font-weight: 500;
             margin-bottom: 0.5rem;
         }
-
         .helper-text {
-            color: #94a3b8;
-            font-size: 0.75rem;
+            color: #6b7280;
+            font-size: 0.8rem;
             margin-top: 0.25rem;
         }
-
         .file-upload {
-            border: 2px dashed #404040;
+            border: 2px dashed #d1d5db;
             border-radius: 1rem;
             padding: 2rem;
             text-align: center;
-            transition: all 0.3s ease;
-            background: #2a2a2a;
+            background: #f3f4f6;
             cursor: pointer;
+            transition: border-color 0.3s, background 0.3s;
         }
-
         .file-upload:hover {
-            border-color: #818cf8;
-            background: rgba(129, 140, 248, 0.1);
+            border-color: #a78bfa;
+            background: #ede9fe;
         }
-
         .btn-primary {
-            background: #818cf8;
+            background: #a78bfa;
             color: white;
             border: none;
             border-radius: 0.75rem;
             padding: 0.75rem 1.5rem;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: background 0.2s, transform 0.2s;
         }
-
         .btn-primary:hover {
-            background: #6366f1;
+            background: #7c3aed;
             transform: translateY(-1px);
         }
-
         .btn-secondary {
-            background: #333333;
-            color: #ffffff;
-            border: 1px solid #404040;
+            background: #f3f4f6;
+            color: #222;
+            border: 1px solid #d1d5db;
             border-radius: 0.75rem;
             padding: 0.75rem 1.5rem;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: background 0.2s, transform 0.2s;
         }
-
         .btn-secondary:hover {
-            background: #404040;
+            background: #e5e7eb;
             transform: translateY(-1px);
         }
-
         select.form-input {
-            background-color: #333333;
-            color: #ffffff;
-            border: 1px solid #404040;
+            background-color: #f3f4f6;
+            color: #222;
+            border: 1px solid #d1d5db;
         }
-
         select.form-input option {
-            background-color: #2a2a2a;
-            color: #ffffff;
+            background-color: #fff;
+            color: #222;
         }
-
-        /* Platform Select Styles */
-        #platformSelectBtn {
-            background-color: #333333;
-            border: 1px solid #404040;
-            color: #ffffff;
+        .preview-container {
+            width: 100%;
+            margin-top: 1rem;
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
         }
-
-        #platformSelectMenu {
-            background-color: #2a2a2a;
-            border: 1px solid #404040;
+        .preview-image {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px 0 rgba(129, 140, 248, 0.08);
         }
-
-        #platformSelectMenu div {
-            color: #ffffff;
+        #screenshotsContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
         }
-
-        #platformSelectMenu div:hover {
-            background-color: #404040;
+        .screenshot-preview {
+            position: relative;
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 0.5rem;
         }
-
-        /* Header section styles */
-        .text-gray-800 {
-            color: #ffffff;
+        .screenshot-preview img {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: 0.5rem;
         }
-
-        .text-gray-600 {
-            color: #94a3b8;
+        .screenshot-remove-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: background 0.2s;
         }
-
-        /* Button styles in header */
-        .bg-white {
-            background-color: #2a2a2a;
+        .screenshot-remove-btn:hover {
+            background: #dc2626;
         }
-
-        .text-gray-700 {
-            color: #ffffff;
+        #addScreenshotBtn {
+            width: 100%;
+            height: 200px;
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #f3f4f6;
+            transition: border-color 0.3s, background 0.3s;
         }
-
-        .shadow-lg {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        #addScreenshotBtn:hover {
+            border-color: #a78bfa;
+            background: #ede9fe;
         }
-
-        /* Status badges */
-        .status-badge.success { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-        .status-badge.warning { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
-        .status-badge.error { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-        .status-badge.info { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
-
+        .form-input.border-red-500 {
+            border-color: #ef4444;
+        }
+        .form-input.border-red-500:focus {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+        }
+        .text-red-500 {
+            color: #ef4444;
+        }
+        .file-upload.border-red-500 {
+            border-color: #ef4444;
+        }
+        /* Cropper.js styles */
+        .cropper-container,
+        .cropper-wrap-box,
+        .cropper-bg {
+            background-color: #f3f4f6 !important;
+        }
+        .cropper-modal {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+        .cropper-line,
+        .cropper-point {
+            background-color: #a78bfa !important;
+        }
+        .cropper-view-box {
+            outline: 1px solid #a78bfa !important;
+        }
+        .cropper-center {
+            background-color: #a78bfa !important;
+        }
+        .crop-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+        .crop-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: #fff;
+            color: #222;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .crop-container {
+            max-height: 70vh;
+            margin: 1rem 0;
+        }
+        .crop-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .crop-image {
+            max-width: 100%;
+            max-height: 70vh;
+        }
         /* Sidebar styles */
         .sidebar {
-            background-color: #2a2a2a;
+            background-color: #fff;
+            border-right: 1px solid #e5e7eb;
             width: 18rem;
             position: fixed;
             left: 0;
@@ -173,7 +248,6 @@
             transition: transform 0.3s ease;
             z-index: 50;
         }
-
         @media (max-width: 1024px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -185,7 +259,6 @@
                 margin-left: 0 !important;
             }
         }
-
         .sidebar-toggle {
             position: fixed;
             top: 1rem;
@@ -193,233 +266,75 @@
             z-index: 60;
             padding: 0.5rem;
             border-radius: 0.5rem;
-            background-color: #2a2a2a;
-            border: 1px solid #404040;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
         }
-
         .nav-group-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease;
         }
-
         .nav-group-content.show {
             max-height: 500px;
         }
-
         .nav-group-toggle {
             transition: transform 0.3s ease;
         }
-
         .nav-group-toggle.rotated {
             transform: rotate(180deg);
         }
-
-        /* Updated image preview styles */
-        .preview-container {
-            width: 100%;
-            margin-top: 1rem;
-            background: #333;
-            padding: 1rem;
-            border-radius: 0.5rem;
+        /* Header section styles */
+        .text-gray-800 {
+            color: #222;
         }
-
-        .preview-image {
-            width: auto;
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
+        .text-gray-600 {
+            color: #6b7280;
         }
-
-        #screenshotsContainer {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
+        .bg-white {
+            background-color: #fff;
         }
-
-        .screenshot-preview {
-            position: relative;
-            background: #333;
-            padding: 1rem;
-            border-radius: 0.5rem;
+        .text-gray-700 {
+            color: #374151;
         }
-
-        .screenshot-preview img {
-            width: auto;
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
+        .shadow-lg {
+            box-shadow: 0 4px 6px -1px rgba(129, 140, 248, 0.08);
         }
-
-        .screenshot-remove-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: rgba(239, 68, 68, 0.8);
-            color: white;
-            border-radius: 50%;
-            width: 2rem;
-            height: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-        }
-
-        #addScreenshotBtn {
-            width: 100%;
-            height: 200px;
-            border: 2px dashed #404040;
-            border-radius: 0.5rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: #2a2a2a;
-            transition: all 0.3s ease;
-        }
-
-        #addScreenshotBtn:hover {
-            border-color: #818cf8;
-            background: rgba(129, 140, 248, 0.1);
-        }
-
-        /* Add Cropper.js related styles */
-        .cropper-container {
-            background-color: #333333;
-        }
-
-        .cropper-view-box,
-        .cropper-face {
-            border-radius: 0;
-        }
-
-        .cropper-modal {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-
-        .cropper-wrap-box {
-            background-color: #333333;
-        }
-
-        .cropper-bg {
-            background-color: #333333;
-        }
-
-        .cropper-line,
-        .cropper-point {
-            background-color: #818cf8;
-        }
-
-        .cropper-view-box {
-            outline: 1px solid #818cf8;
-        }
-
-        .cropper-center {
-            background-color: #818cf8;
-        }
-
-        /* Modal styles for cropper */
-        .crop-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-        }
-
-        .crop-modal-content {
-            position: relative;
-            width: 90%;
-            max-width: 800px;
-            margin: 2rem auto;
-            background-color: #2a2a2a;
-            padding: 1rem;
-            border-radius: 0.5rem;
-        }
-
-        .crop-container {
-            max-height: 70vh;
-            margin: 1rem 0;
-        }
-
-        .crop-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .crop-image {
-            max-width: 100%;
-            max-height: 70vh;
-        }
+        /* Status badges */
+        .status-badge.success { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+        .status-badge.warning { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+        .status-badge.error { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+        .status-badge.info { background: rgba(59, 130, 246, 0.12); color: #3b82f6; }
     </style>
 </head>
-<body class="flex h-screen">
+<body class="flex h-screen bg-gray-50 text-gray-900">
     <%- include('partials/sidebar') %>
 
-
-    <!-- Sidebar Placeholder - This would be replaced by the server with actual sidebar content -->
-    <aside class="sidebar">
-        <!-- Sidebar content would be included here by the server -->
-        <div class="p-5">
-            <div class="flex items-center space-x-3 mb-8">
-                <span class="text-xl font-bold">GameZone Admin</span>
-            </div>
-            
-            <!-- Navigation items would be rendered here -->
-            <nav class="space-y-4">
-                <!-- This is a placeholder for the actual sidebar content -->
-            </nav>
-        </div>
-    </aside>
-
-    <!-- Mobile Sidebar Toggle -->
     <button class="sidebar-toggle lg:hidden">
         <i class="fas fa-bars text-gray-600"></i>
     </button>
-
-    <!-- Main Content -->
-    <div class="flex-1 ml-0 lg:ml-72 p-8 main-content bg-[#1f1f1f]">
+    <div class="flex-1 ml-0 lg:ml-72 p-8 main-content bg-gray-50">
         <!-- Header -->
         <div class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-3xl font-bold text-white">Add New Game</h1>
-                <p class="text-gray-400 mt-2">Fill in the details below to add a new game to the store.</p>
+                <h1 class="text-3xl font-bold text-gray-900">Add New Game</h1>
+                <p class="text-gray-600 mt-2">Fill in the details below to add a new game to the store.</p>
             </div>
-            
         </div>
-
         <!-- Add Game Form -->
         <form class="space-y-6" method="POST" action="/admin/addgame" enctype="multipart/form-data">
             <!-- Basic Info Section -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold text-white mb-4">Basic Information</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="form-label">Game Title</label>
-                        <input type="text" name="title" class="form-input" value="<%=data.title%>"> 
+                        <input type="text" name="title" class="form-input" value="<%=data.title%>">
                         <p class="helper-text">Enter the official title of the game</p>
-                       
                         <% if (typeof errors !== 'undefined' && errors.title) { %>
-                            <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                            <div class="error-message text-red-500 text-sm font-bold mt-1">
                               <%= errors.title %>
                             </div>
-                          <% } %>
-                          
-                          
-                        
-                          
-                          
+                        <% } %>
                     </div>
                     <div>
                         <label class="form-label">Price</label>
@@ -428,28 +343,21 @@
                             <input type="number" name="price" step="0.01" class="form-input pl-10" value="<%=data.price%>">
                             <p class="helper-text">Set the retail price for the game</p>
                         </div>
-                        
                         <% if (typeof errors !== 'undefined' && errors.price) { %>
-                            <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                            <div class="error-message text-red-500 text-sm font-bold mt-1">
                               <%= errors.price %>
                             </div>
-                          <% } %>
-                          
-                       
-                        
+                        <% } %>
                     </div>
                 </div>
             </div>
-
             <!-- Media Section -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold text-white mb-4">Media</h2>
-                
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Media</h2>
                 <!-- Cover Image Section -->
                 <div class="mb-6">
                     <label class="form-label block mb-2">Game Cover Image</label>
                     <p class="helper-text mb-3">Upload a high-quality cover image in 16:9 aspect ratio</p>
-                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <label for="coverImageUpload" class="file-upload block h-full">
                             <input type="file" id="coverImageUpload" name="coverImage" accept="image/*" class="hidden" >
@@ -459,11 +367,10 @@
                                 <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                             </div>
                         </label>
-                        
                         <div id="coverPreviewContainer" class="preview-container hidden">
                             <div class="relative">
                                 <img id="coverPreviewImage" src="" alt="Cover Preview" class="preview-image">
-                                <button type="button" onclick="clearCoverPreview()" 
+                                <button type="button" onclick="clearCoverPreview()"
                                         class="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -478,7 +385,6 @@
                 <div class="mb-6">
                     <label class="form-label">Screenshots</label>
                     <p class="helper-text mb-3">Upload up to 4 screenshots in 16:9 aspect ratio</p>
-                    
                     <div class="file-upload" id="screenshotDropzone">
                         <input type="file" id="screenshotUpload" name="screenshots" accept="image/*" class="hidden" multiple>
                         <div class="flex flex-col items-center">
@@ -487,24 +393,21 @@
                             <p class="text-sm text-gray-500 mt-2">Supported formats: JPG, PNG, WebP</p>
                         </div>
                     </div>
-                    
                     <div id="screenshotsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div id="addScreenshotBtn" onclick="document.getElementById('screenshotUpload').click()">
+                        <div id="addScreenshotBtn" onclick="document.getElementById('screenshotUpload').click()"
+                             class="cursor-pointer flex flex-col items-center justify-center h-48 border-2 border-dashed border-gray-400 rounded-lg hover:border-purple-400 transition-colors">
                             <i class="fas fa-plus text-2xl text-gray-400 mb-2"></i>
                             <span class="text-gray-400">Add Screenshot</span>
                         </div>
                     </div>
                 </div>
             </div>
-
             <!-- Details Section -->
             <div class="card p-6">
-                <h2 class="text-xl font-semibold text-white mb-4">Game Details</h2>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Game Details</h2>
                 <div class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="relative w-full">
-                           
-                        
                             <div>
                                 <label class="form-label">Production</label>
                                 <select name="company" class="form-input">
@@ -515,18 +418,13 @@
                                         <% }); %>
                                     <% } %>
                                 </select>
-                                
                                 <% if (typeof errors !== 'undefined' && errors.company) { %>
-                                    <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                    <div class="error-message text-red-500 text-sm font-bold mt-1">
                                         <%= errors.company %>
                                     </div>
                                 <% } %>
-                                  
                             </div>
-                        
                         </div>
-                        
-                          
                         <div>
                             <label class="form-label">Category</label>
                             <select name="category" class="form-input">
@@ -537,76 +435,77 @@
                                     <% }); %>
                                 <% } %>
                             </select>
-                            
                             <% if (typeof errors !== 'undefined' && errors.category) { %>
-                                <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                <div class="error-message text-red-500 text-sm font-bold mt-1">
                                   <%= errors.category %>
                                 </div>
-                              <% } %>
-                              
+                            <% } %>
                         </div>
                     </div>
                     <div>
                         <label class="form-label">Description</label>
-                        <textarea name="description" rows="4" class="form-input">  <%= data ? data.description : game.description %></textarea>
+                        <textarea name="description" rows="4" class="form-input"><%= data ? data.description : game.description %></textarea>
                     </div>
                     <% if (typeof errors !== 'undefined' && errors.description) { %>
-                        <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                        <div class="error-message text-red-500 text-sm font-bold mt-1">
                           <%= errors.description %>
                         </div>
-                      <% } %>
+                    <% } %>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label class="form-label">Release Date</label>
                             <input type="date" name="releaseDate" class="form-input">
                             <% if (typeof errors !== 'undefined' && errors.releaseDate) { %>
-                                <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                <div class="error-message text-red-500 text-sm font-bold mt-1">
                                   <%= errors.releaseDate %>
                                 </div>
-                              <% } %>
+                            <% } %>
                         </div>
-                       
                         <div>
                             <label class="form-label">Stock Quantity</label>
                             <input type="number" name="stockQuantity" class="form-input">
                             <% if (typeof errors !== 'undefined' && errors.stockQuantity) { %>
-                                <div class="error-message" style="color: #e74c3c; font-size: 14px; font-weight: bold; margin-top: 5px;">
+                                <div class="error-message text-red-500 text-sm font-bold mt-1">
                                   <%= errors.stockQuantity %>
                                 </div>
-                              <% } %>
+                            <% } %>
                         </div>
                         <div>
                             <label class="form-label">Status</label>
                             <select name="status" class="form-input" required>
-                                <option value="" disabled selected>Choose status</option>
+                              
                                 <option value="active">Active</option>
                                 <option value="inactive">Inactive</option>
                             </select>
                         </div>
-                        
                     </div>
                 </div>
+                <div class="w-full flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
+                    <button type="button"
+                      class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition"
+                      onclick="window.history.back()">
+                      <i class="fas fa-arrow-left mr-2"></i>
+                      Go Back
+                    </button>
+                  
+                    <button type="submit"
+                      class="inline-flex items-center justify-center px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition">
+                      <i class="fas fa-save mr-2"></i>
+                      Save Game
+                    </button>
+                  </div>
+                  
             </div>
-
             <!-- Submit Buttons -->
-            <div class="flex justify-end space-x-4">
-                <button type="button" class="btn-secondary">
-                    Cancel
-                </button>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save mr-2"></i>
-                    Save Game
-                </button>
-            </div>
+        
         </form>
     </div>
-
     <!-- Add Crop Modal -->
     <div id="cropModal" class="crop-modal">
         <div class="crop-modal-content">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold text-white">Crop Image</h3>
-                <button onclick="closeCropModal()" class="text-gray-400 hover:text-white">
+                <h3 class="text-xl font-semibold text-gray-900">Crop Image</h3>
+                <button onclick="closeCropModal()" class="text-gray-400 hover:text-gray-900">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -619,356 +518,359 @@
             </div>
         </div>
     </div>
+    <!-- Your JS remains unchanged -->
+   
 
-    <script>
-        const MAX_SCREENSHOTS = 4;
-        let screenshotCount = 0;
-        let cropper = null;
-        let currentCropType = null;
-        let currentFile = null;
+<script>
+    const MAX_SCREENSHOTS = 4;
+    let screenshotCount = 0;
+    let cropper = null;
+    let currentCropType = null;
+    let currentFile = null;
 
-        // Handle cover image upload
-        document.getElementById('coverImageUpload').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                if (!file.type.startsWith('image/')) {
-                    alert('Please select an image file');
-                    return;
-                }
-                openCropModal(file, 'cover');
-            }
-        });
-
-        // Handle screenshot upload
-        document.getElementById('screenshotUpload').addEventListener('change', function(event) {
-            const files = Array.from(event.target.files);
-            const remainingSlots = MAX_SCREENSHOTS - screenshotCount;
-            
-            if (files.length > remainingSlots) {
-                alert(`You can only add ${remainingSlots} more screenshot${remainingSlots === 1 ? '' : 's'}`);
+    // Handle cover image upload
+    document.getElementById('coverImageUpload').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
                 return;
             }
+            openCropModal(file, 'cover');
+        }
+    });
 
-            // Process only the first file if multiple are selected
-            const file = files[0];
-            if (file) {
-                if (!file.type.startsWith('image/')) {
-                    alert('Please select only image files');
-                    return;
-                }
-                openCropModal(file, 'screenshot');
+    // Handle screenshot upload
+    document.getElementById('screenshotUpload').addEventListener('change', function(event) {
+        const files = Array.from(event.target.files);
+        const remainingSlots = MAX_SCREENSHOTS - screenshotCount;
+        
+        if (files.length > remainingSlots) {
+            alert(`You can only add ${remainingSlots} more screenshot${remainingSlots === 1 ? '' : 's'}`);
+            return;
+        }
+
+        // Process only the first file if multiple are selected
+        const file = files[0];
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select only image files');
+                return;
             }
-            
-            // Clear the input to allow selecting the same file again
-            event.target.value = '';
-        });
+            openCropModal(file, 'screenshot');
+        }
+        
+        // Clear the input to allow selecting the same file again
+        event.target.value = '';
+    });
 
-        // Handle screenshot removal
+    // Handle screenshot removal
+    document.getElementById('screenshotsContainer').addEventListener('click', function(e) {
+        const removeBtn = e.target.closest('.screenshot-remove-btn');
+        if (removeBtn) {
+            const screenshotId = removeBtn.dataset.id;
+            const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
+            
+            if (previewElement) {
+                previewElement.remove();
+                screenshotCount--;
+                
+                if (screenshotCount < MAX_SCREENSHOTS) {
+                    document.getElementById('addScreenshotBtn').style.display = '';
+                }
+            }
+        }
+    });
+
+    // Clear cover image
+    function clearCoverPreview() {
+        const coverPreviewContainer = document.getElementById('coverPreviewContainer');
+        const coverPreviewImage = document.getElementById('coverPreviewImage');
+        const coverImageUpload = document.getElementById('coverImageUpload');
+        
+        // Clear the preview
+        coverPreviewImage.src = '';
+        coverPreviewContainer.classList.add('hidden');
+        
+        // Clear the file input
+        coverImageUpload.value = '';
+        
+        // Remove any existing file from the input
+        const dataTransfer = new DataTransfer();
+        coverImageUpload.files = dataTransfer.files;
+    }
+
+    function removeScreenshot(screenshotId) {
+        const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
+        if (previewElement) {
+            previewElement.remove();
+            updateScreenshotCount();
+        }
+    }
+
+    function updateScreenshotCount() {
+        const currentScreenshots = document.querySelectorAll('.screenshot-preview').length;
+        const addButton = document.getElementById('addScreenshotBtn');
+        
+        if (currentScreenshots >= MAX_SCREENSHOTS) {
+            addButton.style.display = 'none';
+        } else {
+            addButton.style.display = 'flex';
+        }
+    }
+
+    // Add event listeners for remove buttons
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add click event listener for cover image remove button
+        const coverRemoveBtn = document.querySelector('.cover-remove-btn');
+        if (coverRemoveBtn) {
+            coverRemoveBtn.addEventListener('click', clearCoverPreview);
+        }
+
+        // Add click event listener for screenshot remove buttons
         document.getElementById('screenshotsContainer').addEventListener('click', function(e) {
             const removeBtn = e.target.closest('.screenshot-remove-btn');
             if (removeBtn) {
-                const screenshotId = removeBtn.dataset.id;
-                const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
-                
-                if (previewElement) {
-                    previewElement.remove();
-                    screenshotCount--;
-                    
-                    if (screenshotCount < MAX_SCREENSHOTS) {
-                        document.getElementById('addScreenshotBtn').style.display = '';
-                    }
-                }
+                const screenshotId = removeBtn.closest('.screenshot-preview').dataset.id;
+                removeScreenshot(screenshotId);
             }
         });
+    });
 
-        // Clear cover image
-        function clearCoverPreview() {
-            const coverPreviewContainer = document.getElementById('coverPreviewContainer');
-            const coverPreviewImage = document.getElementById('coverPreviewImage');
-            const coverImageUpload = document.getElementById('coverImageUpload');
-            
-            // Clear the preview
-            coverPreviewImage.src = '';
-            coverPreviewContainer.classList.add('hidden');
-            
-            // Clear the file input
-            coverImageUpload.value = '';
-            
-            // Remove any existing file from the input
-            const dataTransfer = new DataTransfer();
-            coverImageUpload.files = dataTransfer.files;
+    // Handle drag and drop
+    function setupDragAndDrop(dropArea, fileInput) {
+        if (!dropArea) return;
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
         }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('border-blue-500');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('border-blue-500');
+            }, false);
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                const file = files[0]; // Only take the first file
+                if (fileInput.id === 'coverImageUpload') {
+                    openCropModal(file, 'cover');
+                } else if (fileInput.id === 'screenshotUpload') {
+                    openCropModal(file, 'screenshot');
+                }
+            }
+        }, false);
+    }
 
-        function removeScreenshot(screenshotId) {
-            const previewElement = document.querySelector(`.screenshot-preview[data-id="${screenshotId}"]`);
-            if (previewElement) {
-                previewElement.remove();
+    // Initialize drag and drop
+    document.addEventListener('DOMContentLoaded', function() {
+        setupDragAndDrop(document.querySelector('.file-upload'), document.getElementById('coverImageUpload'));
+        setupDragAndDrop(document.getElementById('addScreenshotBtn'), document.getElementById('screenshotUpload'));
+    });
+
+    function initPlatformDropdown() {
+        const platformSelectBtn = document.getElementById('platformSelectBtn');
+        const platformSelectMenu = document.getElementById('platformSelectMenu');
+        const platformInput = document.getElementById('platformInput');
+        const selectedPlatform = document.getElementById('selectedPlatform');
+
+        platformSelectBtn.addEventListener('click', () => {
+            platformSelectMenu.classList.toggle('hidden');
+        });
+
+        platformSelectMenu.querySelectorAll('div').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const value = e.target.getAttribute('data-value');
+                const text = e.target.textContent;
+                selectedPlatform.textContent = text;
+                platformInput.value = value;
+                platformSelectMenu.classList.add('hidden');
+            });
+        });
+
+        // Close dropdown if clicked outside
+        document.addEventListener('click', (e) => {
+            if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
+                platformSelectMenu.classList.add('hidden');
+            }
+        });
+    }
+
+
+    // Initialize nav group headers if they exist
+    document.addEventListener('DOMContentLoaded', () => {
+        const navGroupHeaders = document.querySelectorAll('.nav-group-header');
+        navGroupHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const toggle = header.querySelector('.nav-group-toggle');
+                
+                if (content && toggle) {
+                    content.classList.toggle('show');
+                    toggle.classList.toggle('rotated');
+                }
+            });
+        });
+    });
+
+
+    // company drag and drop
+    document.addEventListener('DOMContentLoaded', () => {
+const platformSelectBtn = document.getElementById('platformSelectBtn');
+const platformSelectMenu = document.getElementById('platformSelectMenu');
+const companyInput = document.getElementById('companyformInput');
+const selectedPlatform = document.getElementById('selectedPlatform');
+
+// Toggle the dropdown menu
+platformSelectBtn.addEventListener('click', () => {
+    platformSelectMenu.classList.toggle('hidden');
+});
+
+// Handle selecting a company from the dropdown
+platformSelectMenu.querySelectorAll('div').forEach(item => {
+    item.addEventListener('click', (e) => {
+        const value = e.target.getAttribute('data-value');
+        const text = e.target.textContent;
+
+        // Update the selected company name and hidden input value
+        selectedPlatform.textContent = text;
+        companyInput.value = value;
+
+        // Hide the dropdown menu
+        platformSelectMenu.classList.add('hidden');
+    });
+});
+
+// Close the dropdown if clicked outside
+document.addEventListener('click', (e) => {
+    if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
+        platformSelectMenu.classList.add('hidden');
+    }
+});
+});
+
+    function openCropModal(file, type) {
+        currentCropType = type;
+        currentFile = file;
+        const modal = document.getElementById('cropModal');
+        const cropImage = document.getElementById('cropImage');
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            cropImage.src = e.target.result;
+            modal.style.display = 'block';
+            
+            // Initialize cropper after image is loaded
+            cropImage.onload = function() {
+                if (cropper) {
+                    cropper.destroy();
+                }
+                
+              cropper = new Cropper(cropImage, {
+viewMode: 2,
+dragMode: 'move',
+autoCropArea: 1,
+restore: false,
+guides: true,
+center: true,
+highlight: false,
+cropBoxMovable: true,
+cropBoxResizable: true,
+toggleDragModeOnDblclick: false,
+});
+
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function closeCropModal() {
+        const modal = document.getElementById('cropModal');
+        modal.style.display = 'none';
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
+
+    function applyCrop() {
+        if (!cropper) return;
+
+        const canvas = cropper.getCroppedCanvas();
+
+        canvas.toBlob((blob) => {
+            const croppedFile = new File([blob], currentFile.name, {
+                type: currentFile.type,
+                lastModified: new Date().getTime()
+            });
+
+            if (currentCropType === 'cover') {  
+                // Create a new DataTransfer object
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+                
+                // Update the file input
+                const fileInput = document.getElementById('coverImageUpload');
+                fileInput.files = dataTransfer.files;
+                
+                // Show preview
+                const previewImage = document.getElementById('coverPreviewImage');
+                previewImage.src = URL.createObjectURL(croppedFile);
+                document.getElementById('coverPreviewContainer').classList.remove('hidden');
+            } else if (currentCropType === 'screenshot') {
+                const screenshotId = `new-${Date.now()}`;
+                const previewElement = document.createElement('div');
+                previewElement.className = 'screenshot-preview';
+                previewElement.dataset.id = screenshotId;
+
+                previewElement.innerHTML = `
+                    <div class="relative">
+                        <img src="${URL.createObjectURL(croppedFile)}" alt="Screenshot" class="preview-image">
+                        <button type="button" class="screenshot-remove-btn absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                                onclick="removeScreenshot('${screenshotId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+
+                // Create a hidden input for the file
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.name = 'screenshots';
+                fileInput.style.display = 'none';
+                
+                // Create a new DataTransfer object and add the file
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(croppedFile);
+                fileInput.files = dataTransfer.files;
+                
+                previewElement.appendChild(fileInput);
+
+                const addButton = document.getElementById('addScreenshotBtn');
+                document.getElementById('screenshotsContainer').insertBefore(previewElement, addButton);
+
                 updateScreenshotCount();
             }
-        }
+        }, currentFile.type, 0.9); // Added quality parameter for better image quality
 
-        function updateScreenshotCount() {
-            const currentScreenshots = document.querySelectorAll('.screenshot-preview').length;
-            const addButton = document.getElementById('addScreenshotBtn');
-            
-            if (currentScreenshots >= MAX_SCREENSHOTS) {
-                addButton.style.display = 'none';
-            } else {
-                addButton.style.display = 'flex';
-            }
-        }
-
-        // Add event listeners for remove buttons
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click event listener for cover image remove button
-            const coverRemoveBtn = document.querySelector('.cover-remove-btn');
-            if (coverRemoveBtn) {
-                coverRemoveBtn.addEventListener('click', clearCoverPreview);
-            }
-
-            // Add click event listener for screenshot remove buttons
-            document.getElementById('screenshotsContainer').addEventListener('click', function(e) {
-                const removeBtn = e.target.closest('.screenshot-remove-btn');
-                if (removeBtn) {
-                    const screenshotId = removeBtn.closest('.screenshot-preview').dataset.id;
-                    removeScreenshot(screenshotId);
-                }
-            });
-        });
-
-        // Handle drag and drop
-        function setupDragAndDrop(dropArea, fileInput) {
-            if (!dropArea) return;
-            
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, preventDefaults, false);
-            });
-            
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropArea.addEventListener(eventName, () => {
-                    dropArea.classList.add('border-blue-500');
-                }, false);
-            });
-            
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, () => {
-                    dropArea.classList.remove('border-blue-500');
-                }, false);
-            });
-            
-            dropArea.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                
-                if (files.length > 0) {
-                    const file = files[0]; // Only take the first file
-                    if (fileInput.id === 'coverImageUpload') {
-                        openCropModal(file, 'cover');
-                    } else if (fileInput.id === 'screenshotUpload') {
-                        openCropModal(file, 'screenshot');
-                    }
-                }
-            }, false);
-        }
-
-        // Initialize drag and drop
-        document.addEventListener('DOMContentLoaded', function() {
-            setupDragAndDrop(document.querySelector('.file-upload'), document.getElementById('coverImageUpload'));
-            setupDragAndDrop(document.getElementById('addScreenshotBtn'), document.getElementById('screenshotUpload'));
-        });
-
-        function initPlatformDropdown() {
-            const platformSelectBtn = document.getElementById('platformSelectBtn');
-            const platformSelectMenu = document.getElementById('platformSelectMenu');
-            const platformInput = document.getElementById('platformInput');
-            const selectedPlatform = document.getElementById('selectedPlatform');
-
-            platformSelectBtn.addEventListener('click', () => {
-                platformSelectMenu.classList.toggle('hidden');
-            });
-
-            platformSelectMenu.querySelectorAll('div').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    const value = e.target.getAttribute('data-value');
-                    const text = e.target.textContent;
-                    selectedPlatform.textContent = text;
-                    platformInput.value = value;
-                    platformSelectMenu.classList.add('hidden');
-                });
-            });
-
-            // Close dropdown if clicked outside
-            document.addEventListener('click', (e) => {
-                if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
-                    platformSelectMenu.classList.add('hidden');
-                }
-            });
-        }
-
-
-        // Initialize nav group headers if they exist
-        document.addEventListener('DOMContentLoaded', () => {
-            const navGroupHeaders = document.querySelectorAll('.nav-group-header');
-            navGroupHeaders.forEach(header => {
-                header.addEventListener('click', () => {
-                    const content = header.nextElementSibling;
-                    const toggle = header.querySelector('.nav-group-toggle');
-                    
-                    if (content && toggle) {
-                        content.classList.toggle('show');
-                        toggle.classList.toggle('rotated');
-                    }
-                });
-            });
-        });
- 
-
-        // company drag and drop
-        document.addEventListener('DOMContentLoaded', () => {
-    const platformSelectBtn = document.getElementById('platformSelectBtn');
-    const platformSelectMenu = document.getElementById('platformSelectMenu');
-    const companyInput = document.getElementById('companyformInput');
-    const selectedPlatform = document.getElementById('selectedPlatform');
-
-    // Toggle the dropdown menu
-    platformSelectBtn.addEventListener('click', () => {
-        platformSelectMenu.classList.toggle('hidden');
-    });
-
-    // Handle selecting a company from the dropdown
-    platformSelectMenu.querySelectorAll('div').forEach(item => {
-        item.addEventListener('click', (e) => {
-            const value = e.target.getAttribute('data-value');
-            const text = e.target.textContent;
-
-            // Update the selected company name and hidden input value
-            selectedPlatform.textContent = text;
-            companyInput.value = value;
-
-            // Hide the dropdown menu
-            platformSelectMenu.classList.add('hidden');
-        });
-    });
-
-    // Close the dropdown if clicked outside
-    document.addEventListener('click', (e) => {
-        if (!platformSelectBtn.contains(e.target) && !platformSelectMenu.contains(e.target)) {
-            platformSelectMenu.classList.add('hidden');
-        }
-    });
-});
-
-        function openCropModal(file, type) {
-            currentCropType = type;
-            currentFile = file;
-            const modal = document.getElementById('cropModal');
-            const cropImage = document.getElementById('cropImage');
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                cropImage.src = e.target.result;
-                modal.style.display = 'block';
-                
-                // Initialize cropper after image is loaded
-                cropImage.onload = function() {
-                    if (cropper) {
-                        cropper.destroy();
-                    }
-                    
-                  cropper = new Cropper(cropImage, {
-    viewMode: 2,
-    dragMode: 'move',
-    autoCropArea: 1,
-    restore: false,
-    guides: true,
-    center: true,
-    highlight: false,
-    cropBoxMovable: true,
-    cropBoxResizable: true,
-    toggleDragModeOnDblclick: false,
-});
-
-                };
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function closeCropModal() {
-            const modal = document.getElementById('cropModal');
-            modal.style.display = 'none';
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-        }
-
-        function applyCrop() {
-            if (!cropper) return;
-
-            const canvas = cropper.getCroppedCanvas();
-
-            canvas.toBlob((blob) => {
-                const croppedFile = new File([blob], currentFile.name, {
-                    type: currentFile.type,
-                    lastModified: new Date().getTime()
-                });
-
-                if (currentCropType === 'cover') {  
-                    // Create a new DataTransfer object
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(croppedFile);
-                    
-                    // Update the file input
-                    const fileInput = document.getElementById('coverImageUpload');
-                    fileInput.files = dataTransfer.files;
-                    
-                    // Show preview
-                    const previewImage = document.getElementById('coverPreviewImage');
-                    previewImage.src = URL.createObjectURL(croppedFile);
-                    document.getElementById('coverPreviewContainer').classList.remove('hidden');
-                } else if (currentCropType === 'screenshot') {
-                    const screenshotId = `new-${Date.now()}`;
-                    const previewElement = document.createElement('div');
-                    previewElement.className = 'screenshot-preview';
-                    previewElement.dataset.id = screenshotId;
-
-                    previewElement.innerHTML = `
-                        <div class="relative">
-                            <img src="${URL.createObjectURL(croppedFile)}" alt="Screenshot" class="preview-image">
-                            <button type="button" class="screenshot-remove-btn absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                                    onclick="removeScreenshot('${screenshotId}')">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                    `;
-
-                    // Create a hidden input for the file
-                    const fileInput = document.createElement('input');
-                    fileInput.type = 'file';
-                    fileInput.name = 'screenshots';
-                    fileInput.style.display = 'none';
-                    
-                    // Create a new DataTransfer object and add the file
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(croppedFile);
-                    fileInput.files = dataTransfer.files;
-                    
-                    previewElement.appendChild(fileInput);
-
-                    const addButton = document.getElementById('addScreenshotBtn');
-                    document.getElementById('screenshotsContainer').insertBefore(previewElement, addButton);
-
-                    updateScreenshotCount();
-                }
-            }, currentFile.type, 0.9); // Added quality parameter for better image quality
-
-            closeCropModal();
-        }
-    </script>
+        closeCropModal();
+    }
+</script>
 </body>
 </html>
+
