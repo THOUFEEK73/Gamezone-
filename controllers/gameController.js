@@ -62,8 +62,7 @@ export const postGameDetails = async (req, res) => {
     try {
         const { title, price, company, description, releaseDate, stockQuantity, status, category } = req.body;
         req.session.formData = { title, price,company, description, releaseDate, stockQuantity, status, category };
-        console.log('this is the company',company)
-        console.log('this is category',category)
+
         const categories = await Category.find();
         const game = await Game.findOne();
     
@@ -83,6 +82,9 @@ export const postGameDetails = async (req, res) => {
         }
          if(!releaseDate || releaseDate.trim()===""){
             errors.releaseDate = 'game release date is required';
+        }
+        if(!company || company.trim()===""){
+            errors.company = 'production name is required';
         }
         
         if(!stockQuantity || stockQuantity.trim()===""){

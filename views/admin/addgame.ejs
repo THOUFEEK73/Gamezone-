@@ -414,7 +414,7 @@
                                     <option value="" disabled selected>Select company</option>
                                     <% if (typeof companies !== 'undefined' && Array.isArray(companies)) { %>
                                         <% companies.forEach(function(com) { %>
-                                            <option value="<%= com._id %>"><%= com.name %></option>
+                                            <option value="<%= com._id %>" <%= data.company == com._id ? 'selected' : '' %>><%= com.name %></option>
                                         <% }); %>
                                     <% } %>
                                 </select>
@@ -431,7 +431,7 @@
                                 <option value="" disabled selected>Select Category</option>
                                 <% if (typeof category !== 'undefined' && Array.isArray(category)) { %>
                                     <% category.forEach(function(cat) { %>
-                                        <option value="<%= cat._id %>"><%= cat.categoryName %></option>
+                                        <option value="<%= cat._id %>" <%= data.category == cat._id ? 'selected' : '' %>><%= cat.categoryName %></option>
                                     <% }); %>
                                 <% } %>
                             </select>
@@ -454,7 +454,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label class="form-label">Release Date</label>
-                            <input type="date" name="releaseDate" class="form-input">
+                            <input type="date" name="releaseDate" class="form-input" value="<%= data.releaseDate ? data.releaseDate : '' %>">
                             <% if (typeof errors !== 'undefined' && errors.releaseDate) { %>
                                 <div class="error-message text-red-500 text-sm font-bold mt-1">
                                   <%= errors.releaseDate %>
@@ -463,7 +463,7 @@
                         </div>
                         <div>
                             <label class="form-label">Stock Quantity</label>
-                            <input type="number" name="stockQuantity" class="form-input">
+                            <input type="number" name="stockQuantity" class="form-input" value="<%= data.stockQuantity ? data.stockQuantity : '' %>">
                             <% if (typeof errors !== 'undefined' && errors.stockQuantity) { %>
                                 <div class="error-message text-red-500 text-sm font-bold mt-1">
                                   <%= errors.stockQuantity %>
@@ -522,6 +522,9 @@
    
 
 <script>
+
+
+
     const MAX_SCREENSHOTS = 4;
     let screenshotCount = 0;
     let cropper = null;
@@ -621,6 +624,40 @@
 
     // Add event listeners for remove buttons
     document.addEventListener('DOMContentLoaded', function() {
+
+        document.querySelectorAll('input, textarea, select').forEach(function (el) {
+        el.addEventListener('input', function () {
+            let found = false;
+            let current = el;
+            // Traverse up to 3 parent levels
+            for (let i = 0; i < 3 && current && !found; i++) {
+                let next = current.nextElementSibling;
+                while (next) {
+                    if (
+                        next.classList &&
+                        (next.classList.contains('error-message') || next.classList.contains('text-red-500'))
+                    ) {
+                        next.style.display = 'none';
+                        found = true;
+                        break;
+                    }
+                    // Stop if we hit another input, textarea, select, or form group
+                    if (
+                        next.tagName === 'INPUT' ||
+                        next.tagName === 'TEXTAREA' ||
+                        next.tagName === 'SELECT' ||
+                        next.classList.contains('form-input') ||
+                        next.classList.contains('form-label')
+                    ) {
+                        break;
+                    }
+                    next = next.nextElementSibling;
+                }
+                current = current.parentElement;
+            }
+        });
+    });
+        
         // Add click event listener for cover image remove button
         const coverRemoveBtn = document.querySelector('.cover-remove-btn');
         if (coverRemoveBtn) {

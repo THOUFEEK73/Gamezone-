@@ -12,7 +12,7 @@ export const getCompanyPage = async(req,res) =>{
 
 export const addGameCompany = async(req,res) =>{
     try{
-        console.log('triggered')
+         console.log('triggered here')
         const {companyName} = req.body;
       
        

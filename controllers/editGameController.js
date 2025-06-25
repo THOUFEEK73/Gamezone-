@@ -167,11 +167,12 @@ export const postEditGame = async (req, res) => {
             if (formGame.releaseDate) {
                 formGame.releaseDate = new Date(formGame.releaseDate);
             }
-        
+            const companies = await GameCompany.find();
             return res.render('admin/editgame', {
                 errors,
                 game: formGame,
-                category: categories
+                category: categories,
+                companies
             });
         }
 

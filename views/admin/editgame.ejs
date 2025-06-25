@@ -433,11 +433,11 @@
                         <div class="relative w-full">
                             <div>
                                 <label class="form-label">Production</label>
-                                <select name="company" class="form-input" required>
+                                <select name="company" class="form-input" >
                                     <option value="" disabled <%= !game || !game.company ? 'selected' : '' %>>Select company</option>
                                     <% if (typeof companies !== 'undefined' && Array.isArray(companies)) { %>
                                         <% companies.forEach(function(com) { %>
-                                            <option value="<%= com._id %>" <%= game && game.company && game.company._id.toString() === com._id.toString() ? 'selected' : '' %>>
+                                            <option value="<%= com._id %>" <%= game && game.company && (game.company._id?.toString() === com._id.toString() || game.company.toString() === com._id.toString()) ? 'selected' : '' %>>
                                                 <%= com.name %>
                                             </option>
                                         <% }); %>
@@ -502,9 +502,11 @@
                     <!-- Submit Buttons -->
             <div class="w-full flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
                 <button type="button"
-                  class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition">
-                  Cancel
-                </button>
+                class="inline-flex items-center justify-center px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition"
+                onclick="window.location.href='/admin/games'">
+                Go Back
+              </button>
+              
               
                 <button type="submit"
                   class="inline-flex items-center justify-center px-6 py-2.5 bg-purple-600 text-white font-medium rounded-lg hover:bg-purple-700 transition">
@@ -811,6 +813,38 @@ toggleDragModeOnDblclick: false,
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input, textarea, select').forEach(function (el) {
+        el.addEventListener('input', function () {
+            let found = false;
+            let current = el;
+            // Traverse up to 3 parent levels
+            for (let i = 0; i < 3 && current && !found; i++) {
+                let next = current.nextElementSibling;
+                while (next) {
+                    if (
+                        next.classList &&
+                        (next.classList.contains('error-message') || next.classList.contains('text-red-500'))
+                    ) {
+                        next.style.display = 'none';
+                        found = true;
+                        break;
+                    }
+                    // Stop if we hit another input, textarea, select, or form group
+                    if (
+                        next.tagName === 'INPUT' ||
+                        next.tagName === 'TEXTAREA' ||
+                        next.tagName === 'SELECT' ||
+                        next.classList.contains('form-input') ||
+                        next.classList.contains('form-label')
+                    ) {
+                        break;
+                    }
+                    next = next.nextElementSibling;
+                }
+                current = current.parentElement;
+            }
+        });
+    });
         // Add event listeners
         const coverImageUpload = document.getElementById('coverImageUpload');
         const screenshotUpload = document.getElementById('screenshotUpload');
