@@ -291,7 +291,7 @@ export const postForgotPassword = async (req,res)=>{
      user.resetPasswordExpires = Date.now() + 1000 * 60 *10;
      await user.save();
 
-     const resetLink = `http://localhost:3001/reset-password?token=${token}`;
+     const resetLink = `http://localhost:3000/reset-password?token=${token}`;
      await sendEmail(user.email,'Reset Your Password',`Click the link to reset your password:${resetLink}`);
      res.status(200).render('user/reset-password',{token});
 
