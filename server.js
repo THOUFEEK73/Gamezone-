@@ -68,6 +68,14 @@ app.use((err, req, res, next) => {
 app.use('/admin', adminRoutes);
 app.use("/", authRoutes);
 
+app.get('/',(req, res) => {
+  if(req.session.userId){
+    res.redirect('/home')
+  }else{
+    res.redirect('/login')
+  }
+})
+
 const server = http.createServer(app);
 const io = new Server(server);
 
