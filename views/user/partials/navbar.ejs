@@ -155,10 +155,8 @@
 </div>
 
 
+
 <script src="/socket.io/socket.io.js"></script>
-
-
-
   <script>
     // Mobile menu toggle
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
@@ -187,24 +185,23 @@
     });
 
  
+    const socket = io();
 
   // Get user info from EJS
-  const userId = "<%= user%>" || localStorage.getItem('guestId') || (() => {
-    console.log('user id is ',userId)
+  const userId = "<%= user && user._id ? user._id : '' %>" || localStorage.getItem('guestId') || (() => {
   const id = 'guest-' + Math.random().toString(36).substr(2, 9);
   localStorage.setItem('guestId', id);
   return id;
 })();
-  // const userName = "<%= user.name %>";
-  console.log("User ID from session:", userName);
+const userName = "<%= user && user.name ? user.name : 'Guest' %>";
+
   console.log("✅ From navbar: Guest",userId);
-  const socket = io();
 
   // Join user room as guest
   socket.emit('join', userId);
 
   // Notify server when user is online as guest
-  socket.emit('userOnline', { userId, userName });
+  socket.emit('userOnline', { userId });
 
   // Notify server when user disconnects or refreshes as guest
   window.addEventListener('beforeunload', () => {
@@ -343,8 +340,6 @@ function showChatToast(message) {
 
   setTimeout(() => toast.remove(), 4000);
 }
-
-
 
 
   </script>

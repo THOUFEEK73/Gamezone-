@@ -22,13 +22,9 @@
 </head>
 <body class="bg-white text-gray-800">
 
-  <!-- <%- include('partials/navbar', { user: user }) %> -->
+
   <%- include('partials/navbar') %>
 
-  <% if (!user) { %>
-    <script>console.error("❌ user is not defined in navbar partial")</script>
-  <% } %>
-  
 
 
   <section class="relative w-full h-[calc(100vh-64px)] overflow-hidden">
