@@ -205,7 +205,8 @@
     Object.keys(chats).forEach(userId => {
       if (!chats[userId].length) return;
       const lastMsg = chats[userId][chats[userId].length - 1];
-      const userName = lastMsg.userName || userId || "Guest";
+      const userName =  userId
+      console.log('user name is ', userName);
       const isTyping = typingUsers[userId];
       const statusDot = userStatus[userId] === 'online' ? 'bg-green-500' : 'bg-gray-400';
 

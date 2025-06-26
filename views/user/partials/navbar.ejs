@@ -26,9 +26,10 @@
         <!-- Navigation Links -->
         <div class="flex items-center space-x-6">
           <a href="/allgames" class="text-gray-600 hover:text-indigo-600 font-medium <%= page === 'allgames' ? 'underline underline-offset-4 text-indigo-600' : '' %>">Store</a>
-          <a href="javascript:void(0)" onclick="toggleChat()" class="flex items-center gap-2 text-black hover:text-indigo-400 transition duration-200">
+          <a id="supportBtn" href="javascript:void(0)" onclick="toggleChat()" class="relative flex items-center gap-2 text-black hover:text-indigo-400 transition duration-200">
             <i class="fas fa-headset"></i>
             <span>Support</span>
+            <span id="chatNotifBadge" class="hidden absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">0</span>
           </a>
           
           
@@ -188,14 +189,15 @@
  
 
   // Get user info from EJS
-  const userId = "<%= user ? user._id : '' %>" || localStorage.getItem('guestId') || (() => {
+  const userId = "<%= user%>" || localStorage.getItem('guestId') || (() => {
+    console.log('user id is ',userId)
   const id = 'guest-' + Math.random().toString(36).substr(2, 9);
   localStorage.setItem('guestId', id);
   return id;
 })();
-  const userName = "<%= user ? user.name : 'Guest' %>";
-  console.log("User ID from session:", userId);
-  console.log("✅ From navbar: Guest");
+  // const userName = "<%= user.name %>";
+  console.log("User ID from session:", userName);
+  console.log("✅ From navbar: Guest",userId);
   const socket = io();
 
   // Join user room as guest
@@ -247,28 +249,106 @@
     }
   }
 
-  // Listen for admin reply
-  socket.on('newMessage', (msg) => {
-    if (msg.sender === 'admin') {
-      const messages = document.getElementById('chatMessages');
-  const replyDiv = document.createElement('div');
-  replyDiv.className = 'self-start bg-gray-100 text-gray-700 px-3 py-2 rounded-lg shadow';
-  replyDiv.textContent = msg.message;
-  messages.appendChild(replyDiv);
-  messages.scrollTop = messages.scrollHeight;
-    }
-  });
 
-  // Toggle chat popup visibility
-  function toggleChat() {
-    const popup = document.getElementById('chatPopup');
-    if (popup) popup.classList.toggle('hidden');
+
+  // Listen for admin reply
+socket.on('newMessage', (msg) => {
+  if (msg.sender === 'admin') {
+    console.log("Admin reply received:", msg);
+    const messages = document.getElementById('chatMessages');
+    const replyDiv = document.createElement('div');
+    replyDiv.className = 'self-start bg-gray-100 text-gray-700 px-3 py-2 rounded-lg shadow';
+    replyDiv.textContent = msg.message;
+    messages.appendChild(replyDiv);
+    messages.scrollTop = messages.scrollHeight;
+
+    // Show notification badge if chat popup is hidden
+    const chatPopup = document.getElementById('chatPopup');
+    const chatNotifBadge = document.getElementById('chatNotifBadge');
+    if (chatPopup && chatNotifBadge && chatPopup.classList.contains('hidden')) {
+  // Get current count or default to 0
+  let count = parseInt(chatNotifBadge.textContent) || 0;
+  count += 1;
+  chatNotifBadge.textContent = count;
+  chatNotifBadge.classList.remove('hidden');
+  showChatToast('New message from support!');
+  const audio = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1151-pristine.mp3');
+audio.play().catch((err) => {
+  console.warn('Audio play failed:', err);
+});
+
+
+}
   }
+});
+
+// Hide badge when chat is opened
+function toggleChat() {
+  const popup = document.getElementById('chatPopup');
+  const chatNotifBadge = document.getElementById('chatNotifBadge');
+  if (popup) {
+    popup.classList.toggle('hidden');
+    // Hide notification badge when chat is opened
+    if (!popup.classList.contains('hidden') && chatNotifBadge) {
+      chatNotifBadge.classList.add('hidden');
+    }
+  }
+}
+
+
+
+function showChatToast(message) {
+  const toast = document.createElement('div');
+
+  toast.className = `
+    fixed left-1/2 transform -translate-x-1/2 
+    bg-white text-gray-800 px-4 py-3 rounded-2xl shadow-lg 
+    border border-gray-300 z-50 flex items-center space-x-3 
+    animate-toast-slide-down w-[340px] max-w-[90%]
+  `;
+  toast.style.top = '70px';
+
+  toast.innerHTML = `
+  <div class="w-10 h-10 flex items-center justify-center bg-green-500 text-white rounded-full text-lg font-semibold">
+    💬
+  </div>
+  <div class="flex-1">
+    <p class="text-sm font-semibold text-green-600">Support Team</p>
+    <p class="text-xs text-gray-700">${message}</p>
+  </div>
+`;
+
+
+  // Add animation styles
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes toastSlideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -40px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    .animate-toast-slide-down {
+      animation: toastSlideDown 0.4s ease-out;
+    }
+  `;
+  document.head.appendChild(style);
+
+  document.body.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 4000);
+}
+
+
 
 
   </script>
 
-  <!-- <script src="/js/filterFunc.js" defer></script> -->
 
 </nav>
 <!-- This padding ensures content is never overlapped by the fixed navbar -->
