@@ -2,6 +2,7 @@ import { response } from 'express';
 import Order from '../models/orderModel.js'
 import { getActiveOffers } from '../utils/offerUtils.js';
 import User from '../models/userModel.js';
+import Wallet from '../models/walletModel.js';
 
 export const getOrdersPage = async(req,res)=>{
   try{
@@ -269,39 +270,74 @@ export const getOrderDetail = async(req,res)=>{
 
 
 export const updateReturnStatus = async(req,res)=>{
-      try{
+  try{
 
-        console.log('triggering the return status update');
-       
-        const {orderId,itemId} = req.params
-        const {returnStatus} = req.body;
-        
-        console.log('this is return status:', returnStatus);
-
-        const order = await Order.findById(orderId);
-     if (!order) return res.status(404).json({ message: 'Order not found' });
+    const {orderId,itemId} = req.params
+    const {returnStatus} = req.body;
    
-      
-     const item = order.items.id(itemId);
-     if (!item) return res.status(404).json({ message: 'Item not found' });
-     
 
-        if (item.returnStatus !== 'Pending') {
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    const item = order.items.id(itemId);
+    if (!item) return res.status(404).json({ message: 'Item not found' });
+
+    if (item.returnStatus !== 'Pending') {
       return res.status(400).json({ message: 'No pending return request' });
     }
-   
+
     item.returnStatus = returnStatus;
     if(returnStatus === 'Accepted'){
-        item.status ='Returned';
+      item.status ='Returned';
+
+      // --- Process refund here ---
+      const userId = order.userId;
+      const wallet = await Wallet.findOne({ userId });
+      if (wallet) {
+        // Calculate total order item value (for coupon proration)
+        const totalOrderItemValue = order.items.reduce((sum, i) => {
+          return sum + ((i.discountedPrice || i.price) * i.quantity);
+        }, 0);
+        const itemValue = (item.discountedPrice || item.price) * item.quantity;
+        let couponDiscountShare = 0;
+        if (order.discount && totalOrderItemValue > 0) {
+          couponDiscountShare = (itemValue / totalOrderItemValue) * order.discount;
+        }
+        let refundAmount = 0;
+        if (item.discountedPrice) {
+          refundAmount = item.discountedPrice * item.quantity;
+          if (order.deliveryCharge) {
+            refundAmount += order.deliveryCharge;
+          }
+        } else if (item.price) {
+          refundAmount = item.price * item.quantity;
+        } else {
+          const product = await Game.findById(item.productId);
+          refundAmount = product ? product.price * item.quantity : 0;
+        }
+        refundAmount -= couponDiscountShare;
+        refundAmount = Math.max(0, Math.round(refundAmount));
+
+        wallet.balance += refundAmount;
+        wallet.transactions.push({
+          id: Date.now().toString(),
+          type: 'credit',
+          amount: refundAmount,
+          description: `Refund for approved return (${order.orderId})`,
+          date: new Date(),
+          status: 'completed'
+        });
+        await wallet.save();
+      }
+
     }
-    console.log('last trigger')
+    
 
     await order.save();
-     return  res.json({success:true});
+    return  res.json({success:true});
 
-      }catch(error){
-         res.status(500).render('error',{ message:'server is down please try again later'});
-      }
+  }catch(error){
+    res.status(500).render('error',{ message:'server is down please try again later'});
+  }
 }
-
 

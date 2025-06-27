@@ -74,7 +74,7 @@ app.get('/',(req, res) => {
   }else{
     res.redirect('/login')
   }
-})
+});
 
 const server = http.createServer(app);
 const io = new Server(server);

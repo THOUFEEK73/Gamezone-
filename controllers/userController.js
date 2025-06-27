@@ -753,161 +753,6 @@ export const getCartPage = async (req, res) => {
   }
 };
 
-// export const getCartPage = async (req, res) => {
-//   try {
-    
-//     const userId = req.session.userId;
-//     const cartItems = await Cart.findOne({ userId }).populate({
-//       path: "products.productId",
-//       populate: { path: "company", model: "GameCompany" },
-//     });
-
-//     if (!cartItems) {
-//       return res.render("user/cart", {
-//         page: "cart",
-//         cart: null,
-//         cartCount: 0,
-//         subTotal: 0,
-//         recommendedGames:[],
-//       });
-//     }
-
-//     const activeOffers = await getActiveOffers();
-
-
-//     let cartCount = 0;
-//     let subTotal = 0;
-//     let totalSavings = 0;
-//     let offerDiscount = 0;
-//     let total = 0;
-
-//     const productsWithOffers = cartItems.products.map(item => {
-//       const gameObj = item.productId.toObject();
-//       const itemObj = item.toObject();
-
-//       subTotal += gameObj.price * item.quantity;
-//       cartCount += item.quantity;
-//       // Find applicable offers
-//       const productOffer = activeOffers.find(offer =>
-//         offer.offerType === 'product' && 
-//         offer.items.includes(gameObj._id.toString())
-//       );
-
-//       const categoryOffer = activeOffers.find(offer =>
-//         offer.offerType === 'category' && 
-//         offer.items.includes(gameObj.category.toString())
-//       );
-
-//       // Get best offer
-//       const bestOffer = [productOffer, categoryOffer]
-//         .filter(Boolean)
-//         .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
-
-//       if (bestOffer) {
-//         itemObj.originalPrice = gameObj.price;
-//         itemObj.discountPercentage = bestOffer.discountPercentage;
-//         itemObj.price = Math.round(gameObj.price * (1 - bestOffer.discountPercentage / 100));
-//         itemObj.offerName = bestOffer.offerName;
-        
-//         totalSavings += (gameObj.price - itemObj.price) * item.quantity;
-//       } else {
-//         itemObj.price = gameObj.price;
-//       }
-
-  
-
-//       return itemObj;
-//     });
-//     // if (cartItems && cartItems.products.length > 0) {
-//     //   cartCount = cartItems.products.reduce(
-//     //     (total, item) => total + item.quantity,
-//     //     0
-//     //   );
-//     // }
-
-
-
-//     // cartItems.products.forEach((prd) => {
-//     //   const price = Number(prd.price);
-//     //   const quantity = Number(prd.quantity);
-
-//     //   subTotal += price * quantity;
-//     // });
-
-//     cartItems.products = productsWithOffers;
-
-//     total = Math.max(subTotal - totalSavings);
-
-//     const categories = cartItems.products
-//   .map(item => item.productId.category)
-//   .filter(Boolean);
-//     const cartProductIds = cartItems.products.map(item => item.productId._id);
-  
-//     let recommendations = [];
-//     if (categories.length > 0) {
-//       recommendations = await Game.find({
-//         category: { $in: categories },
-//         _id: { $nin: cartProductIds },
-//         status: 'active',
-//       }).limit(4);
-//     } else {
-//       recommendations = await Game.find({
-//         _id: { $nin: cartProductIds },
-//         status: 'active',
-//       }).limit(4);
-//     }
-
-//    // Use your existing offer fetching logic
-
-// const recommendationsWithOffers = recommendations.map(game => {
-//   let originalPrice = game.price;
-//   let discountPercentage = 0;
-//   let offerName = null;
-//   let discountedPrice = originalPrice;
-
-//   // Find best offer for this game
-//   const productOffer = activeOffers.find(offer =>
-//     offer.offerType === 'product' && offer.items.includes(game._id.toString())
-//   );
-//   const categoryOffer = activeOffers.find(offer =>
-//     offer.offerType === 'category' && offer.items.includes(game.category.toString())
-//   );
-//   const bestOffer = [productOffer, categoryOffer]
-//     .filter(Boolean)
-//     .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
-
-//   if (bestOffer) {
-//     discountPercentage = bestOffer.discountPercentage;
-//     offerName = bestOffer.offerName;
-//     discountedPrice = Math.round(originalPrice * (1 - discountPercentage / 100));
-//   }
-
-//   return {
-//     ...game.toObject(),
-//     originalPrice,
-//     discountPercentage,
-//     offerName,
-//     price: discountedPrice,
-//   };
-// });
-
-//     res.render("user/cart", {
-//       page: "cart",
-//       cart: cartItems,
-//       cartCount,
-//       subTotal,
-//       total,
-//       user:userId,
-//       totalSavings,
-//       recommendations:recommendationsWithOffers,
-//     });
-//   } catch (error) {
-//     console.error("Error while rendering cart", error);
-//     res
-//       .status(500)
-//       .render("error", { message: "server down please Try after Some times" });
-//   }
-// };
 
 export const postAddCart = async (req, res) => {
   try {
@@ -995,8 +840,8 @@ export const removeCart = async (req, res) => {
       success: true,
       cartCount,
       subTotal,
+      totalSavings,
       total,
-      // Optionally: add total, totalSavings, etc.
     });
   } catch (error) {
     console.error("Error while removing Cart", error);
@@ -1108,6 +953,7 @@ export const updateQuantity = async (req, res) => {
       totalSavings,
       couponDiscount,
       cartCount,
+      total,
       deliveryCharge,
       grandTotal,
       stockQuantity:game.stockQuantity,
@@ -1356,7 +1202,6 @@ export const postPlaceCODOrder = async (req, res) => {
 
     const grandTotal = totalAmount + deliveryCharge;
 
-    console.log('This is the grand total',grandTotal);
 
     // Reduce stock
     for (const item of productsWithOffers) {
@@ -2098,6 +1943,15 @@ export const postCancelStatus = async(req,res)=>{
       const wallet = await Wallet.findOne({ userId });
       if (wallet) {
        
+    
+        const totalOrderItemValue = order.items.reduce((sum, i) => {
+          return sum + ((i.discountedPrice || i.price) * i.quantity);
+        }, 0);
+        const itemValue = (item.discountedPrice || item.price) * item.quantity;
+        let couponDiscountShare = 0;
+        if (order.discount && totalOrderItemValue > 0) {
+          couponDiscountShare = (itemValue / totalOrderItemValue) * order.discount;
+        }
         let refundAmount = 0;
 
         if (item.discountedPrice) {
@@ -2115,6 +1969,9 @@ export const postCancelStatus = async(req,res)=>{
           const product = await Game.findById(item.productId);
           refundAmount = product ? product.price * item.quantity : 0;
         }
+
+        refundAmount -= couponDiscountShare;
+        refundAmount = Math.max(0, Math.round(refundAmount));
 
         wallet.balance += refundAmount;
         wallet.transactions.push({
@@ -2151,10 +2008,12 @@ export const postCancelStatus = async(req,res)=>{
   }
 }
 
+
+
 export const postReturnStatus = async(req,res)=>{
   try{
     const {orderId,itemId,reason} = req.body;
-    console.log(reason);
+  
     const order = await Order.findById(orderId);
     if(!order)
       return res.json({ success: false, error: 'Order not found' });
@@ -2171,35 +2030,6 @@ export const postReturnStatus = async(req,res)=>{
      item.returnReason = reason;
     
      await order.save();
-
-     const userId = order.userId;
-     const wallet = await Wallet.findOne({ userId });
-     if(wallet){
-       let refundAmount = 0;
-       if(item.discountedPrice){
-         refundAmount = item.discountedPrice * item.quantity;
-         if(order.deliveryCharge){
-          refundAmount += order.deliveryCharge;
-        }
-       }else if(item.price){
-        refundAmount = item.price * item.quantity;
-       }else{
-        const product = await Game.findById(item.productId);
-        refundAmount = product ? product.price * item.quantity : 0;
-       }
-
-       wallet.balance +=refundAmount;
-       wallet.transactions.push({
-        id: Date.now().toString(),
-        type: 'credit',
-        amount: refundAmount,
-        description: `Refund for returned order item (${order.orderId})`,
-        date: new Date(),
-        status: 'completed'
-       })
-        await wallet.save();
-     }
-
 
     res.json({success:true});
 

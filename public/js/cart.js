@@ -207,7 +207,7 @@ if (warningElem) {
     
       // Update cart grand total
       const cartTotalElem = document.getElementById('cartTotal');
-      if (cartTotalElem) cartTotalElem.textContent = `₹ ${result.grandTotal.toLocaleString('en-IN')}`;
+      if (cartTotalElem) cartTotalElem.textContent = `₹ ${result.total.toLocaleString('en-IN')}`;
     
       // Optionally update total savings
       const savingsElem = document.getElementById('totalSavings');
