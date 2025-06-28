@@ -16,7 +16,7 @@ export const getSalesReportPage = async (req, res) => {
 
     const filter = req.query.filter;
 
-    console.log('Filter:', filter);
+   
     let dateFilter = {};
     const now = new Date();
 

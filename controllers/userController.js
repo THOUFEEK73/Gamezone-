@@ -826,12 +826,29 @@ export const removeCart = async (req, res) => {
     let cartCount = 0, subTotal = 0, totalSavings = 0, total = 0;
 
     if (cart && cart.products.length > 0) {
-      // If you have offers, recalculate here as in getCartPage
+      const activeOffers = await getActiveOffers();
       cart.products.forEach(item => {
-        const price = item.productId.price || item.price;
+        const gameObj = item.productId.toObject ? item.productId.toObject() : item.productId;
         cartCount += item.quantity;
-        subTotal += price * item.quantity;
-        // Optionally: add offer logic for totalSavings
+        subTotal += gameObj.price * item.quantity;
+    
+        // Find applicable offers
+        const productOffer = activeOffers.find(offer =>
+          offer.offerType === 'product' && offer.items.includes(gameObj._id.toString())
+        );
+        const categoryOffer = activeOffers.find(offer =>
+          offer.offerType === 'category' && offer.items.includes(gameObj.category?.toString())
+        );
+        const bestOffer = [productOffer, categoryOffer]
+          .filter(Boolean)
+          .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+    
+        let itemPrice = gameObj.price;
+        if (bestOffer) {
+          itemPrice = Math.round(gameObj.price * (1 - bestOffer.discountPercentage / 100));
+          totalSavings += (gameObj.price - itemPrice) * item.quantity;
+        }
+        // If no offer, itemPrice is already gameObj.price
       });
       total = Math.max(subTotal - totalSavings, 0);
     }
