@@ -53,7 +53,28 @@ passport.use(new GoogleStrategy({
             await existingUser.save();
             return done(null, existingUser);
         }
-      
+
+        const email = profile.emails && profile.emails[0] && profile.emails[0].value;
+
+        if(!email){
+            throw new Error('No email provided from Google profile');
+        }
+             
+        let emailUser = await User.findOne({email});
+        if (emailUser) {
+            // If user exists and has a password, do NOT link Google account
+            if (emailUser.password && emailUser.password !== '') {
+                // Prevent login, show message
+                return done(null, false, { message: "An account with this email already exists. Please log in with your password." });
+            } else {
+                // User exists, but is Google-only (no password), link Google ID
+                emailUser.googleId = profile.id;
+                emailUser.lastLogin = new Date();
+                await emailUser.save();
+                return done(null, emailUser);
+            }
+        }
+        console.log('Creating new user from Google profile');
         if (!profile.emails || !profile.emails[0] || !profile.emails[0].value) {
             throw new Error('No email provided from Google');
         }
