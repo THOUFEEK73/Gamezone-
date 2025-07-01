@@ -2328,7 +2328,7 @@ export const postSubscribeEmail = async (req, res) => {
       Be sure to check your inbox regularly so you don't miss out!
     </p>
 
-    <a href="http://localhost:3000/home" style="display: inline-block; margin-top: 25px; padding: 12px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px;">
+    <a href="http://gamesone.shop/home" style="display: inline-block; margin-top: 25px; padding: 12px 20px; background-color: #6366f1; color: white; text-decoration: none; border-radius: 6px;">
       🚀 Visit GameZone Now
     </a>
 
