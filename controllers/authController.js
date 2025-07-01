@@ -438,10 +438,16 @@ export const googleCallback = (req, res, next) => {
             return res.redirect('/login?error=auth_error');
         }
 
+        // if (!user) {
+        //     console.log('User not found during Google callback');
+        //     return res.redirect('/login?error=auth_failed');
+        // }
         if (!user) {
-            console.log('User not found during Google callback');
-            return res.redirect('/login?error=auth_failed');
-        }
+          // info.message contains the custom message from the strategy
+          const errorMsg = info && info.message ? info.message : 'Google login failed.';
+          req.session.loginError = errorMsg;
+          return res.redirect('/login');
+      }
 
         try {
             // Log in the user

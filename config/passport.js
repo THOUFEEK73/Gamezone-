@@ -62,11 +62,13 @@ passport.use(new GoogleStrategy({
              
         let emailUser = await User.findOne({email});
         if (emailUser) {
+            console.log('user is  exist this is working')
             // If user exists and has a password, do NOT link Google account
             if (emailUser.password && emailUser.password !== '') {
                 // Prevent login, show message
                 return done(null, false, { message: "An account with this email already exists. Please log in with your password." });
             } else {
+                console.log('Linking Google account to existing user:', emailUser.id);
                 // User exists, but is Google-only (no password), link Google ID
                 emailUser.googleId = profile.id;
                 emailUser.lastLogin = new Date();
