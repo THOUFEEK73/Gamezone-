@@ -233,6 +233,12 @@ export const postLogin = async (req, res) => {
       req.session.loginError = "User not found";
       return res.redirect('/login');
     }
+       
+     if(!user.password || user.password ===''){
+      req.session.loginError = "Please use 'Sign in with Google' for this account.";
+      return res.redirect('/login');
+     }
+    
 
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) {
