@@ -375,8 +375,22 @@ function updateCartCount(change = 1) {
   }
 }
 
-
-
+function buyNow(gameId) {
+  fetch('/buy-now', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId })
+  })
+  .then(res => res.json())
+  .then(result => {
+      if (result.success && result.redirectUrl) {
+          window.location.href = result.redirectUrl;
+      } else if (result.error) {
+          alert(result.error);
+      }
+  })
+  .catch(() => alert('Something went wrong!'));
+}
 
 async function addToCart(productId) {
   try {

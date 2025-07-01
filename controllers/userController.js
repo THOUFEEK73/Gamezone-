@@ -616,6 +616,31 @@ export const removeWishlist = async (req,res)=>{
 }
 
 
+export const buyNow = async(req,res)=>{
+  try{
+    console.log('heloo')
+    const userId = req.session.userId;
+    const {gameId} = req.body;
+
+    if( !userId || !gameId){
+      return res.status(400).json({success:false, error:'Invalid request'});
+    }
+
+    const game = await Game.findById(gameId).populate('company');
+    if (!game || game.status !== 'active' || game.stockQuantity < 1) {
+      return res.json({ success: false, error: 'Game not available.' });
+    }
+    req.session.buyNow = {
+      gameId: game._id.toString(),
+      quantity: 1
+    };
+    res.json({ success: true, redirectUrl: '/checkout?buyNow=1' });
+
+  }catch(error){
+    console.error('Failed to start Buy Now process', error);
+    res.status(500).json({ success: false, error: "Server error. Please try again." });
+  }
+}
 export const getCartPage = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -991,90 +1016,93 @@ export const proceedToCheckout = (req, res) => {
   req.session.canAccessCheckout = true;
   res.redirect("/checkout");
 };
-
 export const getCheckoutPage = async (req, res) => {
   try {
-    // if(!req.session.canAccessCheckout){
-    //   console.log('triggering......')
-    //   return res.redirect('/cart');
-    // }
-
     const appliedCoupon = req.query.coupon || null;
-
-   
-
     req.session.canAccessCheckout = false;
 
     const userId = req.session.userId;
-    const cartItems = await Cart.findOne({ userId }).populate({
-      path: "products.productId",
-      populate: { path: "company", model: "GameCompany" },
-    });
+    const isBuyNow = req.session.buyNow && req.query.buyNow == 1;
+
+    let cartItems;
+    if (isBuyNow) {
+      // Buy Now flow: create a pseudo-cart with just this game
+      const { gameId, quantity } = req.session.buyNow;
+      const game = await Game.findById(gameId).populate('company');
+      if (!game || game.stockQuantity < 1) {
+        req.session.buyNow = null;
+        return res.redirect('/cart');
+      }
+      cartItems = {
+        products: [{
+          productId: game,
+          quantity: quantity || 1
+        }]
+      };
+    } else {
+      // Normal cart flow
+      cartItems = await Cart.findOne({ userId }).populate({
+        path: "products.productId",
+        populate: { path: "company", model: "GameCompany" },
+      });
+    }
+
     const wallet = await Wallet.findOne({ userId }).lean();
     const address = await Address.find({ userId });
     const coupons = await Coupon.find({ isActive: true, isExpired: false }).sort({ createdAt: -1 });
 
-    if (!cartItems || cartItems.products.length === 0) {
+    // If cart is empty, redirect to cart
+    if (!cartItems || !cartItems.products || cartItems.products.length === 0) {
       return res.redirect("/cart");
     }
 
     const activeOffers = await getActiveOffers();
 
-  
     let cartCount = 0;
     let subTotal = 0;
     let totalSavings = 0;
     let total = 0;
 
-    const productsWithOffers = cartItems.products.map((item)=>{
-          const gameObj =item.productId.toObject();
-          const itemObj = item.toObject();
+    // Attach offer info to each cart item
+    const productsWithOffers = cartItems.products.map(item => {
+      const gameObj = item.productId.toObject ? item.productId.toObject() : item.productId;
+      const itemObj = item.toObject ? item.toObject() : item;
 
+      // Find applicable offers
+      const productOffer = activeOffers.find(offer =>
+        offer.offerType === 'product' && offer.items.includes(gameObj._id.toString())
+      );
+      const categoryOffer = activeOffers.find(offer =>
+        offer.offerType === 'category' && offer.items.includes(gameObj.category?.toString())
+      );
 
-          const productOffer = activeOffers.find(offer =>
-            offer.offerType === 'product' && 
-            offer.items.includes(gameObj._id.toString())
-          );
-    
-          const categoryOffer = activeOffers.find(offer =>
-            offer.offerType === 'category' && 
-            offer.items.includes(gameObj.category._id.toString())
-          );
-
-          const bestOffer = [productOffer, categoryOffer]
+      // Get best offer
+      const bestOffer = [productOffer, categoryOffer]
         .filter(Boolean)
         .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
 
-        if (bestOffer) {
-          itemObj.originalPrice = gameObj.price;
-          itemObj.discountPercentage = bestOffer.discountPercentage;
-          itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
-          itemObj.offerName = bestOffer.offerName;
-          const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
-          totalSavings += itemSavings;
-        }
+      if (bestOffer) {
+        itemObj.originalPrice = gameObj.price;
+        itemObj.discountPercentage = bestOffer.discountPercentage;
+        itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+        itemObj.offerName = bestOffer.offerName;
+        const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+        totalSavings += itemSavings;
+      } else {
+        itemObj.price = gameObj.price;
+      }
 
-        subTotal += gameObj.price * item.quantity;
-        cartCount +=item.quantity;
+      subTotal += gameObj.price * item.quantity;
+      cartCount += item.quantity;
 
-       
-        return itemObj;
-    
-    })
+      return itemObj;
+    });
 
     cartItems.products = productsWithOffers;
-    
 
-    if (cartItems && cartItems.products.length > 0) {
-      cartCount = cartItems.products.reduce(
-        (total, item) => total + item.quantity,
-        0
-      );
-    }
-
-    let couponDiscount = 0
+    // Coupon logic
+    let couponDiscount = 0;
     let appliedCouponDoc = null;
-
     if (appliedCoupon) {
       appliedCouponDoc = await Coupon.findOne({ code: appliedCoupon, isActive: true, isExpired: false });
       if (appliedCouponDoc && (subTotal - totalSavings) >= appliedCouponDoc.minOrderAmount) {
@@ -1086,24 +1114,22 @@ export const getCheckoutPage = async (req, res) => {
       }
     }
 
-     total = Math.max(subTotal - totalSavings - couponDiscount,0);
-// total = Math.max(subTotal - totalSavings, 0);
-    // cartItems.products.forEach((prd) => {
-    //   subTotal = prd.price * prd.quantity;
-    // });
+    total = Math.max(subTotal - totalSavings - couponDiscount, 0);
 
+    // Delivery charge logic
     const DELIVERY_CHARGE = 100;
     let deliveryCharge = 0;
-
-    if(subTotal< 1000){
-      deliveryCharge = DELIVERY_CHARGE
-    
+    if (subTotal < 1000) {
+      deliveryCharge = DELIVERY_CHARGE;
     }
 
     const grandTotal = total + deliveryCharge;
+
+    // Filter out used coupons
     const usedCoupons = await Coupon.find({ usedBy: userId }).select('code -_id');
-const usedCouponCodes = usedCoupons.map(c => c.code);
-const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coupon.code));
+    const usedCouponCodes = usedCoupons.map(c => c.code);
+    const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coupon.code));
+
     res.render("user/checkout", {
       page: "checkout",
       cartCount,
@@ -1116,7 +1142,7 @@ const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coup
       deliveryCharge,
       appliedCoupon,
       couponDiscount,
-      coupons:availableCoupons,
+      coupons: availableCoupons,
       wallet,
       usedCouponCodes
     });
@@ -1127,6 +1153,142 @@ const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coup
       .render("error", { message: "server down please try after some times" });
   }
 };
+// export const getCheckoutPage = async (req, res) => {
+//   try {
+//     // if(!req.session.canAccessCheckout){
+//     //   console.log('triggering......')
+//     //   return res.redirect('/cart');
+//     // }
+
+//     const appliedCoupon = req.query.coupon || null;
+
+   
+
+//     req.session.canAccessCheckout = false;
+
+//     const userId = req.session.userId;
+    
+//     const cartItems = await Cart.findOne({ userId }).populate({
+//       path: "products.productId",
+//       populate: { path: "company", model: "GameCompany" },
+//     });
+//     const wallet = await Wallet.findOne({ userId }).lean();
+//     const address = await Address.find({ userId });
+//     const coupons = await Coupon.find({ isActive: true, isExpired: false }).sort({ createdAt: -1 });
+
+//     if (!cartItems || cartItems.products.length === 0) {
+//       return res.redirect("/cart");
+//     }
+
+//     const activeOffers = await getActiveOffers();
+
+  
+//     let cartCount = 0;
+//     let subTotal = 0;
+//     let totalSavings = 0;
+//     let total = 0;
+
+//     const productsWithOffers = cartItems.products.map((item)=>{
+//           const gameObj =item.productId.toObject();
+//           const itemObj = item.toObject();
+
+
+//           const productOffer = activeOffers.find(offer =>
+//             offer.offerType === 'product' && 
+//             offer.items.includes(gameObj._id.toString())
+//           );
+    
+//           const categoryOffer = activeOffers.find(offer =>
+//             offer.offerType === 'category' && 
+//             offer.items.includes(gameObj.category._id.toString())
+//           );
+
+//           const bestOffer = [productOffer, categoryOffer]
+//         .filter(Boolean)
+//         .sort((a, b) => b.discountPercentage - a.discountPercentage)[0];
+
+//         if (bestOffer) {
+//           itemObj.originalPrice = gameObj.price;
+//           itemObj.discountPercentage = bestOffer.discountPercentage;
+//           itemObj.price = calculateDiscountedPrice(gameObj.price, bestOffer.discountPercentage);
+//           itemObj.offerName = bestOffer.offerName;
+//           const itemSavings = (gameObj.price - itemObj.price) * item.quantity;
+//           totalSavings += itemSavings;
+//         }
+
+//         subTotal += gameObj.price * item.quantity;
+//         cartCount +=item.quantity;
+
+       
+//         return itemObj;
+    
+//     })
+
+//     cartItems.products = productsWithOffers;
+    
+
+//     if (cartItems && cartItems.products.length > 0) {
+//       cartCount = cartItems.products.reduce(
+//         (total, item) => total + item.quantity,
+//         0
+//       );
+//     }
+
+//     let couponDiscount = 0
+//     let appliedCouponDoc = null;
+
+//     if (appliedCoupon) {
+//       appliedCouponDoc = await Coupon.findOne({ code: appliedCoupon, isActive: true, isExpired: false });
+//       if (appliedCouponDoc && (subTotal - totalSavings) >= appliedCouponDoc.minOrderAmount) {
+//         if (appliedCouponDoc.discountType === 'percentage') {
+//           couponDiscount = Math.floor((subTotal - totalSavings) * (appliedCouponDoc.discountValue / 100));
+//         } else {
+//           couponDiscount = appliedCouponDoc.discountValue;
+//         }
+//       }
+//     }
+
+//      total = Math.max(subTotal - totalSavings - couponDiscount,0);
+// // total = Math.max(subTotal - totalSavings, 0);
+//     // cartItems.products.forEach((prd) => {
+//     //   subTotal = prd.price * prd.quantity;
+//     // });
+
+//     const DELIVERY_CHARGE = 100;
+//     let deliveryCharge = 0;
+
+//     if(subTotal< 1000){
+//       deliveryCharge = DELIVERY_CHARGE
+    
+//     }
+
+//     const grandTotal = total + deliveryCharge;
+//     const usedCoupons = await Coupon.find({ usedBy: userId }).select('code -_id');
+// const usedCouponCodes = usedCoupons.map(c => c.code);
+// const availableCoupons = coupons.filter(coupon => !usedCouponCodes.includes(coupon.code));
+//     res.render("user/checkout", {
+//       page: "checkout",
+//       cartCount,
+//       cart: cartItems,
+//       subTotal,
+//       address,
+//       totalSavings,
+//       total,
+//       grandTotal,
+//       deliveryCharge,
+//       appliedCoupon,
+//       couponDiscount,
+//       coupons:availableCoupons,
+//       wallet,
+//       usedCouponCodes
+//     });
+//   } catch (error) {
+//     console.error("Error while fetching checkout Page", error);
+//     res
+//       .status(500)
+//       .render("error", { message: "server down please try after some times" });
+//   }
+// };
 
 // place order
 

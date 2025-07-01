@@ -33,6 +33,7 @@ import {
     getWishListPage,
     getCartPage,
     postAddCart,
+    buyNow,
     removeCart,
     updateQuantity,
     // getCartPartial,
@@ -113,10 +114,14 @@ router.post('/deleteAddress/:id', deleteAddress);
 router.post('/setDefaultAddress/:id', postSetDefault);
 router.post('/editAddress/:id', postEditAddress);
 
+// Buy Now Route
+router.post('/buy-now', isAuthenticated, buyNow);
+
 // Wishlist Routes
 router.get('/wishlist', noCache, isAuthenticated, getWishListPage);
 router.post('/wishlist/toggle', toggleWishlist);
 router.delete('/wishlist/remove/:id', removeWishlist);
+
 
 // Cart Routes
 router.get('/cart', noCache, isAuthenticated, getCartPage);
