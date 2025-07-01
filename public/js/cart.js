@@ -94,6 +94,9 @@ function showCartFlash(type, message) {
 
 async function removeItem(itemId, button) {
   try {
+    const confirmed = await showCustomConfirm("Remove Item", "Are you sure you want to remove this item from your cart?");
+
+    if (!confirmed) return;
     const response = await fetch(`/cart/remove/${itemId}`, {
       method: "DELETE",
     });
@@ -158,6 +161,39 @@ async function removeItem(itemId, button) {
   }
 }
 
+function showCustomConfirm(title = "Are you sure?", message = "Confirm action.") {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('custom-confirm');
+    const titleElem = document.getElementById('confirm-title');
+    const messageElem = document.getElementById('confirm-message');
+    const yesBtn = document.getElementById('confirm-yes');
+    const noBtn = document.getElementById('confirm-no');
+
+    titleElem.textContent = title;
+    messageElem.textContent = message;
+
+    modal.classList.remove('hidden');
+
+    const cleanup = () => {
+      modal.classList.add('hidden');
+      yesBtn.removeEventListener('click', onYes);
+      noBtn.removeEventListener('click', onNo);
+    };
+
+    const onYes = () => {
+      cleanup();
+      resolve(true);
+    };
+
+    const onNo = () => {
+      cleanup();
+      resolve(false);
+    };
+
+    yesBtn.addEventListener('click', onYes);
+    noBtn.addEventListener('click', onNo);
+  });
+}
 
 
 async function updateQuantity(itemId, action) {
