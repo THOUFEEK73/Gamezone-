@@ -5,7 +5,8 @@
   <title>GameZone - Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://kit.fontawesome.com/your-code.js" crossorigin="anonymous"></script>
+  <script src="https://kit.fontawesome.com/abcdef1234.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gradient-to-b from-black via-zinc-900 to-black font-sans">
   <div class="min-h-screen flex items-center justify-center px-4">
@@ -54,7 +55,7 @@
         <!-- Password -->
         <div class="group">
           <div class="flex justify-between items-center mb-2">
-            <label for="password" class="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">
+            <label for="password" class="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors ">
               Password
             </label>
             <a href="/forgot-password" 
@@ -67,6 +68,7 @@
               type="password" 
               id="password" 
               name="password" 
+              autocomplete="off"
                
               class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-10 pr-4 py-2.5 
                      focus:ring-2 focus:ring-white/50 focus:border-transparent 
@@ -74,11 +76,11 @@
               placeholder="Enter your password"
             >
             <i class="fas fa-lock absolute left-3 top-3 text-zinc-500"></i>
-            <button type="button" 
-                    onclick="togglePassword()"
-                    class="absolute right-3 top-3 text-zinc-500 hover:text-white transition-colors">
-              <i class="fas fa-eye" id="togglePassword"></i>
-            </button>
+            <i
+            class="fas fa-eye absolute right-3 top-2.5 text-zinc-500 text-sm cursor-pointer"
+            onclick="togglePassword(this)"
+            id="toggleIcon"
+          ></i>
           </div>
         </div>
 
@@ -132,20 +134,18 @@
   </div>
 
   <script>
-    function togglePassword() {
+    function togglePassword(icon) {
       const password = document.getElementById('password');
-      const toggleIcon = document.getElementById('togglePassword');
-      
       if (password.type === 'password') {
         password.type = 'text';
-        toggleIcon.classList.remove('fa-eye');
-        toggleIcon.classList.add('fa-eye-slash');
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
       } else {
         password.type = 'password';
-        toggleIcon.classList.remove('fa-eye-slash');
-        toggleIcon.classList.add('fa-eye');
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
       }
     }
-  </script>
+    </script>
 </body>
 </html>

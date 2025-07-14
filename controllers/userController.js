@@ -822,9 +822,10 @@ export const postAddCart = async (req, res) => {
         cart.products.push({
           productId,
           quantity: 1,
-          name: game.name,
+          name: game.title,
           price: game.price,
         });
+        console.log('Product added to cart');
       }
     }
 
@@ -1418,6 +1419,8 @@ export const postPlaceCODOrder = async (req, res) => {
     : 0,
       status: 'Pending',
     }));
+
+    console.log("Order items:", orderItems);
     const totalOfferDiscount = orderItems.reduce((sum, item) => sum + (item.offerDiscount || 0), 0);
     // Create order
     const order = new Order({
