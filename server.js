@@ -11,10 +11,12 @@ import http from 'http';
 import ChatMessage from './models/chatMessageModel.js';
 import {Server } from 'socket.io';
 import './utils/offerExpiryJob.js'
+import morgan from "morgan";
 
 
 dotenv.config();
 const app = express();
+app.use(morgan('dev'));
 
 // Body parsing middleware
 app.use(express.json());

@@ -164,9 +164,7 @@ export const verifyOTP = async (req, res) => {
       isVerified: true
     });
 
-    console.log('success');
-    
-
+  
     await Wallet.create({
       userId:newUser._id,
       balance:0,
@@ -174,7 +172,7 @@ export const verifyOTP = async (req, res) => {
       transactions:[],
     })
 
-    console.log('final triggering')
+
 
     delete req.session.tempUser;
     await OTP.deleteOne({ email });
@@ -427,59 +425,62 @@ export const googleAuth = (req, res, next) => {
 
 // Google Callback
 export const googleCallback = (req, res, next) => {
-    console.log('Google Callback triggered');
+  console.log('Google Callback triggered');
 
-    passport.authenticate('google', { 
-        failureRedirect: '/login', 
-        failureFlash: true 
-    }, async (err, user, info) => {
-        if (err) {
-            console.error('Auth error:', err);
-            return res.redirect('/login?error=auth_error');
-        }
+  passport.authenticate('google', { 
+      failureRedirect: '/login', 
+      failureFlash: true 
+  }, async (err, user, info) => {
+      if (err) {
+          console.error('Auth error:', err);
+          return res.redirect('/login?error=auth_error');
+      }
 
-        // if (!user) {
-        //     console.log('User not found during Google callback');
-        //     return res.redirect('/login?error=auth_failed');
-        // }
-        if (!user) {
-          // info.message contains the custom message from the strategy
+      if (!user) {
           const errorMsg = info && info.message ? info.message : 'Google login failed.';
           req.session.loginError = errorMsg;
           return res.redirect('/login');
       }
 
-        try {
-            // Log in the user
-            req.login(user, async (err) => {
-                if (err) {
-                    console.error('Login error:', err);
-                    return res.redirect('/login?error=login_failed');
-                }
+      try {
+          // Log in the user
+          req.login(user, async (err) => {
+              if (err) {
+                  console.error('Login error:', err);
+                  return res.redirect('/login?error=login_failed');
+              }
 
-                // Set session variables
-                req.session.userId = user._id;
-                req.session.user = {
-                    name: user.name,
-                    email: user.email,
-                };
+              // Create wallet if not exists
+              const existingWallet = await Wallet.findOne({ userId: user._id });
+              if (!existingWallet) {
+                  await Wallet.create({
+                      userId: user._id,
+                      balance: 0,
+                      currency: 'INR',
+                      transactions: [],
+                  });
+              }
 
-                // Save session
-                req.session.save((err) => {
-                    if (err) {
-                        console.error('Session save error:', err);
-                        return res.redirect('/login?error=session_error');
-                    }
-                    
-                    // Redirect to home page
-                    return res.redirect('/home');
-                });
-            });
-        } catch (error) {
-            console.error('Session/login error:', error);
-            return res.redirect('/login?error=session_error');
-        }
-    })(req, res, next);
+              // Set session variables
+              req.session.userId = user._id;
+              req.session.user = {
+                  name: user.name,
+                  email: user.email,
+              };
+
+              req.session.save((err) => {
+                  if (err) {
+                      console.error('Session save error:', err);
+                      return res.redirect('/login?error=session_error');
+                  }
+                  return res.redirect('/home');
+              });
+          });
+      } catch (error) {
+          console.error('Session/login error:', error);
+          return res.redirect('/login?error=session_error');
+      }
+  })(req, res, next);
 };
 
 // Logout (Passport)
