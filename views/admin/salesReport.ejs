@@ -157,13 +157,13 @@
     let toDate = '';
     
     async function fetchOrders(page = 1) {
-      let url = `/admin/salesReport?page=${page}`;
-      if (currentFilter) url += `&filter=${currentFilter}`;
-      if (currentFilter === 'custom' && fromDate && toDate) {
-        url += `&from=${fromDate}&to=${toDate}`;
-      }
-      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) {
+  let url = `/admin/salesReport?page=${page}`;
+  if (currentFilter) url += `&filter=${currentFilter}`;
+  if (currentFilter === 'custom' && fromDate && toDate) {
+    url += `&from=${fromDate}&to=${toDate}`;
+  }
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!res.ok) {
     const errorData = await res.json();
     if (errorData.errors) {
       Object.values(errorData.errors).forEach(msg => {
@@ -174,60 +174,63 @@
     }
     return;
   }
-      const data = await res.json();
+  const data = await res.json();
 
-
-    
-      // Render orders
-      const tbody = document.getElementById('orders-tbody');
-      if (!data.allOrders.length) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td></tr>`;
-      } else {
-        tbody.innerHTML = data.allOrders.map(order => {
-  let couponHtml = '';
-  const hasCoupon = order.coupon && order.discount && order.discount > 0;
-  const hasOffer = order.offerDiscount && order.offerDiscount > 0;
-
-  if (hasCoupon && hasOffer) {
-    couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>
-      <span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>
-      <span class="ml-2 text-yellow-600 font-bold">| Offer -₹${order.offerDiscount.toLocaleString('en-IN')}</span>`;
-  } else if (hasCoupon) {
-    couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>
-      <span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>`;
-  } else if (hasOffer) {
-    couponHtml = `<span class="text-yellow-600 font-bold">Offer -₹${order.offerDiscount.toLocaleString('en-IN')}</span>`;
+  // Render orders
+  const tbody = document.getElementById('orders-tbody');
+  if (!data.allOrders.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-gray-400">No orders found.</td></tr>`;
   } else {
-    couponHtml = 'No Discount';
+    tbody.innerHTML = data.allOrders.map(order => {
+      let couponHtml = '';
+      const hasCoupon = order.coupon && order.discount && order.discount > 0;
+      const hasOffer = order.offerDiscount && order.offerDiscount > 0;
+
+      if (hasCoupon && hasOffer) {
+        couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>
+          <span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>
+          <span class="ml-2 text-yellow-600 font-bold">| Offer -₹${order.offerDiscount.toLocaleString('en-IN')}</span>`;
+      } else if (hasCoupon) {
+        couponHtml = `<span class="font-semibold text-indigo-600">${order.coupon}</span>
+          <span class="ml-2 text-green-600 font-bold">-₹${order.discount.toLocaleString('en-IN')}</span>`;
+      } else if (hasOffer) {
+        couponHtml = `<span class="text-yellow-600 font-bold">Offer -₹${order.offerDiscount.toLocaleString('en-IN')}</span>`;
+      } else {
+        couponHtml = 'No Discount';
+      }
+
+      return `
+        <tr class="border-b">
+          <td class="py-3 px-4">${order.orderId}</td>
+          <td class="py-3 px-4">${new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
+          <td class="py-3 px-4">${order.userId?.name || 'Guest'}</td>
+          <td class="py-3 px-4">₹${order.totalAmount.toLocaleString('en-IN')}</td>
+          <td class="py-3 px-4 capitalize">${order.paymentStatus || 'Pending'}</td>
+          <td class="py-3 px-4">${couponHtml}</td>
+        </tr>
+      `;
+    }).join('');
   }
 
-  return `
-    <tr class="border-b">
-      <td class="py-3 px-4">${order.orderId}</td>
-      <td class="py-3 px-4">${new Date(order.createdAt).toLocaleDateString('en-IN')}</td>
-      <td class="py-3 px-4">${order.userId?.name || 'Guest'}</td>
-      <td class="py-3 px-4">₹${order.totalAmount.toLocaleString('en-IN')}</td>
-      <td class="py-3 px-4 capitalize">${order.paymentStatus || 'Pending'}</td>
-      <td class="py-3 px-4">${couponHtml}</td>
-    </tr>
+  // Render summary
+  const summary = document.getElementById('orders-summary');
+  const start = (data.page - 1) * 10 + 1;
+  const end = Math.min(data.page * 10, data.totalOrders);
+  summary.textContent = `Showing ${data.allOrders.length ? start : 0} to ${data.allOrders.length ? end : 0} of ${data.totalOrders} orders`;
+
+  // Render pagination
+  const pagDiv = document.getElementById('orders-pagination');
+  pagDiv.innerHTML = `
+    <button onclick="fetchOrders(${data.page - 1})" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" ${data.page === 1 ? 'disabled' : ''}>‹</button>
+    <span>Page ${data.page} of ${data.totalPages}</span>
+    <button onclick="fetchOrders(${data.page + 1})" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" ${data.page === data.totalPages ? 'disabled' : ''}>›</button>
   `;
-}).join('');
-      }
-    
-      // Render summary
-      const summary = document.getElementById('orders-summary');
-      const start = (data.page - 1) * 10 + 1;
-      const end = Math.min(data.page * 10, data.totalOrders);
-      summary.textContent = `Showing ${data.allOrders.length ? start : 0} to ${data.allOrders.length ? end : 0} of ${data.totalOrders} orders`;
-    
-      // Render pagination
-      const pagDiv = document.getElementById('orders-pagination');
-      pagDiv.innerHTML = `
-        <button onclick="fetchOrders(${data.page - 1})" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" ${data.page === 1 ? 'disabled' : ''}>‹</button>
-        <span>Page ${data.page} of ${data.totalPages}</span>
-        <button onclick="fetchOrders(${data.page + 1})" class="bg-gray-200 hover:bg-gray-300 text-gray-600 px-2 py-1 rounded" ${data.page === data.totalPages ? 'disabled' : ''}>›</button>
-      `;
-    }
+
+  // ---- Update metrics cards dynamically ----
+  document.querySelector('.font-bold.text-blue-600').textContent = `₹${data.totalSales.toLocaleString('en-IN')}`;
+  document.querySelector('.font-bold.text-green-600').textContent = data.totalOrders;
+  document.querySelector('.font-bold.text-red-500').textContent = `₹${data.totalDiscount.toLocaleString('en-IN')}`;
+}
 
     function showToast(msg) {
   const toast = document.createElement('div');

@@ -2,9 +2,16 @@ import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
 import Order from '../models/orderModel.js'; // adjust path as needed
 
+// Helper: Calculate total sales excluding returned/cancelled items
+function getValidOrderTotal(order) {
+  if (!order.items || !Array.isArray(order.items)) return 0;
+  return order.items
+    .filter(item => item.status !== 'Returned' && item.status !== 'Cancelled')
+    .reduce((sum, item) => sum + ((item.discountedPrice || item.originalPrice || 0) * (item.quantity || 1)), 0);
+}
+
 export const downloadSalesReportExcel = async (req, res) => {
   try {
-    // Use the same filter logic as your report page
     const { filter, from, to } = req.query;
     let matchConditions = {};
     let now = new Date();
@@ -34,7 +41,11 @@ export const downloadSalesReportExcel = async (req, res) => {
 
     const orders = await Order.find(matchConditions)
       .populate('userId', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Add items population for filtering
+    await Order.populate(orders, { path: 'items.productId' });
 
     // Create workbook and worksheet
     const workbook = new ExcelJS.Workbook();
@@ -45,19 +56,27 @@ export const downloadSalesReportExcel = async (req, res) => {
       'Order ID', 'Date', 'Customer', 'Total', 'Status', 'Coupon', 'Discount', 'Offer Discount'
     ]);
 
-    // Add data rows
+    // Add data rows (only valid items)
     orders.forEach(order => {
+      const validTotal = getValidOrderTotal(order);
       worksheet.addRow([
         order.orderId,
         order.createdAt.toLocaleDateString('en-IN'),
         order.userId?.name || 'Guest',
-        order.totalAmount,
+        validTotal,
         order.paymentStatus,
         order.coupon || '',
         order.discount || 0,
         order.offerDiscount || 0
       ]);
     });
+
+    // Calculate total sales (excluding returned/cancelled)
+    const totalSales = orders.reduce((sum, order) => sum + getValidOrderTotal(order), 0);
+    worksheet.addRow([]);
+    worksheet.addRow([
+      '', '', 'Total Sales', totalSales, '', '', '', ''
+    ]);
 
     // Set response headers
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -71,11 +90,6 @@ export const downloadSalesReportExcel = async (req, res) => {
     res.status(500).send('Failed to generate Excel');
   }
 };
-
-
-
-
-
 
 export const downloadSalesReportPDF = async (req, res) => {
   try {
@@ -109,7 +123,11 @@ export const downloadSalesReportPDF = async (req, res) => {
 
     const orders = await Order.find(matchConditions)
       .populate('userId', 'name')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Add items population for filtering
+    await Order.populate(orders, { path: 'items.productId' });
 
     // Create PDF
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
@@ -158,16 +176,26 @@ export const downloadSalesReportPDF = async (req, res) => {
         hour12: true,
       });
 
+      // Calculate valid total for this order
+      const validTotal = getValidOrderTotal(order);
+
       doc.text(order.orderId.slice(0, 10), 40, rowY);
       doc.text(formattedDate, 105, rowY, { width: 90 });
       doc.text(order.userId?.name || 'Guest', 200, rowY, { width: 80 });
-      doc.text(`RS-${order.totalAmount}`, 285, rowY);
+      doc.text(`RS-${validTotal}`, 285, rowY);
       doc.text(order.paymentStatus, 340, rowY);
       doc.text(order.coupon || '—', 395, rowY, { width: 70 });
       doc.text(`RS-${order.discount || 0}`, 470, rowY);
       doc.text(`RS-${order.offerDiscount || 0}`, 515, rowY);
       doc.moveDown(0.7);
     });
+
+    // Calculate total sales (excluding returned/cancelled)
+    const totalSales = orders.reduce((sum, order) => sum + getValidOrderTotal(order), 0);
+
+    doc.moveDown(2);
+    doc.font('Helvetica-Bold').fontSize(12).fillColor('#2c3e50');
+    doc.text(`Total Sales: RS-${totalSales.toLocaleString('en-IN')}`, 40, doc.y, { align: 'left' });
 
     doc.end();
   } catch (err) {

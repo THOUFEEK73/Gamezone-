@@ -6,17 +6,26 @@ export const getSalesReportPage = async (req, res) => {
     const limit = 5;
     const skip = (page - 1) * limit;
 
+    const filter = req.query.filter;
     let matchConditions = {
-      $or: [
-        { paymentStatus: 'paid','items.status': 'Delivered', 'items.status': { $ne: 'Pending' } },
-        { paymentMethod: 'cod', 'items.status': 'Delivered','items.status':{$ne:'Pending'} },
-        { paymentMethod: 'wallet', paymentStatus: 'paid' }
+      $and: [
+        {
+          $or: [
+            { paymentStatus: 'paid' },
+            { paymentMethod: 'cod' },
+            { paymentMethod: 'wallet', paymentStatus: 'paid' }
+          ]
+        },
+        {
+          items: {
+            $elemMatch: {
+              status: 'Delivered'
+            }
+          }
+        }
       ]
     };
 
-    const filter = req.query.filter;
-
-   
     let dateFilter = {};
     const now = new Date();
 
@@ -46,12 +55,13 @@ export const getSalesReportPage = async (req, res) => {
       }
     }
 
+    // Date filter logic
     if (filter === 'daily') {
-     console.log('Daily filter applied');
       const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const end = new Date(start);
       end.setDate(end.getDate() + 1);
       dateFilter = { $gte: start, $lt: end };
+
     } else if (filter === 'weekly') {
       const start = new Date(now);
       start.setDate(now.getDate() - now.getDay());
@@ -74,10 +84,9 @@ export const getSalesReportPage = async (req, res) => {
       matchConditions.createdAt = dateFilter;
     }
 
-    // 1. Aggregate offerDiscount from items
+    // Aggregate offerDiscount from items
     const offerDiscountAgg = await Order.aggregate([
       { $match: matchConditions },
-     
       {
         $group: {
           _id: null,
@@ -87,9 +96,7 @@ export const getSalesReportPage = async (req, res) => {
     ]);
     const offerDiscount = offerDiscountAgg[0]?.offerDiscount || 0;
 
-    console.log('offerDiscount:', offerDiscount);
-
-    // 2. Aggregate coupon discount and total sales at order level
+    // Aggregate coupon discount and total sales at order level
     const orderLevelAgg = await Order.aggregate([
       { $match: matchConditions },
       {
@@ -104,7 +111,8 @@ export const getSalesReportPage = async (req, res) => {
     const aggResult = orderLevelAgg[0] || { totalSales: 0, couponDiscount: 0, totalOrders: 0 };
 
     const totalDiscount = offerDiscount + aggResult.couponDiscount;
-    console.log('totalDiscount:', totalDiscount);
+
+    // Fetch paginated orders
     const allOrders = await Order.find(matchConditions)
       .populate('userId', 'name')
       .sort({ createdAt: -1 })
@@ -113,8 +121,8 @@ export const getSalesReportPage = async (req, res) => {
 
     const totalOrderCount = await Order.countDocuments(matchConditions);
     const totalPages = Math.ceil(totalOrderCount / limit);
-    
-  
+
+    // For API response
     if (req.headers.accept && req.headers.accept.includes('application/json')) {
       return res.json({
         allOrders,
@@ -124,13 +132,12 @@ export const getSalesReportPage = async (req, res) => {
         totalSales: aggResult.totalSales,
         totalDiscount,
         offerDiscount,
-        couponDiscount: aggResult.couponDiscount
+        couponDiscount: aggResult.couponDiscount,
+        filter
       });
     }
 
-
-   
-
+    // For EJS view
     res.render('admin/salesReport', {
       totalSales: aggResult.totalSales,
       totalOrders: aggResult.totalOrders,
@@ -140,6 +147,7 @@ export const getSalesReportPage = async (req, res) => {
       allOrders,
       page,
       totalPages,
+      filter,
       messages: req.flash()
     });
 
