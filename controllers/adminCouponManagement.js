@@ -283,8 +283,8 @@ export const CouponStatus = async (req, res) => {
       if (discountType && !['percentage', 'fixed'].includes(discountType)) {
         errors.discountType = 'Invalid discount type. Must be "percentage" or "fixed".';
       }
-      if (discountType === 'percentage' && (parsedDiscountValue <= 0 || parsedDiscountValue > 100)) {
-        errors.discountValue = 'Percentage discount must be between 1 and 100.';
+      if (discountType === 'percentage' && (parsedDiscountValue <= 0 || parsedDiscountValue > 90)) {
+        errors.discountValue = 'Percentage discount must be between 1 and 90.';
       }
       if (discountType === 'fixed' && parsedDiscountValue <= 0) {
         errors.discountValue = 'Fixed discount must be greater than 0.';
