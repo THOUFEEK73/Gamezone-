@@ -131,26 +131,37 @@
                             </td>
                             <td class="p-3 text-center align-top text-gray-700">
                                 <div class="text-sm w-32 mx-auto">
-                                    <select data-current-status="<%= item.status %>"
-                                        onchange="updateItemStatus('<%= order._id %>', '<%= item._id %>', this.value, this)"
-                                        class="w-full border-2 rounded px-2 py-1.5 text-sm transition duration-300
-                                        focus:outline-none focus:ring-0
-                                        <%= item.status === 'Delivered' ? 'border-green-500' : '' %>
-                                        <%= item.status === 'Out for Delivery' ? 'border-yellow-500' : '' %>
-                                        <%= item.status === 'Shipped' ? 'border-blue-500' : '' %>
-                                        <%= item.status === 'Cancelled' ? 'border-red-500' : '' %>
-                                        <%= item.status === 'Pending' ? 'border-gray-300' : '' %>">
-                                        <%
-                                        const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
-                                        const currentStatusIndex = statusOrder.indexOf(item.status);
-                                        statusOrder.forEach((status, index) => { %>
-                                            <option value="<%= status %>"
-                                                <%= item.status === status ? 'selected' : '' %>
-                                                <%= index < currentStatusIndex || index > currentStatusIndex + 1 ? 'disabled' : '' %>>
-                                                <%= status %>
-                                            </option>
-                                        <% }); %>
-                                    </select>
+                                    <% if (order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay') { %>
+                                        <select disabled style="background:#f3f4f6;cursor:not-allowed;" class="w-full border-2 rounded px-2 py-1.5 text-sm text-gray-400 bg-gray-100">
+                                            <%
+                                            const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+                                            statusOrder.forEach((status) => { %>
+                                                <option value="<%= status %>" <%= item.status === status ? 'selected' : '' %>><%= status %></option>
+                                            <% }); %>
+                                        </select>
+                                        <div class="text-xs text-red-500 mt-1">Cannot change status: Payment is pending for Razorpay order.</div>
+                                    <% } else { %>
+                                        <select data-current-status="<%= item.status %>"
+                                            onchange="updateItemStatus('<%= order._id %>', '<%= item._id %>', this.value, this)"
+                                            class="w-full border-2 rounded px-2 py-1.5 text-sm transition duration-300
+                                            focus:outline-none focus:ring-0
+                                            <%= item.status === 'Delivered' ? 'border-green-500' : '' %>
+                                            <%= item.status === 'Out for Delivery' ? 'border-yellow-500' : '' %>
+                                            <%= item.status === 'Shipped' ? 'border-blue-500' : '' %>
+                                            <%= item.status === 'Cancelled' ? 'border-red-500' : '' %>
+                                            <%= item.status === 'Pending' ? 'border-gray-300' : '' %>">
+                                            <%
+                                            const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+                                            const currentStatusIndex = statusOrder.indexOf(item.status);
+                                            statusOrder.forEach((status, index) => { %>
+                                                <option value="<%= status %>"
+                                                    <%= item.status === status ? 'selected' : '' %>
+                                                    <%= index < currentStatusIndex || index > currentStatusIndex + 1 ? 'disabled' : '' %>>
+                                                    <%= status %>
+                                                </option>
+                                            <% }); %>
+                                        </select>
+                                    <% } %>
                                     <% if (item.returnStatus === 'Pending') { %>
                                         <span class="bg-yellow-100 text-yellow-700 px-2 py-1 text-xs rounded block mt-2">Return Requested</span>
                                         <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
@@ -218,16 +229,10 @@
                 const newIndex = statusOrder.indexOf(status);
 
                 // Prevent selecting previous status or skipping steps
-                // if (newIndex < currentIndex || newIndex > currentStatusIndex + 1) {
-                //     selectElem.value = currentStatus;
-                //     return;
-                // }
-
-
                 if (newIndex < currentIndex || newIndex > currentIndex + 1) {
-    selectElem.value = currentStatus;
-    return;
-}
+                    selectElem.value = currentStatus;
+                    return;
+                }
 
                 const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/status`, {
                     method: 'POST',

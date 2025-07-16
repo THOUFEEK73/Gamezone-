@@ -1,151 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>GameZone - Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://kit.fontawesome.com/abcdef1234.js" crossorigin="anonymous"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
-<body class="bg-gradient-to-b from-black via-zinc-900 to-black font-sans">
-  <div class="min-h-screen flex items-center justify-center px-4">
-    <div class="w-full max-w-md bg-zinc-900/50 backdrop-blur-sm p-8 rounded-2xl shadow-2xl border border-zinc-800/50 hover:border-zinc-700/50 transition-all duration-300">
-      <!-- Logo and Title -->
-      <div class="text-center mb-8 transform hover:scale-105 transition-transform duration-300">
-        <h1 class="text-5xl font-bold text-white mb-2 animate-pulse">GameZone</h1>
-        <p class="text-zinc-400 hover:text-zinc-300 transition-colors">Welcome back, gamer!</p>
-      </div>
 
-      <!-- Error Message (if any) -->
-      <% if (typeof err !== 'undefined' && err) { %>
-        <div class="bg-red-900/20 border border-red-900/30 text-red-400 px-4 py-2 rounded-lg mb-6 animate-shake">
-          <%= err %>
-        </div>
-      <% } %>
+<body class="bg-gray-100 min-h-screen flex">
 
-      <% if (typeof message !== 'undefined' && message) { %>
-        <div class="bg-green-900/20 border border-green-900/30 text-green-400 px-4 py-2 rounded-lg mb-6 animate-shake">
-          <%= message %>
-        </div>
-      <% } %>
+    <!-- Sidebar -->
+    <%- include('partials/sidebar') %>
 
-      <!-- Sign In Form -->
-      <form action="/login" method="POST" class="space-y-6">
-        <!-- Email -->
-        <div class="group">
-          <label for="email" class="block text-sm font-medium text-zinc-300 mb-2 group-hover:text-white transition-colors">
-            Email Address
-          </label>
-          <div class="relative">
-            <input 
-              type="email" 
-              id="email" 
-              name="email" 
-               
-              class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-10 pr-4 py-2.5 
-                     focus:ring-2 focus:ring-white/50 focus:border-transparent 
-                     hover:border-zinc-600 transition-all duration-200"
-              placeholder="Enter your email"
-            >
-            <i class="fas fa-envelope absolute left-3 top-3 text-zinc-500"></i>
-          </div>
-        </div>
+    <!-- Main Content Area -->
+    <div class="flex flex-col flex-1 ml-64 min-h-screen relative z-0">
 
-        <!-- Password -->
-        <div class="group">
-          <div class="flex justify-between items-center mb-2">
-            <label for="password" class="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors ">
-              Password
-            </label>
-            <a href="/forgot-password" 
-               class="text-sm text-zinc-400 hover:text-white transition-colors transform hover:translate-x-1 inline-block">
-              Forgot password? →
-            </a>
-          </div>
-          <div class="relative">
-            <input 
-              type="password" 
-              id="password" 
-              name="password" 
-              autocomplete="off"
-               
-              class="w-full bg-zinc-800/50 border border-zinc-700 text-white rounded-lg pl-10 pr-4 py-2.5 
-                     focus:ring-2 focus:ring-white/50 focus:border-transparent 
-                     hover:border-zinc-600 transition-all duration-200"
-              placeholder="Enter your password"
-            >
-            <i class="fas fa-lock absolute left-3 top-3 text-zinc-500"></i>
-            <i
-            class="fas fa-eye absolute right-3 top-2.5 text-zinc-500 text-sm cursor-pointer"
-            onclick="togglePassword(this)"
-            id="toggleIcon"
-          ></i>
-          </div>
-        </div>
+        <!-- Page Content -->
+        <main class="flex-1 bg-white shadow-sm rounded-lg p-4 md:p-8 overflow-y-auto">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4 gap-2">
+                <h2 class="text-xl md:text-2xl font-semibold text-gray-800">
+                    Order Details - <span class="text-gray-500"><%= order.orderId %></span>
+                </h2>
+                <%
+                let statusColor = 'bg-gray-100 text-gray-700';
+                switch ((summaryStatus || '').toLowerCase()) {
+                  case 'pending':
+                    statusColor = 'bg-yellow-100 text-yellow-700';
+                    break;
+                  case 'shipped':
+                    statusColor = 'bg-blue-100 text-blue-700';
+                    break;
+                  case 'out for delivery':
+                    statusColor = 'bg-yellow-200 text-yellow-800';
+                    break;
+                  case 'delivered':
+                    statusColor = 'bg-green-100 text-green-700';
+                    break;
+                  case 'cancelled':
+                    statusColor = 'bg-red-100 text-red-700';
+                    break;
+                  case 'returned':
+                    statusColor = 'bg-red-100 text-red-700';
+                    break;
+                }
+                %>
+                <span class="<%= statusColor %> px-4 py-1 rounded text-sm w-max capitalize">
+                  <%= summaryStatus %>
+                </span>
+            </div>
 
-        <!-- Submit Button -->
-        <button 
-          type="submit" 
-          class="w-full bg-white text-black hover:bg-zinc-200 font-semibold py-3 rounded-lg 
-                 transition-all duration-300 transform hover:scale-[1.02] active:scale-95
-                 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
-                 shadow-lg hover:shadow-white/10"
-        >
-          Sign In
-        </button>
-      </form>
+            <p class="text-sm text-gray-500 mb-6">Placed on <%= order.createdAt.toLocaleString('en-IN') %></p>
 
-      <!-- Social Login -->
-      <div class="mt-6">
-        <div class="flex items-center justify-center">
-          <button 
-            onclick="window.location.href='/auth/google'"
-            class="w-full flex items-center justify-center gap-2 bg-white text-black hover:bg-zinc-200 font-semibold py-3 rounded-lg 
-                   transition-all duration-300 transform hover:scale-[1.02] active:scale-95
-                   focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black
-                   shadow-lg hover:shadow-white/10"
-          >
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
-                 alt="Google" 
-                 class="w-5 h-5">
-            Continue with Google
-          </button>
-        </div>
-      </div>
+            <!-- Info Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Customer Information</h4>
+                    <p class="text-gray-700"><%= order.userId.name %></p>
+                    <p class="text-gray-600"><%= order.userId.email %></p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-800 mb-2">Shipping Address</h4>
+                    <p class="text-gray-700"><%= order.shippingAddress?.state %>, <%= order.shippingAddress?.zipCode %></p>
+                    <p class="text-gray-700"><%= order.shippingAddress?.phone %></p>
+                    <p class="text-gray-700"><%= order.shippingAddress?.city %></p>
+                </div>
+            </div>
 
-      <!-- Divider -->
-      <div class="flex items-center my-8">
-        <hr class="flex-grow border-zinc-800">
-        <span class="px-4 text-zinc-500 text-sm">New to GameZone?</span>
-        <hr class="flex-grow border-zinc-800">
-      </div>
-
-      <!-- Sign Up Link -->
-      <a 
-        href="/signup" 
-        class="block w-full text-center bg-transparent border border-zinc-700 text-zinc-300 
-               hover:bg-zinc-800/50 hover:text-white font-semibold py-3 rounded-lg 
-               transition-all duration-300 transform hover:scale-[1.02] active:scale-95"
-      >
-        Create an Account
-      </a>
+            <!-- Table -->
+            <div class="overflow-x-auto mb-6">
+                <table class="min-w-full table-auto border-t border-b border-gray-200 bg-white">
+                    <thead class="bg-gray-50 text-gray-700">
+                        <tr>
+                            <th class="p-3 text-left">Product</th>
+                            <th class="p-3 text-center">Qty</th>
+                            <th class="p-3 text-right">Original Price</th>
+                            <th class="p-3 text-right">Discounted Price</th>
+                            <th class="p-3 text-center">Offer</th>
+                            <th class="p-3 text-center">Status</th>
+                            <% if (order.coupon && couponDiscount > 0) { %>
+                                <th class="p-3 text-right">After Coupon</th>
+                            <% } %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% let total = 0; %>
+                        <% order.items.forEach(item => { %>
+                        <% 
+                            const base = item.discountedPrice ? item.discountedPrice : item.productId.price;
+                            total += base * item.quantity;
+                            let couponShare = 0;
+                            let effectivePrice = base * item.quantity;
+                            if (order.coupon && couponDiscount > 0) {
+                                const share = (base * item.quantity) / total;
+                                couponShare = Math.round(share * couponDiscount);
+                                effectivePrice = (base * item.quantity) - couponShare;
+                            }
+                        %>
+                        <tr class="border-t hover:bg-gray-50 transition">
+                            <td class="p-3 align-top">
+                                <div class="flex items-start space-x-3">
+                                    <img src="<%= item.productId.media.coverImage %>" alt="Product Image"
+                                        class="w-12 h-12 rounded object-cover border" />
+                                    <div>
+                                        <p class="font-medium text-gray-800"><%= item.productId.title %></p>
+                                        <p class="text-xs text-gray-500">Company: <%= item.productId.company %></p>
+                                        <p class="text-xs text-gray-500">Category: <%= item.productId.category?.name %></p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-3 text-center align-top"><%= item.quantity %></td>
+                            <td class="p-3 text-right align-top">
+                                <% if (item.discountPercentage) { %>
+                                    <span class="line-through text-gray-400">₹<%= item.originalPrice %></span>
+                                <% } else { %>
+                                    ₹<%= item.productId.price %>
+                                <% } %>
+                            </td>
+                            <td class="p-3 text-right align-top text-green-700 font-semibold">
+                                ₹<%= base %>
+                            </td>
+                            <td class="p-3 text-center align-top text-red-600">
+                                <% if (item.discountPercentage) { %>
+                                    <%= item.discountPercentage %>% OFF (<%= item.offerName %>)
+                                <% } else { %>
+                                    -
+                                <% } %>
+                            </td>
+                            <td class="p-3 text-center align-top text-gray-700">
+                                <div class="text-sm w-32 mx-auto">
+                                    <select data-current-status="<%= item.status %>"
+                                        onchange="updateItemStatus('<%= order._id %>', '<%= item._id %>', this.value, this)"
+                                        class="w-full border-2 rounded px-2 py-1.5 text-sm transition duration-300
+                                        focus:outline-none focus:ring-0
+                                        <%= item.status === 'Delivered' ? 'border-green-500' : '' %>
+                                        <%= item.status === 'Out for Delivery' ? 'border-yellow-500' : '' %>
+                                        <%= item.status === 'Shipped' ? 'border-blue-500' : '' %>
+                                        <%= item.status === 'Cancelled' ? 'border-red-500' : '' %>
+                                        <%= item.status === 'Pending' ? 'border-gray-300' : '' %>"
+                                        <%= order.paymentStatus === 'pending' && order.paymentMethod === 'razorpay' ? 'disabled style="background:#f3f4f6;cursor:not-allowed;"' : '' %>>
+                                        <%
+                                        const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+                                        const currentStatusIndex = statusOrder.indexOf(item.status);
+                                        statusOrder.forEach((status, index) => { %>
+                                            <option value="<%= status %>"
+                                                <%= item.status === status ? 'selected' : '' %>
+                                                <%= index < currentStatusIndex || index > currentStatusIndex + 1 ? 'disabled' : '' %>>
+                                                <%= status %>
+                                            </option>
+                                        <% }); %>
+                                    </select>
+                                    <% if (item.returnStatus === 'Pending') { %>
+                                        <span class="bg-yellow-100 text-yellow-700 px-2 py-1 text-xs rounded block mt-2">Return Requested</span>
+                                        <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+                                        <div class="mt-2 flex gap-2">
+                                            <button onclick="handleReturnAction('<%= order._id %>', '<%= item._id %>', 'Accepted')" class="bg-green-500 text-white px-2 py-1 rounded text-xs">Approve</button>
+                                            <button onclick="handleReturnAction('<%= order._id %>', '<%= item._id %>', 'Denied')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Reject</button>
+                                        </div>
+                                    <% } else if (item.returnStatus === 'Accepted') { %>
+                                        <span class="bg-green-100 text-green-700 px-2 py-1 text-xs rounded block mt-2">Return Approved</span>
+                                        <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+                                    <% } else if (item.returnStatus === 'Denied') { %>
+                                        <span class="bg-red-100 text-red-700 px-2 py-1 text-xs rounded block mt-2">Return Rejected</span>
+                                        <p class="text-xs text-gray-500 mt-1">Reason: <%= item.returnReason %></p>
+                                    <% } else { %>
+                                        <span class="bg-gray-100 text-gray-700 px-2 py-1 text-xs rounded block mt-2">No Return</span>
+                                    <% } %>
+                                </div>
+                            </td>
+                            <% if (order.coupon && couponDiscount > 0) { %>
+                                <td class="p-3 text-right align-top text-blue-700 font-semibold">
+                                    ₹<%= Math.round(effectivePrice / item.quantity) %> <br>
+                                    <span class="text-xs text-blue-500">after coupon</span>
+                                </td>
+                            <% } %>
+                        </tr>
+                        <% }) %>
+                        <tr>
+                            <td colspan="<%= order.coupon && couponDiscount > 0 ? 7 : 6 %>" class="pt-4 pb-2 text-right">
+                              <div>
+                                <span class="font-semibold">Subtotal:</span>
+                                ₹<%= total.toLocaleString('en-IN') %>
+                              </div>
+                              <% if (order.coupon) { %>
+                                <div class="text-blue-700 font-semibold mt-1 text-sm flex items-center gap-2">
+                                  <i class="fa-solid fa-ticket"></i>
+                                  Coupon (<%= order.coupon %>)
+                                  <% if (couponDiscount > 0) { %>
+                                    <span class="ml-1">-₹<%= couponDiscount.toLocaleString('en-IN') %></span>
+                                  <% } %>
+                                </div>
+                                <% if (order.couponDescription) { %>
+                                  <div class="text-xs text-blue-500 ml-8"><%= order.couponDescription %></div>
+                                <% } %>
+                                <div class="text-xs text-gray-500 ml-8">
+                                  Coupon discount is applied to the order total, not to individual products.
+                                </div>
+                              <% } %>
+                              <div class="font-bold text-lg text-green-700 mt-1">
+                                Final Total: ₹<%= order.grandTotal.toLocaleString('en-IN') %>
+                              </div>
+                            </td>
+                          </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
-  </div>
 
-  <script>
-    function togglePassword(icon) {
-      const password = document.getElementById('password');
-      if (password.type === 'password') {
-        password.type = 'text';
-        icon.classList.remove('fa-eye');
-        icon.classList.add('fa-eye-slash');
-      } else {
-        password.type = 'password';
-        icon.classList.remove('fa-eye-slash');
-        icon.classList.add('fa-eye');
-      }
-    }
+    <script>
+        async function updateItemStatus(orderId, itemId, status, selectElem) {
+            try {
+                const statusOrder = ['Pending', 'Shipped', 'Out for Delivery', 'Delivered'];
+                const currentStatus = selectElem.getAttribute('data-current-status');
+                const currentIndex = statusOrder.indexOf(currentStatus);
+                const newIndex = statusOrder.indexOf(status);
+
+                // Prevent selecting previous status or skipping steps
+                // if (newIndex < currentIndex || newIndex > currentStatusIndex + 1) {
+                //     selectElem.value = currentStatus;
+                //     return;
+                // }
+
+
+                if (newIndex < currentIndex || newIndex > currentIndex + 1) {
+    selectElem.value = currentStatus;
+    return;
+}
+
+                const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    selectElem.setAttribute('data-current-status', status);
+
+                    // Update border colors
+                    selectElem.classList.remove(
+                        'border-green-500',
+                        'border-yellow-500',
+                        'border-blue-500',
+                        'border-red-500',
+                        'border-gray-300'
+                    );
+
+                    // Add new border color based on status
+                    switch (status) {
+                        case 'Delivered':
+                            selectElem.classList.add('border-green-500');
+                            break;
+                        case 'Out for Delivery':
+                            selectElem.classList.add('border-yellow-500');
+                            break;
+                        case 'Shipped':
+                            selectElem.classList.add('border-blue-500');
+                            break;
+                        default:
+                            selectElem.classList.add('border-gray-300');
+                    }
+
+                    location.reload();
+                } else {
+                    alert('Failed to update status');
+                    selectElem.value = currentStatus;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating status');
+                selectElem.value = currentStatus;
+            }
+        }
+
+        async function handleReturnAction(orderId, itemId, action) {
+            try {
+                const response = await fetch(`/admin/orders/${orderId}/item/${itemId}/return`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ returnStatus: action })
+                });
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Failed to update return status');
+                }
+            } catch (error) {
+                alert('Error updating return status');
+            }
+        }
     </script>
 </body>
 </html>
