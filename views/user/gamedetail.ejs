@@ -660,7 +660,7 @@
                         <% } %>
 
                             <!-- Rating -->
-                            <div class="bg-white rounded-xl p-6 shadow">
+                            <!-- <div class="bg-white rounded-xl p-6 shadow">
                                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Game Rating</h3>
                                 <div class="flex items-center space-x-4">
                                     <div class="flex text-yellow-400">
@@ -677,7 +677,7 @@
                                         <div class="h-full bg-yellow-400 rounded-full" style="width: 75%"></div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
                 </div>
 
                 <!-- Right Side - Info and Buy -->
@@ -782,11 +782,11 @@
                 <i class="fas fa-cart-plus group-hover:scale-110 transition-transform"></i>
                 Add to Cart
             </button>
-            <button onclick="buyNow('<%= game._id %>', '<%= user._id %>')"
+            <!-- <button onclick="buyNow('<%= game._id %>', '<%= user._id %>')"
                 class="flex-1 px-6 py-2.5 buy-now-button flex items-center justify-center gap-2">
                 <i class="fas fa-bolt"></i>
                 Buy Now
-            </button>
+            </button> -->
             <button class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium text-sm transition-all duration-300 flex items-center justify-center border border-gray-200 hover:border-gray-300">
                 <i class="fas fa-share-alt"></i>
             </button>
@@ -800,98 +800,40 @@
     <% } %>
 </div>
 </div>
-                    <div class="bg-white rounded-2xl p-6 shadow-md mt-8 transition-all duration-300">
-                        <div class="space-y-6">
-                            <!-- Description Header -->
-                            <div class="flex items-center justify-between">
-                                <h2 class="text-2xl md:text-3xl font-bold text-gray-900">About This Game</h2>
-                                <button id="expandBtn"
-                                    class="text-indigo-600 hover:text-indigo-800 flex items-center gap-2 text-sm font-medium focus:outline-none">
-                                    <span>Show More</span>
-                                    <i class="fas fa-chevron-down transition-transform duration-300"></i>
-                                </button>
-                            </div>
-
-                            <!-- Description Content -->
-                            <div id="descriptionContent"
-                                class="relative overflow-hidden max-h-[200px] transition-all duration-500">
-                                <div class="prose max-w-none text-gray-700 leading-relaxed space-y-5 text-base">
-                                    <p>
-                                        <%= game.description %>
-                                    </p>
-
-                                    <!-- Key Features -->
-                                    <div class="pt-2">
-                                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Key Features</h3>
-                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <% const features=[ { icon: "gamepad" , title: "Immersive Gameplay" ,
-                                                desc: "Experience stunning graphics and engaging storylines that will keep you hooked for hours."
-                                                }, { icon: "users" , title: "Multiplayer Experience" ,
-                                                desc: "Join forces with friends or compete against players worldwide in exciting multiplayer modes."
-                                                }, { icon: "trophy" , title: "Achievements & Rewards" ,
-                                                desc: "Unlock achievements, collect rewards, and showcase your gaming prowess."
-                                                }, { icon: "download" , title: "Regular Updates" ,
-                                                desc: "Stay engaged with regular content updates, new features, and improvements."
-                                                }, ]; %>
-                                                <% features.forEach(f=> { %>
-                                                    <div class="flex items-start space-x-4">
-                                                        <div
-                                                            class="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-                                                            <i class="fas fa-<%= f.icon %> text-lg text-indigo-600"></i>
-                                                        </div>
-                                                        <div>
-                                                            <h4 class="font-semibold text-gray-800 mb-1">
-                                                                <%= f.title %>
-                                                            </h4>
-                                                            <p class="text-sm text-gray-600">
-                                                                <%= f.desc %>
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <% }); %>
-                                        </div>
-                                    </div>
-
-                                    <!-- System Requirements -->
-                                    <% if (game.systemRequirements) { %>
-                                        <div class="pt-6">
-                                            <h3 class="text-xl font-semibold text-gray-900 mb-4">System Requirements
-                                            </h3>
-                                            <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
-                                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                    <div>
-                                                        <h4 class="font-medium text-gray-800 mb-2">Minimum</h4>
-                                                        <ul class="space-y-2 text-gray-700 text-sm">
-                                                            <li class="flex items-center gap-2">
-                                                                <i class="fas fa-microchip text-indigo-600"></i>
-                                                                <%= game.systemRequirements.minimum.processor %>
-                                                            </li>
-                                                            <!-- Add more minimum specs -->
-                                                        </ul>
-                                                    </div>
-                                                    <div>
-                                                        <h4 class="font-medium text-gray-800 mb-2">Recommended</h4>
-                                                        <ul class="space-y-2 text-gray-700 text-sm">
-                                                            <li class="flex items-center gap-2">
-                                                                <i class="fas fa-microchip text-indigo-600"></i>
-                                                                <%= game.systemRequirements.recommended.processor %>
-                                                            </li>
-                                                            <!-- Add more recommended specs -->
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <% } %>
-                                </div>
-
-                                <!-- Gradient Overlay -->
-                                <div id="overlay"
-                                    class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none transition-opacity duration-300">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<div class="bg-white rounded-2xl p-6 shadow-xl mt-10 transition-all duration-300">
+    <div class="space-y-8">
+      <!-- Header -->
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+          About This Game
+        </h2>
+        <button id="expandBtn"
+          class="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 text-sm font-semibold focus:outline-none">
+          <span>Show More</span>
+          <i class="fas fa-chevron-down transform transition-transform duration-300"></i>
+        </button>
+      </div>
+  
+      <!-- Description Content -->
+      <div id="descriptionContent"
+      class="relative overflow-hidden max-h-[200px] transition-all duration-500 ease-in-out group">
+   
+   <!-- Actual Description -->
+   <div class="prose max-w-none text-gray-800 leading-relaxed text-base space-y-6">
+     <p class="text-lg text-gray-700">
+       <%= game.description %>
+     </p>
+   </div>
+ 
+   <!-- Bottom Fade Overlay -->
+   <div id="overlay"
+        class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none transition-opacity duration-300">
+   </div>
+ </div>
+ 
+    </div>
+  </div>
+  
                 </div>
 
             </div>
@@ -1081,6 +1023,31 @@
                     }
                 });
             }
+
+            const expandBtn = document.getElementById('expandBtn');
+  const descriptionContent = document.getElementById('descriptionContent');
+  const overlay = document.getElementById('overlay');
+
+  let expanded = false;
+
+  if (expandBtn && descriptionContent) {
+    expandBtn.addEventListener('click', function () {
+      expanded = !expanded;
+      if (expanded) {
+        descriptionContent.classList.remove('max-h-[200px]');
+        descriptionContent.classList.add('max-h-[2000px]');
+        expandBtn.querySelector('span').textContent = 'Show Less';
+        expandBtn.querySelector('i').classList.add('rotate-180');
+        if (overlay) overlay.style.opacity = 0;
+      } else {
+        descriptionContent.classList.add('max-h-[200px]');
+        descriptionContent.classList.remove('max-h-[2000px]');
+        expandBtn.querySelector('span').textContent = 'Show More';
+        expandBtn.querySelector('i').classList.remove('rotate-180');
+        if (overlay) overlay.style.opacity = 1;
+      }
+    });
+  }
 
             // Image Modal
             const imageModal = document.getElementById('imageModal');
